@@ -30,6 +30,15 @@ public enum  DataType {
     BOOLEAN(Boolean.class, boolean.class),
     BINARY();
 
+    /*
+     * DOUBLE, DECIMAL, FLOAT, INTEGER BIGINT,
+     * CHAR, VARCHAR,  LONG_TEXT
+     * DATE, DATETIME, TIMESTAMP, TIME
+     * BINARY, BLOB
+     *
+     * ENUM
+     */
+
     private final Class<?>[] javaClasses;
 
     DataType(Class... javaClasses) {

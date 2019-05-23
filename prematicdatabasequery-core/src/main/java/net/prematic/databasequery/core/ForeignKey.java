@@ -22,12 +22,13 @@ package net.prematic.databasequery.core;
 public class ForeignKey {
 
     private final String collection, field;
-    private final boolean deleteCascade;
+    //private final boolean deleteCascade;
+    private Option delete, update;
 
     public ForeignKey(String collection, String field, boolean deleteCascade) {
         this.collection = collection;
         this.field = field;
-        this.deleteCascade = deleteCascade;
+        //this.deleteCascade = deleteCascade;
     }
 
     public ForeignKey(String collection, String field) {
@@ -42,7 +43,17 @@ public class ForeignKey {
         return field;
     }
 
+    /*
     public boolean isDeleteCascade() {
         return deleteCascade;
+    }
+
+     */
+    public enum Option {
+
+        DEFAULT,
+        CASCADE,
+        SET_NULL
+
     }
 }

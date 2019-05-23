@@ -19,13 +19,15 @@
 
 package net.prematic.databasequery.core;
 
+import net.prematic.databasequery.core.query.CreateQuery;
+
 public interface Database {
 
     String getName();
 
     DatabaseCollection getCollection(String name);
 
-    DatabaseCollection createCollection(String name);
+    CreateQuery createCollection(String name);
 
     DatabaseCollection createCollection(Class<?> clazz);
 

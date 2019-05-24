@@ -10,6 +10,8 @@
     <version>1.0.0</version>
     <modules>
         <module>prematicdatabasequery-core</module>
+        <module>prematicdatabasequery-sql</module>
+        <module>prematicdatabasequery-core-impl</module>
     </modules>
 
 

@@ -24,6 +24,8 @@ public interface DatabaseDriver {
 
     String getName();
 
+    String getType();
+
     Database getDatabase(String name);
 
     boolean isConnected();
@@ -33,9 +35,5 @@ public interface DatabaseDriver {
     void connect();
 
     void disconnect();
-
-
-
-
 
 }

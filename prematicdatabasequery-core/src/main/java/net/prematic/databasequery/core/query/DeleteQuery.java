@@ -19,6 +19,6 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface DeleteQuery extends SearchQuery {
+public interface DeleteQuery extends SearchQuery<DeleteQuery> {
 
 }

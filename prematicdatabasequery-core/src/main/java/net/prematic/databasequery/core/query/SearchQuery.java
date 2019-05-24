@@ -26,123 +26,96 @@ import net.prematic.libraries.utility.map.Pair;
 import java.util.HashMap;
 import java.util.Map;
 
-public interface SearchQuery extends Query {
+public interface SearchQuery<T extends SearchQuery> extends Query {
 
-    SearchQuery where(String field, Object value);
+    T where(String field, Object value);
 
-    default SearchQuery where(String field) {
+    default T where(String field) {
         return where(field, (Object) null);
     }
 
-    SearchQuery where(String field, Pattern pattern);
+    T where(String field, Pattern pattern);
 
-    SearchQuery not(SearchQuery searchQuery);
+    T not(FindQuery searchQuery);
 
-    SearchQuery and(SearchQuery... searchQueries);
+    T and(FindQuery... searchQueries);
 
-    SearchQuery or(SearchQuery... searchQueries);
+    T or(FindQuery... searchQueries);
 
-    SearchQuery between(String field, Object value1, Object value2);
+    T between(String field, Object value1, Object value2);
 
-    default SearchQuery between(String field) {
+    default T between(String field) {
         return between(field, null, null);
     }
 
-    SearchQuery limit(int limit);
+    T limit(int limit);
 
-    default SearchQuery limit() {
+    default T limit() {
         return limit(-1);
     }
 
-    default SearchQuery first() {
+    default T first() {
         return limit(1);
     }
 
-    SearchQuery orderBy(String field, OrderOption orderOption);
+    T orderBy(String field, OrderOption orderOption);
 
-    default SearchQuery orderBy(String field) {
+    default T orderBy(String field) {
         return orderBy(field, null);
     }
 
-    SearchQuery groupBy(String... fields);
+    T groupBy(String... fields);
 
-    SearchQuery groupBy(String field, Aggregation aggregation);
+    T groupBy(String field, Aggregation aggregation);
 
-    SearchQuery groupBy(Pair<String, Aggregation>... fields);
+    default T groupBy(Pair<String, Aggregation>... fields) {
+        for (Pair<String, Aggregation> field : fields) {
+            groupBy(field.getKey(), field.getValue());
+        }
+        return (T) this;
+    }
 
-    SearchQuery having(SearchQuery first, String operator, SearchQuery second);
+    default T having(FindQuery first, String operator, FindQuery second) {
+        return having((Object)first, operator, (Object)second);
+    }
 
-    SearchQuery having(Object first, String operator, SearchQuery second);
+    default T having(Object first, String operator, FindQuery second) {
+        return having(first, operator, (Object)second);
+    }
 
-    SearchQuery having(SearchQuery first, String operator, Object second);
+    default T having(FindQuery first, String operator, Object second) {
+        return having((Object)first, operator, second);
+    }
 
-    SearchQuery min(String field);
+    T having(Object first, String operator, Object second);
 
-    default SearchQuery min() {
+    T min(String field);
+
+    default T min() {
         return min(null);
     }
 
-    SearchQuery max(String field);
+    T max(String field);
 
-    default SearchQuery max() {
+    default T max() {
         return max(null);
     }
 
-    SearchQuery count(String field);
+    T count(String field);
 
-    default SearchQuery count() {
+    default T count() {
         return count(null);
     }
 
-    SearchQuery avg(String field);
+    T avg(String field);
 
-    default SearchQuery avg() {
+    default T avg() {
         return avg(null);
     }
 
-    SearchQuery sum(String field);
+    T sum(String field);
 
-    default SearchQuery sum() {
+    default T sum() {
         return sum(null);
-    }
-
-    SearchQuery get(String... fields);
-
-    SearchQuery get(SearchQueryGetBuilder... fields);
-
-    class SearchQueryGetBuilder {
-
-        private Map<SearchQueryGetBuilderEntryType, Object> entries;
-
-        public SearchQueryGetBuilder() {
-            this.entries = new HashMap<>();
-        }
-
-        public Map<SearchQueryGetBuilderEntryType, Object> getEntries() {
-            return entries;
-        }
-
-        public SearchQueryGetBuilder withField(String field) {
-            this.entries.put(SearchQueryGetBuilderEntryType.FIELD, field);
-            return this;
-        }
-
-        public SearchQueryGetBuilder withOperator(String operator) {
-            this.entries.put(SearchQueryGetBuilderEntryType.OPERATOR, operator);
-            return this;
-        }
-
-        public SearchQueryGetBuilder withAggregation(Aggregation aggregation, String field) {
-            this.entries.put(SearchQueryGetBuilderEntryType.AGGREGATION, new Pair<>(aggregation, field));
-            return this;
-        }
-
-        enum SearchQueryGetBuilderEntryType {
-
-            FIELD,
-            OPERATOR,
-            AGGREGATION
-
-        }
     }
 }

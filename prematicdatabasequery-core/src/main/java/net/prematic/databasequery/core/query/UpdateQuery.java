@@ -19,6 +19,7 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface UpdateQuery extends ChangeQuery, SearchQuery {
+public interface UpdateQuery extends ChangeQuery<UpdateQuery>, SearchQuery<UpdateQuery> {
+
 
 }

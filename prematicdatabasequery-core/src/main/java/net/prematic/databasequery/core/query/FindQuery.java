@@ -19,6 +19,51 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface FindQuery extends SearchQuery {
+import net.prematic.databasequery.core.Aggregation;
+import net.prematic.libraries.utility.map.Pair;
 
+import java.util.HashMap;
+import java.util.Map;
+
+public interface FindQuery extends SearchQuery<FindQuery> {
+
+    FindQuery get(String... fields);
+
+    FindQuery get(GetBuilder... getBuilders);
+
+    class GetBuilder {
+
+        private Map<EntryType, Object> entries;
+
+        public GetBuilder() {
+            this.entries = new HashMap<>();
+        }
+
+        public Map<EntryType, Object> getEntries() {
+            return entries;
+        }
+
+        public GetBuilder withField(String field) {
+            this.entries.put(EntryType.FIELD, field);
+            return this;
+        }
+
+        public GetBuilder withOperator(String operator) {
+            this.entries.put(EntryType.OPERATOR, operator);
+            return this;
+        }
+
+        public GetBuilder withAggregation(Aggregation aggregation, String field) {
+            this.entries.put(EntryType.AGGREGATION, new Pair<>(aggregation, field));
+            return this;
+        }
+
+        enum EntryType {
+
+            FIELD,
+            OPERATOR,
+            AGGREGATION
+
+        }
+    }
 }

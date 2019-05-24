@@ -39,7 +39,5 @@ public interface DatabaseCollection {
 
     DeleteQuery delete();
 
-    //@Todo count query methods
-    CountQuery count();
-
+    QueryTransaction transact();
 }

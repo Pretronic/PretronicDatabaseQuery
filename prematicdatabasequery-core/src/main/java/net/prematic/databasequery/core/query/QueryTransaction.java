@@ -26,7 +26,7 @@ public interface QueryTransaction {
 
     void commit();
 
-    void roolBack();
+    void rollBack();
 
     void execute(Query query);
 

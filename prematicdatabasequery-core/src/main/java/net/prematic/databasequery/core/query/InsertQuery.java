@@ -19,6 +19,6 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface InsertQuery extends ChangeQuery {
+public interface InsertQuery extends ChangeQuery<InsertQuery> {
 
 }

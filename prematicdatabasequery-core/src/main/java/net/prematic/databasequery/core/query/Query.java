@@ -19,21 +19,9 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface Query {
+import net.prematic.databasequery.core.query.result.QueryResult;
 
-    /*
-    Query
-        SearchQuery /
-        ChangeQuery /
-        FinalQuery
-            InsertQuery -> change /
-            UpdateQuery -> change, search /
-            ReplaceQuery -> update, search
-            DeleteQuery -> search /
-            CountQuery -> Search
-            CreateQuery -> Change /
-            DropQuery -> Change /
-     */
+public interface Query {
 
     QueryResult execute();
 

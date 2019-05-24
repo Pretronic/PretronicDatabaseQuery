@@ -27,4 +27,5 @@ public interface CreateQuery extends Query {
 
     CreateQuery with(String name, DataType type, int size, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions);
 
+    CreateQuery withEngine(String name);
 }

@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 03.05.19, 23:51
+ * @since 23.05.19, 21:33
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.query;
+package net.prematic.databasequery.core.entity;
 
-public interface ChangeQuery<T extends ChangeQuery> extends Query {
+import net.prematic.databasequery.core.ForeignKeyOption;
 
-    T set(String field, Object value);
+public @interface ForeignKey {
 
-    default T set(String field) {
-        return set(field, null);
-    }
+    String collection();
+
+    String field();
+
+    ForeignKeyOption deleteOption() default ForeignKeyOption.DEFAULT;
+
+    ForeignKeyOption updateOption() default ForeignKeyOption.DEFAULT;
+
 }

@@ -23,7 +23,6 @@ public class Pattern {
 
     private String pattern, startsWith, endsWith, contains;
 
-
     public Pattern() {
 
     }
@@ -48,8 +47,7 @@ public class Pattern {
         return this;
     }
 
-    @Override
-    public String toString() {
+    public String build() {
         if(pattern != null) return pattern;
         StringBuilder builder = new StringBuilder();
         if(startsWith != null) builder.append(startsWith);

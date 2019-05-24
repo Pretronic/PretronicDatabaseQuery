@@ -20,6 +20,10 @@
 package net.prematic.databasequery.core;
 
 import net.prematic.databasequery.core.query.CreateQuery;
+import net.prematic.databasequery.core.query.Query;
+import net.prematic.databasequery.core.query.QueryTransaction;
+import net.prematic.databasequery.core.query.result.QueryResult;
+import java.util.List;
 
 public interface Database {
 
@@ -41,7 +45,7 @@ public interface Database {
         return updateCollectionStructure(collection.getName(), clazz);
     }
 
-    DatabaseCollection deleteCollection(String name);
+    void deleteCollection(String name);
 
     void dropCollection(String name);
 
@@ -50,4 +54,8 @@ public interface Database {
     }
 
     void drop();
+
+    List<QueryResult> execute(Query... queries);
+
+    QueryTransaction transact();
 }

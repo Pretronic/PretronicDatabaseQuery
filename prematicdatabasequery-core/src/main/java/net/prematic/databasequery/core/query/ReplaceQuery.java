@@ -19,6 +19,6 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface ReplaceQuery extends ChangeQuery, SearchQuery {
+public interface ReplaceQuery extends ChangeQuery<ReplaceQuery>, SearchQuery<ReplaceQuery> {
 
 }

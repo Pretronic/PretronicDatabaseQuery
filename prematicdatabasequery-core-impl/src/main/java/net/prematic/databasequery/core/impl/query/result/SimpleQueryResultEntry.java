@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 07.05.19, 17:00
+ * @since 23.05.19, 21:32
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.query.result.impl;
+package net.prematic.databasequery.core.impl.query.result;
 
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
 import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
-
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
 
-public class DefaultQueryResultEntry implements QueryResultEntry {
+public class SimpleQueryResultEntry implements QueryResultEntry {
 
     private final Map<DefaultQueryResultEntryKey, Object> results;
 
-    public DefaultQueryResultEntry(Map<DefaultQueryResultEntryKey, Object> results) {
+    public SimpleQueryResultEntry(Map<DefaultQueryResultEntryKey, Object> results) {
         this.results = results;
     }
 

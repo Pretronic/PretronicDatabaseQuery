@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 07.05.19, 17:00
+ * @since 23.05.19, 21:32
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,17 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.query.result.impl;
+package net.prematic.databasequery.core.impl.query.result;
 
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
-
 import java.util.List;
 
-public class DefaultQueryResult implements QueryResult {
+public class SimpleQueryResult implements QueryResult {
 
     private final List<QueryResultEntry> entries;
 
-    public DefaultQueryResult(List<QueryResultEntry> entries) {
+    public SimpleQueryResult(List<QueryResultEntry> entries) {
         this.entries = entries;
     }
 

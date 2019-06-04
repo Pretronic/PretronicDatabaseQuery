@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 23.05.19, 21:50
+ * @since 25.05.19, 23:08
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,32 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.impl.query;
+package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
-import net.prematic.databasequery.core.query.DeleteQuery;
+import com.zaxxer.hikari.HikariConfig;
+import net.prematic.databasequery.core.Database;
+import net.prematic.databasequery.sql.SqlDatabaseDriver;
 
-public abstract class AbstractDeleteQuery extends SearchQueryHelper<DeleteQuery> implements DeleteQuery {
+public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
-    public AbstractDeleteQuery(DatabaseCollection collection) {
-        super(collection);
+    private static final String TYPE = "MySql";
+
+    public MySqlDatabaseDriver(String name, HikariConfig config) {
+        super(name, config);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
+    @Override
+    public Database getDatabase(String name) {
+        return new MySqlDatabase(name, this);
+    }
+
+    @Override
+    public void dropDatabase(String name) {
+
     }
 }

@@ -20,19 +20,29 @@
 package net.prematic.databasequery.core.impl.query.helper;
 
 import net.prematic.databasequery.core.Aggregation;
-import net.prematic.databasequery.core.Pattern;
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
+import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
-import net.prematic.databasequery.core.query.DeleteQuery;
-import net.prematic.databasequery.core.query.FindQuery;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
-
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelper implements SearchQuery<T> {
+
+    private final DatabaseCollection collection;
+
+    public SearchQueryHelper(DatabaseCollection collection) {
+        this.collection = collection;
+    }
+
+    public DatabaseCollection getCollection() {
+        return collection;
+    }
 
     @Override
     public T where(String field, Object value) {
@@ -43,24 +53,40 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T where(String field, Pattern pattern) {
-        addEntry(new QueryEntry(QueryOperator.WHERE)
+    public T where(String field, String pattern) {
+        addEntry(new QueryEntry(QueryOperator.WHERE_PATTERN)
                 .addData("field", field)
-                .addDataIfNotNull("pattern", pattern.build()));
+                .addDataIfNotNull("pattern", pattern));
         return (T) this;
     }
 
     @Override
-    public T not(FindQuery findQuery) {
-        addEntry(new QueryEntry(QueryOperator.NOT).addData("findQuery", findQuery));
+    public T where(String field, String operator, Object value) {
+        addEntry(new QueryEntry(QueryOperator.WHERE_AGGREGATION)
+                .addData("field", field)
+                .addDataIfNotNull("operator", operator)
+                .addDataIfNotNull("value", value));
         return (T) this;
     }
 
     @Override
-    public T and(FindQuery... findQueries) {
+    public T not(SearchQuery searchQuery) {
+        addEntry(new QueryEntry(QueryOperator.NOT).addData("searchQuery", searchQuery));
+        return (T) this;
+    }
+
+    @Override
+    public T not(SearchQueryConsumer searchQuery) {
+        searchQuery.accept(this.collection.find());
+        return (T) this;
+    }
+
+    @Override
+    public T and(SearchQuery... searchQueries) {
+        System.out.println("AND");
         List<QueryEntry> entries = new ArrayList<>();
-        for (FindQuery findQuery : findQueries) {
-            for (QueryEntry entry : ((AbstractFindQuery) findQuery).getEntries()) {
+        for (SearchQuery searchQuery : searchQueries) {
+            for (QueryEntry entry : ((AbstractFindQuery) searchQuery).getEntries()) {
                 entries.add(entry.setHasParentEntry(true));
             }
         }
@@ -69,14 +95,37 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T or(FindQuery... findQueries) {
+    public T and(SearchQueryConsumer... searchQueries) {
+        System.out.println("AND CONSUMER");
+        List<SearchQuery> resultQueries = new ArrayList<>();
+        for (Consumer<SearchQuery> searchQueryConsumer : searchQueries) {
+            SearchQuery searchQuery = this.collection.find();
+            searchQueryConsumer.accept(searchQuery);
+        }
+        System.out.println(resultQueries);
+        for (SearchQuery resultQuery : resultQueries) {
+            ((AbstractFindQuery)resultQuery).getEntries().forEach(queryEntry -> System.out.println(queryEntry.getOperator()));
+        }
+        return (T) this;
+    }
+
+    @Override
+    public T or(SearchQuery... searchQueries) {
         List<QueryEntry> entries = new ArrayList<>();
-        for (FindQuery findQuery : findQueries) {
-            for (QueryEntry entry : ((AbstractFindQuery) findQuery).getEntries()) {
+        for (SearchQuery searchQuery : searchQueries) {
+            for (QueryEntry entry : ((AbstractFindQuery) searchQuery).getEntries()) {
                 entries.add(entry.setHasParentEntry(true));
             }
         }
         addEntry(new QueryEntry(QueryOperator.OR, entries));
+        return (T) this;
+    }
+
+    @Override
+    public T or(SearchQueryConsumer... searchQueries) {
+        for (Consumer<SearchQuery> searchQuery : searchQueries) {
+            searchQuery.accept(this.collection.find());
+        }
         return (T) this;
     }
 
@@ -97,7 +146,7 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
 
     @Override
     public T orderBy(String field, OrderOption orderOption) {
-        addEntry(new QueryEntry(QueryOperator.ORDER_BY).addData("field", field).addDataIfNotNull("orderOption", orderOption));
+        addEntry(new QueryEntry(QueryOperator.ORDER_BY).addData("field", field).addData("orderOption", orderOption));
         return (T) this;
     }
 

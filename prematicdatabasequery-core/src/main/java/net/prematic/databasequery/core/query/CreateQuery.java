@@ -20,12 +20,15 @@
 package net.prematic.databasequery.core.query;
 
 import net.prematic.databasequery.core.DataType;
+import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
 public interface CreateQuery extends Query {
 
-    CreateQuery with(String name, DataType type, int size, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions);
+    CreateQuery with(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions);
 
-    CreateQuery withEngine(String name);
+    CreateQuery withEngine(String engine);
+
+    CreateQuery withCollectionType(DatabaseCollectionType collectionType);
 }

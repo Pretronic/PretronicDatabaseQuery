@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.core.impl.query.helper;
 
-import net.prematic.databasequery.core.impl.QueryEntry;
+import net.prematic.databasequery.core.impl.query.QueryEntry;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -20,10 +20,8 @@
 package net.prematic.databasequery.core.query;
 
 import net.prematic.databasequery.core.Aggregation;
-import net.prematic.libraries.utility.map.Pair;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.function.Consumer;
 
 public interface FindQuery extends SearchQuery<FindQuery> {
 
@@ -31,39 +29,49 @@ public interface FindQuery extends SearchQuery<FindQuery> {
 
     FindQuery get(GetBuilder... getBuilders);
 
-    class GetBuilder {
+    FindQuery get(GetBuilderConsumer... getBuilders);
 
-        private Map<EntryType, Object> entries;
+    GetBuilder getGetBuilder();
 
-        public GetBuilder() {
-            this.entries = new HashMap<>();
+    default FindQuery get(Object... fieldsAndGetBuilders) {
+        for (Object fieldsAndGetBuilder : fieldsAndGetBuilders) {
+            if(fieldsAndGetBuilder instanceof String) get((String)fieldsAndGetBuilder);
+            else if(fieldsAndGetBuilder instanceof GetBuilder) get((GetBuilder)fieldsAndGetBuilder);
         }
+        return this;
+    }
 
-        public Map<EntryType, Object> getEntries() {
-            return entries;
-        }
+    interface GetBuilder {
 
-        public GetBuilder withField(String field) {
-            this.entries.put(EntryType.FIELD, field);
-            return this;
-        }
+        List<Entry> getEntries();
 
-        public GetBuilder withOperator(String operator) {
-            this.entries.put(EntryType.OPERATOR, operator);
-            return this;
-        }
+        GetBuilder withField(String field);
 
-        public GetBuilder withAggregation(Aggregation aggregation, String field) {
-            this.entries.put(EntryType.AGGREGATION, new Pair<>(aggregation, field));
-            return this;
-        }
+        GetBuilder withOperator(String operator);
 
-        enum EntryType {
+        GetBuilder withAggregation(Aggregation aggregation, String field);
 
-            FIELD,
-            OPERATOR,
-            AGGREGATION
+        GetBuilder withReturnAlias(String alias);
 
+        GetBuilder withGetBuilder(GetBuilder getBuilder);
+
+        interface Entry {
+
+            Type getType();
+
+            Object getValue();
+
+            enum Type {
+
+                FIELD,
+                OPERATOR,
+                AGGREGATION,
+                ALIAS,
+                GET_BUILDER
+
+            }
         }
     }
+
+    interface GetBuilderConsumer extends Consumer<GetBuilder> {}
 }

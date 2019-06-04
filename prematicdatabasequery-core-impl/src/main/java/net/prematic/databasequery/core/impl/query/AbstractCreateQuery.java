@@ -20,24 +20,46 @@
 package net.prematic.databasequery.core.impl.query;
 
 import net.prematic.databasequery.core.DataType;
+import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
 import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
 public abstract class AbstractCreateQuery extends QueryHelper implements CreateQuery {
 
+    private final String collectionName;
+
+    public AbstractCreateQuery(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
     @Override
-    public CreateQuery with(String name, DataType type, int size, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
+    public CreateQuery with(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
         getEntries().add(new QueryEntry(QueryOperator.CREATE)
-                .addData("name", name)
-                .addData("type", type)
-                .addDataIfNotNull("size", size)
+                .addData("field", field)
+                .addData("dataType", dataType)
+                .addDataIfNotNull("fieldSize", fieldSize)
                 .addDataIfNotNull("defaultValue", defaultValue)
                 .addDataIfNotNull("foreignKey", foreignKey)
                 .addDataIfNotNull("createOptions", createOptions));
+        return this;
+    }
+
+    @Override
+    public CreateQuery withEngine(String engine) {
+        getEntries().add(new QueryEntry(QueryOperator.ENGINE).addData("engine", engine));
+        return this;
+    }
+
+    @Override
+    public CreateQuery withCollectionType(DatabaseCollectionType collectionType) {
+        getEntries().add(new QueryEntry(QueryOperator.COLLECTION_TYPE).addData("collectionType", collectionType));
         return this;
     }
 }

@@ -19,16 +19,20 @@
 
 package net.prematic.databasequery.core.impl.query;
 
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
 import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
 import net.prematic.databasequery.core.query.UpdateQuery;
 
 public abstract class AbstractUpdateQuery extends SearchQueryHelper<UpdateQuery> implements UpdateQuery {
 
+    public AbstractUpdateQuery(DatabaseCollection collection) {
+        super(collection);
+    }
+
     @Override
     public UpdateQuery set(String field, Object value) {
-        addEntry(new QueryEntry(QueryOperator.UPDATE).addData("field", field).addDataIfNotNull("value", value));
+        addEntry(new QueryEntry(QueryOperator.SET).addData("field", field).addDataIfNotNull("value", value));
         return this;
     }
 }

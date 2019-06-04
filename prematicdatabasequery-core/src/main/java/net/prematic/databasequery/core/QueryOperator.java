@@ -22,6 +22,8 @@ package net.prematic.databasequery.core;
 public enum QueryOperator {
 
     WHERE(),
+    WHERE_PATTERN(),
+    WHERE_AGGREGATION(),
     NOT(),
     BETWEEN(),
     AND(),
@@ -37,7 +39,7 @@ public enum QueryOperator {
     SUM(),
     GET(),
     CREATE(),
-    INSERT(),
-    UPDATE(),
-    REPLACE();
+    ENGINE(),
+    COLLECTION_TYPE(),
+    SET();
 }

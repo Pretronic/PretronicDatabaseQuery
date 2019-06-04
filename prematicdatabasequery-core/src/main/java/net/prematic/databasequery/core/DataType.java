@@ -22,13 +22,26 @@ package net.prematic.databasequery.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum  DataType {
+public enum DataType {
 
-    NUMBER(Integer.class, int.class, Short.class, short.class, Long.class, long.class),
+    /*NUMBER(Integer.class, int.class, Short.class, short.class, Long.class, long.class),
     FLOAT(Float.class, float.class, Double.class, double.class),
     TEXT(String.class, char.class),
     BOOLEAN(Boolean.class, boolean.class),
-    BINARY();
+    BINARY();*/
+    DOUBLE,
+    DECIMAL,
+    FLOAT,
+    INTEGER,
+    LONG,
+    CHAR,
+    STRING,
+    LONG_TEXT,
+    DATE,
+    DATETIME,
+    TIMESTAMP,
+    BINARY,
+    BLOB;
 
     /*
      * DOUBLE, DECIMAL, FLOAT, INTEGER BIGINT,

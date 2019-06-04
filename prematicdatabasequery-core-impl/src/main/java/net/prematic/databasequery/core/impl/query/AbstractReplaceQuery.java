@@ -19,16 +19,20 @@
 
 package net.prematic.databasequery.core.impl.query;
 
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
 import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
 import net.prematic.databasequery.core.query.ReplaceQuery;
 
 public abstract class AbstractReplaceQuery extends SearchQueryHelper<ReplaceQuery> implements ReplaceQuery {
 
+    public AbstractReplaceQuery(DatabaseCollection collection) {
+        super(collection);
+    }
+
     @Override
     public ReplaceQuery set(String field, Object value) {
-        addEntry(new QueryEntry(QueryOperator.REPLACE).addData("field", field).addDataIfNotNull("value", value));
+        addEntry(new QueryEntry(QueryOperator.SET).addData("field", field).addDataIfNotNull("value", value));
         return this;
     }
 }

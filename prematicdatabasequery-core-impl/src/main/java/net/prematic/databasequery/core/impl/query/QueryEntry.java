@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 23.05.19, 21:48
+ * @since 26.05.19, 15:48
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.impl;
+package net.prematic.databasequery.core.impl.query;
 
 import net.prematic.databasequery.core.QueryOperator;
 

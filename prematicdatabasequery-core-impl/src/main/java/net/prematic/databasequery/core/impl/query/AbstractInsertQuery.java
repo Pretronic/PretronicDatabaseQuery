@@ -20,7 +20,6 @@
 package net.prematic.databasequery.core.impl.query;
 
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
 import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
 import net.prematic.databasequery.core.query.InsertQuery;
 
@@ -28,7 +27,7 @@ public abstract class AbstractInsertQuery extends QueryHelper implements InsertQ
 
     @Override
     public InsertQuery set(String field, Object value) {
-        addEntry(new QueryEntry(QueryOperator.INSERT).addData("field", field).addDataIfNotNull("value", value));
+        addEntry(new QueryEntry(QueryOperator.SET).addData("field", field).addDataIfNotNull("value", value));
         return this;
     }
 }

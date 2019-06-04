@@ -21,14 +21,19 @@ package net.prematic.databasequery.core;
 
 public class ForeignKey {
 
-    private final String collection, field;
+    private final String database, collection, field;
     private final ForeignKeyOption deleteOption, updateOption;
 
-    public ForeignKey(String collection, String field, ForeignKeyOption deleteOption, ForeignKeyOption updateOption) {
+    public ForeignKey(String database, String collection, String field, ForeignKeyOption deleteOption, ForeignKeyOption updateOption) {
+        this.database = database;
         this.collection = collection;
         this.field = field;
         this.deleteOption = deleteOption;
         this.updateOption = updateOption;
+    }
+
+    public String getDatabase() {
+        return database;
     }
 
     public String getCollection() {

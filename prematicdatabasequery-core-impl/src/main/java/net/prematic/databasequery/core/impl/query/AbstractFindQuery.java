@@ -19,20 +19,28 @@
 
 package net.prematic.databasequery.core.impl.query;
 
-import net.prematic.databasequery.core.Aggregation;
-import net.prematic.databasequery.core.Pattern;
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.QueryEntry;
-import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
 import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
 import net.prematic.databasequery.core.query.FindQuery;
-import net.prematic.databasequery.core.query.option.OrderOption;
 
 public abstract class AbstractFindQuery extends SearchQueryHelper<FindQuery> implements FindQuery {
+
+    public AbstractFindQuery(DatabaseCollection collection) {
+        super(collection);
+    }
 
     @Override
     public FindQuery get(String... fields) {
         addEntry(new QueryEntry(QueryOperator.GET).addDataIfNotNull("fields", fields));
+        return this;
+    }
+
+    @Override
+    public FindQuery get(GetBuilderConsumer... getBuilders) {
+        for (GetBuilderConsumer getBuilder : getBuilders) {
+            getBuilder.accept(getGetBuilder());
+        }
         return this;
     }
 

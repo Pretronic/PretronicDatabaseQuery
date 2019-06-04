@@ -25,6 +25,7 @@ import net.prematic.databasequery.core.query.option.OrderOption;
 import net.prematic.libraries.utility.map.Pair;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public interface SearchQuery<T extends SearchQuery> extends Query {
 
@@ -34,13 +35,25 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return where(field, (Object) null);
     }
 
-    T where(String field, Pattern pattern);
+    default T where(String field, Pattern pattern) {
+        return where(field, pattern.build());
+    }
 
-    T not(FindQuery searchQuery);
+    T where(String field, String pattern);
 
-    T and(FindQuery... searchQueries);
+    T where(String field, String operator, Object value);
 
-    T or(FindQuery... searchQueries);
+    T not(SearchQuery searchQuery);
+
+    T not(SearchQueryConsumer searchQuery);
+
+    T and(SearchQuery... searchQueries);
+
+    T and(SearchQueryConsumer... searchQueries);
+
+    T or(SearchQuery... searchQueries);
+
+    T or(SearchQueryConsumer... searchQueries);
 
     T between(String field, Object value1, Object value2);
 
@@ -48,21 +61,21 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return between(field, null, null);
     }
 
-    T limit(int limit);
+    T limit(int limit, int offset);
+
+    default T limit(int limit) {
+        return limit(limit, 0);
+    }
 
     default T limit() {
-        return limit(-1);
+        return limit(-1, -1);
     }
 
     default T first() {
-        return limit(1);
+        return limit(1, 0);
     }
 
     T orderBy(String field, OrderOption orderOption);
-
-    default T orderBy(String field) {
-        return orderBy(field, null);
-    }
 
     T groupBy(String... fields);
 
@@ -118,4 +131,6 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
     default T sum() {
         return sum(null);
     }
+
+    interface SearchQueryConsumer extends Consumer<SearchQuery> {}
 }

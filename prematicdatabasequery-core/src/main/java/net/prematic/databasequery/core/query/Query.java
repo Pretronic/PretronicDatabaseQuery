@@ -23,7 +23,11 @@ import net.prematic.databasequery.core.query.result.QueryResult;
 
 public interface Query {
 
-    QueryResult execute();
+    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
+    default QueryResult execute() {
+        return execute(EMPTY_OBJECT_ARRAY);
+    }
 
     QueryResult execute(Object... values);
 

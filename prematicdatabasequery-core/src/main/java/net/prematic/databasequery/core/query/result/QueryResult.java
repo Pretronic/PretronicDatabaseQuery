@@ -19,7 +19,9 @@
 
 package net.prematic.databasequery.core.query.result;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 public interface QueryResult {
 
@@ -30,5 +32,7 @@ public interface QueryResult {
     QueryResultEntry get(int index);
 
     List<QueryResultEntry> asList();
+
+    <T> void loadIn(Collection<T> collection, Function<QueryResultEntry,T> loader);
 
 }

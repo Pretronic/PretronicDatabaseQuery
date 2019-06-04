@@ -24,11 +24,6 @@ import java.util.Map;
 
 public enum DataType {
 
-    /*NUMBER(Integer.class, int.class, Short.class, short.class, Long.class, long.class),
-    FLOAT(Float.class, float.class, Double.class, double.class),
-    TEXT(String.class, char.class),
-    BOOLEAN(Boolean.class, boolean.class),
-    BINARY();*/
     DOUBLE,
     DECIMAL,
     FLOAT,
@@ -41,16 +36,9 @@ public enum DataType {
     DATETIME,
     TIMESTAMP,
     BINARY,
-    BLOB;
+    BLOB,
+    UUID;
 
-    /*
-     * DOUBLE, DECIMAL, FLOAT, INTEGER BIGINT,
-     * CHAR, VARCHAR,  LONG_TEXT
-     * DATE, DATETIME, TIMESTAMP, TIME
-     * BINARY, BLOB
-     *
-     * ENUM
-     */
 
     private final Class<?>[] javaClasses;
 

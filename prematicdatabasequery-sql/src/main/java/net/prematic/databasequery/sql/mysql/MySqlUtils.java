@@ -72,6 +72,7 @@ public class MySqlUtils {
         add(new DataTypeInformation(DataType.TIMESTAMP, "TIMESTAMP"));
         add(new DataTypeInformation(DataType.BINARY, "BINARY"));
         add(new DataTypeInformation(DataType.BLOB, "BLOB", false));
+        add(new DataTypeInformation(DataType.UUID, "VARCHAR", true,36));
     }};
 
     public static int getQueryOperatorPriority(QueryOperator queryOperator) {

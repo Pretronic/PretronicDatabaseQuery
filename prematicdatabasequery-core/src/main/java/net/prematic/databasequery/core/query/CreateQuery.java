@@ -28,6 +28,18 @@ public interface CreateQuery extends Query {
 
     CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions);
 
+    default CreateQuery attribute(String field, DataType dataType, CreateOption... createOptions) {
+        return attribute(field, dataType, -1, null, null, createOptions);
+    }
+
+    default CreateQuery attribute(String field, DataType dataType, int fieldSize, CreateOption... createOptions) {
+        return attribute(field, dataType, fieldSize, null, null, createOptions);
+    }
+
+    default CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, CreateOption createOptions) {
+        return attribute(field, dataType, fieldSize, defaultValue, null, createOptions);
+    }
+
     CreateQuery engine(String engine);
 
     CreateQuery collectionType(DatabaseCollectionType collectionType);

@@ -28,6 +28,11 @@ import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 import net.prematic.databasequery.sql.mysql.MySqlUtils;
 import net.prematic.libraries.utility.map.Pair;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,7 +46,72 @@ public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuil
 
     @Override
     public QueryResult execute(Object... values) {
-        System.out.println(buildExecuteString(false));
+        try(Connection connection = ((MySqlDatabaseCollection)getCollection()).getDatabase().getDriver().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            List<Integer> indexToPrepare = new ArrayList<>();
+            int index = 1;
+            for (QueryEntry entry : getEntries()) {
+                switch (entry.getOperator()) {
+                    case WHERE: {
+
+                    }
+                    case WHERE_PATTERN: {
+
+                    }
+                    case WHERE_AGGREGATION: {
+
+                    }
+                    case NOT: {
+
+                    }
+                    case AND: {
+
+                    }
+                    case OR: {
+
+                    }
+                    case BETWEEN: {
+
+                    }
+                    case LIMIT: {
+
+                    }
+                    case ORDER_BY: {
+
+                    }
+                    case GROUP_BY: {
+
+                    }
+                    case HAVING: {
+
+                    }
+                    case MIN: {
+
+                    }
+                    case MAX: {
+
+                    }
+                    case COUNT: {
+
+                    }
+                    case AVG: {
+
+                    }
+                    case SUM: {
+
+                    }
+                }
+            }
+            index = 0;
+            for (Object value : values) {
+                preparedStatement.setObject(indexToPrepare.get(index), value);
+                index++;
+            }
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
         return null;
     }
 

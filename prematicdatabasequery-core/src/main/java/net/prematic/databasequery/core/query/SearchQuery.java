@@ -104,33 +104,13 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
 
     T min(String field);
 
-    default T min() {
-        return min(null);
-    }
-
     T max(String field);
-
-    default T max() {
-        return max(null);
-    }
 
     T count(String field);
 
-    default T count() {
-        return count(null);
-    }
-
     T avg(String field);
 
-    default T avg() {
-        return avg(null);
-    }
-
     T sum(String field);
-
-    default T sum() {
-        return sum(null);
-    }
 
     interface SearchQueryConsumer extends Consumer<SearchQuery> {}
 }

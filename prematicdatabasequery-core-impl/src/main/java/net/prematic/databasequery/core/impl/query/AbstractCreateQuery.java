@@ -40,7 +40,7 @@ public abstract class AbstractCreateQuery extends QueryHelper implements CreateQ
     }
 
     @Override
-    public CreateQuery with(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
+    public CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
         getEntries().add(new QueryEntry(QueryOperator.CREATE)
                 .addData("field", field)
                 .addData("dataType", dataType)
@@ -52,13 +52,13 @@ public abstract class AbstractCreateQuery extends QueryHelper implements CreateQ
     }
 
     @Override
-    public CreateQuery withEngine(String engine) {
+    public CreateQuery engine(String engine) {
         getEntries().add(new QueryEntry(QueryOperator.ENGINE).addData("engine", engine));
         return this;
     }
 
     @Override
-    public CreateQuery withCollectionType(DatabaseCollectionType collectionType) {
+    public CreateQuery collectionType(DatabaseCollectionType collectionType) {
         getEntries().add(new QueryEntry(QueryOperator.COLLECTION_TYPE).addData("collectionType", collectionType));
         return this;
     }

@@ -24,6 +24,7 @@ import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 public class SimpleQueryResultEntry implements QueryResultEntry {
 
@@ -152,6 +153,16 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
     @Override
     public Date getDate(String key) {
         return (Date) getObject(key);
+    }
+
+    @Override
+    public UUID getUniqueId(int index) {
+        return null;
+    }
+
+    @Override
+    public UUID getUniqueId(String key) {
+        return null;
     }
 
     @Override

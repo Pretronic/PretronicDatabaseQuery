@@ -21,7 +21,10 @@ package net.prematic.databasequery.core.impl.query.result;
 
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
+
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 public class SimpleQueryResult implements QueryResult {
 
@@ -49,5 +52,10 @@ public class SimpleQueryResult implements QueryResult {
     @Override
     public List<QueryResultEntry> asList() {
         return this.entries;
+    }
+
+    @Override
+    public <T> void loadIn(Collection<T> collection, Function<QueryResultEntry, T> loader) {
+
     }
 }

@@ -24,137 +24,112 @@ import net.prematic.databasequery.core.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.core.query.result.QueryResultEntry;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 import net.prematic.databasequery.sql.mysql.MySqlUtils;
 import net.prematic.libraries.utility.map.Pair;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuildAble {
 
     private String queryString;
+    private final List<String> fields;
 
     public MySqlFindQuery(MySqlDatabaseCollection collection) {
         super(collection);
+        this.fields = new ArrayList<>();
     }
 
     @Override
     public QueryResult execute(Object... values) {
+        List<QueryResultEntry> resultEntries = new ArrayList<>();
         try(Connection connection = ((MySqlDatabaseCollection)getCollection()).getDatabase().getDriver().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
             List<Integer> indexToPrepare = new ArrayList<>();
-            int index = 1;
-            for (QueryEntry entry : getEntries()) {
-                switch (entry.getOperator()) {
-                    case WHERE: {
-
-                    }
-                    case WHERE_PATTERN: {
-
-                    }
-                    case WHERE_AGGREGATION: {
-
-                    }
-                    case NOT: {
-
-                    }
-                    case AND: {
-
-                    }
-                    case OR: {
-
-                    }
-                    case BETWEEN: {
-
-                    }
-                    case LIMIT: {
-
-                    }
-                    case ORDER_BY: {
-
-                    }
-                    case GROUP_BY: {
-
-                    }
-                    case HAVING: {
-
-                    }
-                    case MIN: {
-
-                    }
-                    case MAX: {
-
-                    }
-                    case COUNT: {
-
-                    }
-                    case AVG: {
-
-                    }
-                    case SUM: {
-
-                    }
-                }
+            for (QueryEntry queryEntry : getEntries()) {
+                MySqlUtils.prepareQueryEntry(queryEntry, preparedStatement, new AtomicInteger(1), indexToPrepare);
             }
-            index = 0;
+            int index = 0;
             for (Object value : values) {
                 preparedStatement.setObject(indexToPrepare.get(index), value);
                 index++;
             }
             ResultSet resultSet = preparedStatement.executeQuery();
-
+            while (resultSet.next()) {
+                Map<String, Object> results = new LinkedHashMap<>();
+                if(!this.fields.isEmpty()) {
+                    for (String field : this.fields) {
+                        results.put(field, resultSet.getObject(field));
+                    }
+                } else {
+                    for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                        results.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                    }
+                }
+                resultEntries.add(new SimpleQueryResultEntry(results));
+            }
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        return null;
+        return new SimpleQueryResult(resultEntries);
     }
 
     @Override
     public String buildExecuteString(boolean rebuild) {
         if(!rebuild && this.queryString != null) return this.queryString;
         StringBuilder queryString = new StringBuilder();
-        queryString.append("SELECT ");
-
+        queryString.append("SELECT ")
+        ;
         List<QueryEntry> queryEntries = getEntries();
         queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
         boolean first = true;
+        boolean returnValues = false;
         for (QueryEntry queryEntry : queryEntries) {
             if(queryEntry.getOperator() == QueryOperator.GET) {
+                returnValues = true;
                 if(queryEntry.containsData("fields")) {
                     for (String field : (String[]) queryEntry.getData("fields")) {
                         if(!first) queryString.append(",");
                         else first = false;
                         queryString.append("`").append(field).append("`");
+                        fields.add(field);
                     }
                 } else if(queryEntry.containsData("getBuilders")) {
                     for (GetBuilder getBuilder : (GetBuilder[]) queryEntry.getData("getBuilders")) {
+                        StringBuilder subQueryString = new StringBuilder();
                         if(!first) queryString.append(",");
                         else first = false;
-                        queryString.append("(");
                         String alias = null;
                         for (GetBuilder.Entry entry : getBuilder.getEntries()) {
-                            alias = buildGetBuilderEntry(entry, queryString);
+                            alias = buildGetBuilderEntry(entry, subQueryString);
                         }
-                        queryString.append(")");
-                        if(alias != null) queryString.append(" AS `").append(alias).append("`");
+                        if(alias != null) {
+                            subQueryString.append(" AS `").append(alias).append("`");
+                            fields.add(alias);
+                        } else fields.add(subQueryString.toString());
+                        queryString.append(subQueryString);
                     }
                 }
             }
         }
-        queryString.append(" FROM `").append(getCollection().getName()).append("`");
+        if(!returnValues) queryString.append("*");
+        queryString.append(" FROM `").append(((MySqlDatabaseCollection)getCollection()).getDatabase().getName())
+                .append("`.`").append(getCollection().getName()).append("`");
         MySqlUtils.buildSearchQuery(queryString, queryEntries);
         this.queryString = queryString.append(";").toString();
         return this.queryString;
     }
 
     private String buildGetBuilderEntry(GetBuilder.Entry entry, StringBuilder queryString) {
-        System.out.println(entry);
         switch (entry.getType()) {
             case FIELD: {
                 queryString.append("`").append(entry.getValue()).append("`");

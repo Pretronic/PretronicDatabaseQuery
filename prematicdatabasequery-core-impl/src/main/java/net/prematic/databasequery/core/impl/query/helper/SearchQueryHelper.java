@@ -22,10 +22,11 @@ package net.prematic.databasequery.core.impl.query.helper;
 import net.prematic.databasequery.core.Aggregation;
 import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
+import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -62,26 +63,27 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     public T where(String field, String operator, Object value) {
         addEntry(new QueryEntry(QueryOperator.WHERE_AGGREGATION)
                 .addData("field", field)
-                .addDataIfNotNull("operator", operator)
+                .addData("operator", operator)
                 .addDataIfNotNull("value", value));
         return (T) this;
     }
 
     @Override
     public T not(SearchQuery searchQuery) {
-        addEntry(new QueryEntry(QueryOperator.NOT).addData("searchQuery", searchQuery));
+        addEntry(new QueryEntry(QueryOperator.NOT, ((AbstractFindQuery)searchQuery).getEntries()));
         return (T) this;
     }
 
     @Override
     public T not(SearchQueryConsumer searchQuery) {
-        searchQuery.accept(this.collection.find());
+        SearchQuery resultQuery = this.collection.find();
+        searchQuery.accept(resultQuery);
+        resultQuery.not(resultQuery);
         return (T) this;
     }
 
     @Override
     public T and(SearchQuery... searchQueries) {
-        System.out.println("AND");
         List<QueryEntry> entries = new ArrayList<>();
         for (SearchQuery searchQuery : searchQueries) {
             for (QueryEntry entry : ((AbstractFindQuery) searchQuery).getEntries()) {

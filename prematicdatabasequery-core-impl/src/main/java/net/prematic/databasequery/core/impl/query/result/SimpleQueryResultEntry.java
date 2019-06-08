@@ -21,6 +21,7 @@ package net.prematic.databasequery.core.impl.query.result;
 
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
 import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
+
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
@@ -28,9 +29,9 @@ import java.util.UUID;
 
 public class SimpleQueryResultEntry implements QueryResultEntry {
 
-    private final Map<DefaultQueryResultEntryKey, Object> results;
+    private final Map<String, Object> results;
 
-    public SimpleQueryResultEntry(Map<DefaultQueryResultEntryKey, Object> results) {
+    public SimpleQueryResultEntry(Map<String, Object> results) {
         this.results = results;
     }
 
@@ -61,18 +62,17 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public Object getObject(int index) {
-        for (Map.Entry<DefaultQueryResultEntryKey, Object> entry : this.results.entrySet()) {
-            if(entry.getKey().getIndex() == index) return entry.getValue();
+        int i = 0;
+        for (Map.Entry<String, Object> entry : this.results.entrySet()) {
+            if(i == index) return entry.getValue();
+            i++;
         }
         return null;
     }
 
     @Override
     public Object getObject(String key) {
-        for (Map.Entry<DefaultQueryResultEntryKey, Object> entry : this.results.entrySet()) {
-            if(entry.getKey().getKeyName().equalsIgnoreCase(key)) return entry.getValue();
-        }
-        return null;
+        return this.results.get(key);
     }
 
     @Override
@@ -102,7 +102,9 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public long getLong(String key) {
-        return (long) getObject(key);
+        Object value = getObject(key);
+        if(value instanceof Integer) return (long) (int) value;
+        return (long) value;
     }
 
     @Override
@@ -157,12 +159,12 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public UUID getUniqueId(int index) {
-        return null;
+        return UUID.fromString(getString(index));
     }
 
     @Override
     public UUID getUniqueId(String key) {
-        return null;
+        return UUID.fromString(getString(key));
     }
 
     @Override
@@ -180,26 +182,6 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
             return getObject(index) != null;
         } catch (Exception exception) {
             return false;
-        }
-    }
-
-
-    public class DefaultQueryResultEntryKey {
-
-        private final String keyName;
-        private final int index;
-
-        public DefaultQueryResultEntryKey(String keyName, int index) {
-            this.keyName = keyName;
-            this.index = index;
-        }
-
-        public String getKeyName() {
-            return keyName;
-        }
-
-        public int getIndex() {
-            return index;
         }
     }
 }

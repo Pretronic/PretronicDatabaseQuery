@@ -52,7 +52,6 @@ public class MySqlCreateQuery extends AbstractCreateQuery implements QueryString
     public QueryResult execute(Object... values) {
         try(Connection connection = database.getDriver().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            System.out.println(buildExecuteString());
             int index = 1;
             for (QueryEntry entry : getEntries()) {
                 if(entry.getOperator() == QueryOperator.CREATE) {
@@ -93,6 +92,7 @@ public class MySqlCreateQuery extends AbstractCreateQuery implements QueryString
                     if(dataTypeInformation.isSizeAble()) {
                         int fieldSize = (int) queryEntry.getData("fieldSize");
                         if(fieldSize != -1) queryString.append("(").append(fieldSize).append(")");
+                        else if(dataTypeInformation.getDefaultSize() != -1) queryString.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
                     }
                     if(queryEntry.containsData("defaultValue")) {
                         queryString.append(" DEFAULT ?");

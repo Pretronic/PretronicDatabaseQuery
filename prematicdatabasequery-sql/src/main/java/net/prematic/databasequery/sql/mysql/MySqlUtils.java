@@ -23,13 +23,14 @@ import net.prematic.databasequery.core.DataType;
 import net.prematic.databasequery.core.QueryOperator;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
-import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
-import net.prematic.databasequery.core.query.Query;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MySqlUtils {
 
@@ -119,7 +120,6 @@ public class MySqlUtils {
     }
 
     private static void buildChildQueryEntry(StringBuilder queryString, QueryEntry queryEntry, boolean negate, boolean where, boolean first) {
-        System.out.println(queryEntry.getOperator());
         switch (queryEntry.getOperator()) {
             case WHERE: {
                 if(!first) {
@@ -149,7 +149,7 @@ public class MySqlUtils {
                 return;
             }
             case NOT: {
-                for (QueryEntry childQueryEntry : ((SearchQueryHelper) queryEntry.getData("searchQuery")).getEntries()) {
+                for (QueryEntry childQueryEntry : queryEntry.getEntries()) {
                     buildChildQueryEntry(queryString, childQueryEntry, true, where, first);
                 }
                 return;
@@ -175,6 +175,64 @@ public class MySqlUtils {
                 if(negate) queryString.append(" NOT");
                 queryString.append(" BETWEEN ? AND ?");
                 return;
+            }
+            case GROUP_BY: {
+
+            }
+            case HAVING: {
+
+            }
+            case MIN: {
+
+            }
+            case MAX: {
+
+            }
+            case COUNT: {
+
+            }
+            case AVG: {
+
+            }
+            case SUM: {
+
+            }
+        }
+    }
+
+    public static void prepareQueryEntry(QueryEntry queryEntry, PreparedStatement preparedStatement, AtomicInteger index, List<Integer> indexToPrepare) throws SQLException {
+        switch (queryEntry.getOperator()) {
+            case WHERE: case WHERE_AGGREGATION: {
+                if(queryEntry.hasData("value")) preparedStatement.setObject(index.getAndIncrement(), queryEntry.getData("value"));
+                else indexToPrepare.add(index.getAndIncrement());
+                return;
+            }
+            case WHERE_PATTERN: {
+                if(queryEntry.hasData("pattern")) preparedStatement.setObject(index.getAndIncrement(), queryEntry.getData("pattern"));
+                else indexToPrepare.add(index.getAndIncrement());
+                return;
+            }
+            case NOT: {
+                for (QueryEntry childQueryEntry : queryEntry.getEntries()) {
+                    prepareQueryEntry(childQueryEntry, preparedStatement, index, indexToPrepare);
+                }
+                return;
+            }
+            case AND: case OR: {
+                List<QueryEntry> queryEntries = queryEntry.getEntries();
+                for (QueryEntry childQueryEntry : queryEntries) {
+                    prepareQueryEntry(childQueryEntry, preparedStatement, index, indexToPrepare);
+                }
+                return;
+            }
+            case BETWEEN: {
+
+            }
+            case LIMIT: {
+
+            }
+            case ORDER_BY: {
+
             }
             case GROUP_BY: {
 

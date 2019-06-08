@@ -20,6 +20,7 @@
 package net.prematic.databasequery.core.query.result;
 
 import java.util.Date;
+import java.util.UUID;
 
 public interface QueryResultEntry {
 
@@ -64,6 +65,10 @@ public interface QueryResultEntry {
     Date getDate(int index);
 
     Date getDate(String key);
+
+    UUID getUniqueId(int index);
+
+    UUID getUniqueId(String key);
 
     boolean contains(String key);
 

@@ -27,8 +27,6 @@ import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -96,17 +94,13 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
 
     @Override
     public T and(SearchQueryConsumer... searchQueries) {
-        System.out.println("AND CONSUMER");
         List<SearchQuery> resultQueries = new ArrayList<>();
         for (Consumer<SearchQuery> searchQueryConsumer : searchQueries) {
             SearchQuery searchQuery = this.collection.find();
             searchQueryConsumer.accept(searchQuery);
+            resultQueries.add(searchQuery);
         }
-        System.out.println(resultQueries);
-        for (SearchQuery resultQuery : resultQueries) {
-            ((AbstractFindQuery)resultQuery).getEntries().forEach(queryEntry -> System.out.println(queryEntry.getOperator()));
-        }
-        return (T) this;
+        return and(resultQueries.toArray(new SearchQuery[0]));
     }
 
     @Override
@@ -123,10 +117,13 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
 
     @Override
     public T or(SearchQueryConsumer... searchQueries) {
-        for (Consumer<SearchQuery> searchQuery : searchQueries) {
-            searchQuery.accept(this.collection.find());
+        List<SearchQuery> resultQueries = new ArrayList<>();
+        for (Consumer<SearchQuery> searchQueryConsumer : searchQueries) {
+            SearchQuery searchQuery = this.collection.find();
+            searchQueryConsumer.accept(searchQuery);
+            resultQueries.add(searchQuery);
         }
-        return (T) this;
+        return or(resultQueries.toArray(new SearchQuery[0]));
     }
 
     @Override
@@ -139,8 +136,10 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T limit(int limit) {
-        addEntry(new QueryEntry(QueryOperator.LIMIT).addData("limit", limit, (value)-> value instanceof Integer && (int) value != -1));
+    public T limit(int limit, int offset) {
+        addEntry(new QueryEntry(QueryOperator.LIMIT)
+                .addData("limit", limit, (value)-> value instanceof Integer && (int) value != -1)
+                .addData("offset", offset, (value)-> value instanceof Integer && (int) value != -1));
         return (T) this;
     }
 

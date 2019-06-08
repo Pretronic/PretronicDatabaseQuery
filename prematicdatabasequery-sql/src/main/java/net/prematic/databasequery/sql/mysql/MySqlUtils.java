@@ -153,26 +153,13 @@ public class MySqlUtils {
                 }
                 return;
             }
-            //@Todo Frage: Wenn AND NOT innere entries auch not oder nicht?
-            case AND: {
-                queryString.append(" AND ");
+            case AND: case OR: {
+                queryString.append(" ").append(queryEntry.getOperator().toString()).append(" ");
                 if(negate) queryString.append("NOT ");
                 queryString.append("(");
                 first = true;
                 for(QueryEntry childQueryEntry : queryEntry.getEntries()) {
-                    buildChildQueryEntry(queryString, childQueryEntry, negate, false, first);
-                    first = false;
-                }
-                queryString.append(")");
-                return;
-            }
-            case OR: {
-                queryString.append(" OR ");
-                if(negate) queryString.append("NOT ");
-                queryString.append("(");
-                first = true;
-                for(QueryEntry childQueryEntry : queryEntry.getEntries()) {
-                    buildChildQueryEntry(queryString, childQueryEntry, negate, false, first);
+                    buildChildQueryEntry(queryString, childQueryEntry, false, false, first);
                     first = false;
                 }
                 queryString.append(")");
@@ -186,6 +173,7 @@ public class MySqlUtils {
                 queryString.append("`").append(queryEntry.getData("field")).append("`");
                 if(negate) queryString.append(" NOT");
                 queryString.append(" BETWEEN ? AND ?");
+                return;
             }
             case GROUP_BY: {
 

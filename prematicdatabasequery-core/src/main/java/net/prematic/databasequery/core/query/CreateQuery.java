@@ -19,9 +19,9 @@
 
 package net.prematic.databasequery.core.query;
 
-import net.prematic.databasequery.core.DataType;
 import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.ForeignKey;
+import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
 public interface CreateQuery extends Query {

@@ -19,8 +19,8 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.DataType;
 import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 
@@ -73,7 +73,7 @@ public class MySqlUtils {
         add(new DataTypeInformation(DataType.TIMESTAMP, "TIMESTAMP"));
         add(new DataTypeInformation(DataType.BINARY, "BINARY"));
         add(new DataTypeInformation(DataType.BLOB, "BLOB", false));
-        add(new DataTypeInformation(DataType.UUID, "VARCHAR", true,36));
+        add(new DataTypeInformation(DataType.UUID, "BINARY", true,16));
     }};
 
     public static int getQueryOperatorPriority(QueryOperator queryOperator) {

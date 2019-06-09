@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.core.impl;
 
-import net.prematic.databasequery.core.DataType;
+import net.prematic.databasequery.core.datatype.DataType;
 
 public class DataTypeInformation {
 

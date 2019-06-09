@@ -159,12 +159,12 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public UUID getUniqueId(int index) {
-        return UUID.fromString(getString(index));
+        return (UUID) getObject(index);
     }
 
     @Override
     public UUID getUniqueId(String key) {
-        return UUID.fromString(getString(key));
+        return (UUID) getObject(key);
     }
 
     @Override

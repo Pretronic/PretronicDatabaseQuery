@@ -23,6 +23,7 @@ import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.query.*;
 import net.prematic.databasequery.sql.mysql.query.MySqlFindQuery;
+import net.prematic.databasequery.sql.mysql.query.MySqlInsertQuery;
 import net.prematic.databasequery.sql.mysql.query.MySqlUpdateQuery;
 
 public class MySqlDatabaseCollection implements DatabaseCollection {
@@ -58,7 +59,7 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
 
     @Override
     public InsertQuery insert() {
-        return null;
+        return new MySqlInsertQuery(this);
     }
 
     @Override

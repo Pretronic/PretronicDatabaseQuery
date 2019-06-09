@@ -21,6 +21,7 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.Aggregation;
 import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.datatype.DataTypeAdapter;
 import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
@@ -65,14 +66,19 @@ public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuil
             }
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
+
                 Map<String, Object> results = new LinkedHashMap<>();
                 if(!this.fields.isEmpty()) {
                     for (String field : this.fields) {
-                        results.put(field, resultSet.getObject(field));
+                        Object value = resultSet.getObject(field);
+                        DataTypeAdapter dataTypeAdapter = ((MySqlDatabaseCollection) getCollection()).getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                        results.put(field, dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
                     }
                 } else {
                     for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                        results.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                        Object value = resultSet.getObject(i);
+                        DataTypeAdapter dataTypeAdapter = ((MySqlDatabaseCollection) getCollection()).getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                        results.put(resultSet.getMetaData().getColumnName(i), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
                     }
                 }
                 resultEntries.add(new SimpleQueryResultEntry(results));

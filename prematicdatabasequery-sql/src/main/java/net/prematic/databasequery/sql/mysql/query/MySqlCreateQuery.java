@@ -19,10 +19,10 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.DataType;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.ForeignKeyOption;
 import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.AbstractCreateQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;

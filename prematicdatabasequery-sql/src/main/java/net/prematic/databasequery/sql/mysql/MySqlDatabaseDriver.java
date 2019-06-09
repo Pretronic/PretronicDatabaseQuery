@@ -21,14 +21,20 @@ package net.prematic.databasequery.sql.mysql;
 
 import com.zaxxer.hikari.HikariConfig;
 import net.prematic.databasequery.core.Database;
+import net.prematic.databasequery.core.datatype.DataTypeAdapter;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
     private static final String TYPE = "MySql";
+    private final Collection<DataTypeAdapter> dataTypeAdapters;
 
     public MySqlDatabaseDriver(String name, HikariConfig config) {
         super(name, config);
+        this.dataTypeAdapters = new HashSet<>();
     }
 
     @Override
@@ -44,5 +50,10 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
     @Override
     public void dropDatabase(String name) {
 
+    }
+
+    @Override
+    public Collection<DataTypeAdapter> getDataTypeAdapters() {
+        return this.dataTypeAdapters;
     }
 }

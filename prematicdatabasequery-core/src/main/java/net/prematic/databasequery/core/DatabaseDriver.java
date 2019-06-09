@@ -20,6 +20,13 @@
 
 package net.prematic.databasequery.core;
 
+import net.prematic.databasequery.core.datatype.DataTypeAdapter;
+import net.prematic.databasequery.core.datatype.adapters.UUIDDataTypeAdapter;
+import net.prematic.libraries.utility.annonations.Nullable;
+
+import java.util.Collection;
+import java.util.Iterator;
+
 public interface DatabaseDriver {
 
     String getName();
@@ -36,4 +43,41 @@ public interface DatabaseDriver {
 
     void disconnect();
 
+    Collection<DataTypeAdapter> getDataTypeAdapters();
+
+    default void registerDataTypeAdapter(DataTypeAdapter adapter) {
+        getDataTypeAdapters().add(adapter);
+    }
+
+    default boolean unregisterDataTypeAdapter(Class<? extends DataTypeAdapter> adapterClass) {
+        Iterator<DataTypeAdapter> iterator = getDataTypeAdapters().iterator();
+        while (iterator.hasNext()) {
+            DataTypeAdapter dataTypeAdapter = iterator.next();
+            if(dataTypeAdapter.getClass() == adapterClass) {
+                getDataTypeAdapters().remove(dataTypeAdapter);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    default DataTypeAdapter getDataTypeAdapterByWriteClass(Class<?> writeClass) {
+        for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
+            if(dataTypeAdapter.getWriteClass() == writeClass) return dataTypeAdapter;
+        }
+        return null;
+    }
+
+    @Nullable
+    default DataTypeAdapter getDataTypeAdapterByReadClass(Class<?> readClass) {
+        for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
+            if(dataTypeAdapter.getReadClass() == readClass) return dataTypeAdapter;
+        }
+        return null;
+    }
+
+    default void registerDefaultAdapters() {
+        registerDataTypeAdapter(new UUIDDataTypeAdapter());
+    }
 }

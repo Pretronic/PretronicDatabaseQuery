@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 26.05.19, 16:01
+ * @since 08.06.19, 23:33
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,48 +19,52 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.query.AbstractUpdateQuery;
+import net.prematic.databasequery.core.datatype.DataTypeAdapter;
+import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
-import net.prematic.databasequery.sql.mysql.MySqlUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class MySqlUpdateQuery extends AbstractUpdateQuery implements QueryStringBuildAble {
+public class MySqlInsertQuery extends AbstractInsertQuery implements QueryStringBuildAble {
 
+    private final DatabaseCollection collection;
     private String queryString;
 
-    public MySqlUpdateQuery(MySqlDatabaseCollection collection) {
-        super(collection);
+    public MySqlInsertQuery(DatabaseCollection collection) {
+        this.collection = collection;
     }
 
     @Override
     public QueryResult execute(Object... values) {
-        try(Connection connection = ((MySqlDatabaseCollection)getCollection()).getDatabase().getDriver().getConnection()) {
+        try(Connection connection = ((MySqlDatabaseCollection)this.collection).getDatabase().getDriver().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
             List<Integer> indexToPrepare = new ArrayList<>();
-            AtomicInteger index = new AtomicInteger(1);
+            int index = 1;
             for (QueryEntry queryEntry : getEntries()) {
                 if(queryEntry.getOperator() == QueryOperator.SET) {
-                    if(queryEntry.hasData("value"))
-                        preparedStatement.setObject(index.getAndIncrement(), queryEntry.getData("value"));
-                    else indexToPrepare.add(index.getAndIncrement());
-                } else {
-                    MySqlUtils.prepareQueryEntry(queryEntry, preparedStatement, new AtomicInteger(1), indexToPrepare);
+                    if(queryEntry.hasData("value")) {
+                        Object value = queryEntry.getData("value");
+
+                        DataTypeAdapter adapter = ((MySqlDatabaseCollection) this.collection).getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                        preparedStatement.setObject(index, adapter != null ? adapter.write(value) : value);
+                    }
+                    else indexToPrepare.add(index);
+                    index++;
                 }
             }
-            index.set(0);
+            index = 0;
             for (Object value : values) {
-                preparedStatement.setObject(indexToPrepare.get(index.getAndIncrement()), value);
+                preparedStatement.setObject(indexToPrepare.get(index), value);
+                index++;
             }
             preparedStatement.executeUpdate();
         } catch (SQLException exception) {
@@ -73,20 +77,20 @@ public class MySqlUpdateQuery extends AbstractUpdateQuery implements QueryString
     public String buildExecuteString(boolean rebuild) {
         if(!rebuild && this.queryString != null) return this.queryString;
         StringBuilder queryString = new StringBuilder();
-        queryString.append("UPDATE `").append(((MySqlDatabaseCollection)getCollection()).getDatabase().getName())
-                .append("`.`").append(getCollection().getName()).append("` SET ");
-        List<QueryEntry> queryEntries = getEntries();
-        queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
+        StringBuilder subQueryString = new StringBuilder().append("(");
+        queryString.append("INSERT INTO `").append(((MySqlDatabaseCollection)this.collection).getDatabase().getName())
+                .append("`.`").append(this.collection.getName()).append("` (");
         boolean first = true;
-        for (QueryEntry queryEntry : queryEntries) {
-            if(queryEntry.getOperator() == QueryOperator.SET) {
-                if(!first) queryString.append(",");
-                else first = false;
-                queryString.append("`").append(queryEntry.getData("field")).append("`=?");
+        for (QueryEntry queryEntry : getEntries()) {
+            if(!first) {
+                queryString.append(",");
+                subQueryString.append(",");
             }
+            else first = false;
+            queryString.append("`").append(queryEntry.getData("field")).append("`");
+            subQueryString.append("?");
         }
-        MySqlUtils.buildSearchQuery(queryString, queryEntries);
-        this.queryString = queryString.append(";").toString();
+        this.queryString = queryString.append(") VALUES ").append(subQueryString).append(");").toString();
         return this.queryString;
     }
 }

@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 07.05.19, 13:57
+ * @since 09.06.19, 14:58
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core;
+package net.prematic.databasequery.core.datatype;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,5 +63,4 @@ public enum DataType {
     public static DataType getDataTypeByClass(Class<?> clazz) {
         return DATA_TYPES.get(clazz);
     }
-
 }

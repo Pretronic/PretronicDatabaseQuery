@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 23.05.19, 21:40
+ * @since 09.06.19, 16:46
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,17 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core;
+package net.prematic.databasequery.core.aggregation;
 
-public enum ForeignKeyOption {
+/**
+ * All aggregations to use in {@link AggregationBuilder}
+ */
+public enum Aggregation {
 
-    DEFAULT,
-    CASCADE,
-    SET_NULL
+    MIN,
+    MAX,
+    COUNT,
+    AVG,
+    SUM
 
 }

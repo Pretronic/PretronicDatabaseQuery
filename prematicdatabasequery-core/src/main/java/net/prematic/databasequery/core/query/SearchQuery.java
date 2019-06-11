@@ -19,48 +19,58 @@
 
 package net.prematic.databasequery.core.query;
 
-import net.prematic.databasequery.core.Aggregation;
 import net.prematic.databasequery.core.Pattern;
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.option.OrderOption;
-import net.prematic.libraries.utility.map.Pair;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 public interface SearchQuery<T extends SearchQuery> extends Query {
 
     T where(String field, Object value);
 
     default T where(String field) {
-        return where(field, (Object) null);
+        return where(field, null);
     }
 
-    default T where(String field, Pattern pattern) {
+    default T wherePattern(String field, Pattern pattern) {
         return where(field, pattern.build());
     }
 
-    T where(String field, String pattern);
+    T wherePattern(String field, String pattern);
 
     T where(String field, String operator, Object value);
 
     T not(SearchQuery searchQuery);
 
-    T not(SearchQueryConsumer searchQuery);
+    T not(Consumer searchQuery);
 
     T and(SearchQuery... searchQueries);
 
-    T and(SearchQueryConsumer... searchQueries);
+    T and(Consumer... searchQueries);
 
     T or(SearchQuery... searchQueries);
 
-    T or(SearchQueryConsumer... searchQueries);
+    T or(Consumer... searchQueries);
 
+    //Aggregation
     T between(String field, Object value1, Object value2);
 
-    default T between(String field) {
-        return between(field, null, null);
+    default T between(String field, AggregationBuilder value1, AggregationBuilder value2) {
+        return between(field, value1, (Object)value2);
     }
 
+    default T between(String field, AggregationBuilder value1, Object value2) {
+        return between(field, (Object)value1, value2);
+    }
+
+    default T between(String field, Object value1, AggregationBuilder value2) {
+        return between(field, value1, (Object) value2);
+    }
+
+    default T between(String field) {
+        return between(field, (Object)null, null);
+    }
+
+    //Offset 0, if not used
     T limit(int limit, int offset);
 
     default T limit(int limit) {
@@ -75,42 +85,70 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return limit(1, 0);
     }
 
+
     T orderBy(String field, OrderOption orderOption);
+
+    T orderBy(AggregationBuilder aggregationBuilder, OrderOption orderOption);
 
     T groupBy(String... fields);
 
-    T groupBy(String field, Aggregation aggregation);
-
-    default T groupBy(Pair<String, Aggregation>... fields) {
-        for (Pair<String, Aggregation> field : fields) {
-            groupBy(field.getKey(), field.getValue());
-        }
-        return (T) this;
-    }
-
-    default T having(FindQuery first, String operator, FindQuery second) {
-        return having((Object)first, operator, (Object)second);
-    }
-
-    default T having(Object first, String operator, FindQuery second) {
-        return having(first, operator, (Object)second);
-    }
-
-    default T having(FindQuery first, String operator, Object second) {
-        return having((Object)first, operator, second);
-    }
+    T groupBy(AggregationBuilder... aggregationBuilders);
 
     T having(Object first, String operator, Object second);
 
-    T min(String field);
+    default T having(AggregationBuilder first, String operator, Object second) {
+        return having((Object) first, operator, second);
+    }
 
-    T max(String field);
+    default T having(AggregationBuilder.Consumer first, String operator, Object second) {
+        return having((Object)first, operator, second);
+    }
 
-    T count(String field);
+    default T having(Object first, String operator, AggregationBuilder second) {
+        return having(first, operator, (Object) second);
+    }
 
-    T avg(String field);
+    default T having(Object first, String operator, AggregationBuilder.Consumer second) {
+        return having(first, operator, (Object)second);
+    }
 
-    T sum(String field);
+    default T having(AggregationBuilder first, String operator, AggregationBuilder second) {
+        return having((Object) first, operator, second);
+    }
 
-    interface SearchQueryConsumer extends Consumer<SearchQuery> {}
+    default T having(AggregationBuilder.Consumer first, String operator, AggregationBuilder.Consumer second) {
+        return having((Object) first, operator, (Object) second);
+    }
+
+    T min(Object first, String operator, Object second);
+
+    default T min(String field) {
+        return min(field, null, null);
+    }
+
+    T max(Object first, String operator, Object second);
+
+    default T max(String field) {
+        return max(field, null, null);
+    }
+
+    T count(Object first, String operator, Object second);
+
+    default T count(String field) {
+        return count(field, null, null);
+    }
+
+    T avg(Object first, String operator, Object second);
+
+    default T avg(String field) {
+        return avg(field, null, null);
+    }
+
+    T sum(Object first, String operator, Object second);
+
+    default T sum(String field) {
+        return sum(field, null, null);
+    }
+
+    interface Consumer extends java.util.function.Consumer<SearchQuery> {}
 }

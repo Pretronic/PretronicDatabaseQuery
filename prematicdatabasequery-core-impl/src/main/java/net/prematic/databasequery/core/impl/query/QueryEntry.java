@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.core.impl.query;
 
-import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.impl.QueryOperator;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -27,17 +27,20 @@ import java.util.function.Predicate;
 public class QueryEntry {
 
     private boolean hasParentEntry;
+    private final List<Object> values;
     private final QueryOperator operator;
     private final List<QueryEntry> entries;
     private final Map<String, Object> data;
 
     public QueryEntry(QueryOperator operator, List<QueryEntry> entries) {
+        this.values = new ArrayList<>();
         this.operator = operator;
         this.entries = entries;
         this.data = new HashMap<>();
     }
 
     public QueryEntry(QueryOperator operator) {
+        this.values = new ArrayList<>();
         this.operator = operator;
         this.entries = new ArrayList<>();
         this.data = new HashMap<>();
@@ -57,6 +60,20 @@ public class QueryEntry {
 
     public Map<String, Object> getData() {
         return data;
+    }
+
+    public List<Object> getValues() {
+        return this.values;
+    }
+
+    public List<Object> getValuesDeep() {
+        if(this.entries.isEmpty()) return getValues();
+        List<Object> values = new ArrayList<>();
+        values.addAll(this.values);
+        for (QueryEntry queryEntry : getEntries()) {
+            values.addAll(queryEntry.getValuesDeep());
+        }
+        return values;
     }
 
     public boolean containsData(String key) {
@@ -93,6 +110,11 @@ public class QueryEntry {
 
     public QueryEntry setHasParentEntry(boolean hasParentEntry) {
         this.hasParentEntry = hasParentEntry;
+        return this;
+    }
+
+    public QueryEntry addValue(Object value) {
+        this.values.add(value);
         return this;
     }
 

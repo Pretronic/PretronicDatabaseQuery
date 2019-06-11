@@ -20,10 +20,9 @@
 package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.ForeignKey;
-import net.prematic.databasequery.core.ForeignKeyOption;
-import net.prematic.databasequery.core.QueryOperator;
 import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
+import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractCreateQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
@@ -52,6 +51,7 @@ public class MySqlCreateQuery extends AbstractCreateQuery implements QueryString
     public QueryResult execute(Object... values) {
         try(Connection connection = database.getDriver().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            System.out.println(buildExecuteString());
             int index = 1;
             for (QueryEntry entry : getEntries()) {
                 if(entry.getOperator() == QueryOperator.CREATE) {
@@ -138,10 +138,10 @@ public class MySqlCreateQuery extends AbstractCreateQuery implements QueryString
                                 .append(foreignKey.getCollection())
                                 .append("`(`")
                                 .append(foreignKey.getField()).append("`)");
-                        if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKeyOption.DEFAULT) {
+                        if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
                             queryString.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
                         }
-                        if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKeyOption.DEFAULT) {
+                        if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKey.Option.DEFAULT) {
                             queryString.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
                         }
                     }

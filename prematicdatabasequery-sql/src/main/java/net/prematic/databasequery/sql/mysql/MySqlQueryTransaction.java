@@ -20,7 +20,6 @@
 package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
-import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 

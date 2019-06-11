@@ -19,6 +19,7 @@
 
 package net.prematic.databasequery.core;
 
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.*;
 
 public interface DatabaseCollection {
@@ -40,4 +41,6 @@ public interface DatabaseCollection {
     DeleteQuery delete();
 
     QueryTransaction transact();
+
+    AggregationBuilder newAggregationBuilder(boolean aliasAble);
 }

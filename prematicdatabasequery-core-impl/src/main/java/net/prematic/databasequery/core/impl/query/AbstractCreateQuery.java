@@ -21,13 +21,13 @@ package net.prematic.databasequery.core.impl.query;
 
 import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.ForeignKey;
-import net.prematic.databasequery.core.QueryOperator;
 import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
+import net.prematic.databasequery.core.impl.QueryOperator;
+import net.prematic.databasequery.core.impl.query.helper.EntryHelper;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
-public abstract class AbstractCreateQuery extends QueryHelper implements CreateQuery {
+public abstract class AbstractCreateQuery extends EntryHelper<CreateQuery> implements CreateQuery {
 
     private final String collectionName;
 

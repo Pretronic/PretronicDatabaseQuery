@@ -20,14 +20,15 @@
 package net.prematic.databasequery.core.query.result;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-public interface QueryResult {
+public interface QueryResult extends Iterable<QueryResultEntry> {
 
-    QueryResultEntry getFirst();
+    QueryResultEntry first();
 
-    QueryResultEntry getLast();
+    QueryResultEntry last();
 
     QueryResultEntry get(int index);
 
@@ -35,4 +36,8 @@ public interface QueryResult {
 
     <T> void loadIn(Collection<T> collection, Function<QueryResultEntry,T> loader);
 
+    @Override
+    default Iterator<QueryResultEntry> iterator() {
+        return asList().iterator();
+    }
 }

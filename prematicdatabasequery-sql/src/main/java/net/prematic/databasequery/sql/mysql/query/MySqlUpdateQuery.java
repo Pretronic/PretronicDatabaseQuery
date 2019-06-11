@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractUpdateQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
@@ -46,21 +46,19 @@ public class MySqlUpdateQuery extends AbstractUpdateQuery implements QueryString
     @Override
     public QueryResult execute(Object... values) {
         try(Connection connection = ((MySqlDatabaseCollection)getCollection()).getDatabase().getDriver().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            List<Integer> indexToPrepare = new ArrayList<>();
-            AtomicInteger index = new AtomicInteger(1);
+            AtomicInteger index = new AtomicInteger(0);
             for (QueryEntry queryEntry : getEntries()) {
-                if(queryEntry.getOperator() == QueryOperator.SET) {
-                    if(queryEntry.hasData("value"))
-                        preparedStatement.setObject(index.getAndIncrement(), queryEntry.getData("value"));
-                    else indexToPrepare.add(index.getAndIncrement());
-                } else {
-                    MySqlUtils.prepareQueryEntry(queryEntry, preparedStatement, new AtomicInteger(1), indexToPrepare);
-                }
+                queryEntry.getValues().clear();
+                MySqlUtils.prepareQueryEntry(queryEntry, index, values);
             }
-            index.set(0);
-            for (Object value : values) {
-                preparedStatement.setObject(indexToPrepare.get(index.getAndIncrement()), value);
+            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            List<QueryEntry> queryEntries = new ArrayList<>(getEntries());
+            queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
+            index.set(1);
+            for (QueryEntry queryEntry : queryEntries) {
+                for (Object value : queryEntry.getValuesDeep()) {
+                    preparedStatement.setObject(index.getAndIncrement(), value);
+                }
             }
             preparedStatement.executeUpdate();
         } catch (SQLException exception) {
@@ -75,9 +73,10 @@ public class MySqlUpdateQuery extends AbstractUpdateQuery implements QueryString
         StringBuilder queryString = new StringBuilder();
         queryString.append("UPDATE `").append(((MySqlDatabaseCollection)getCollection()).getDatabase().getName())
                 .append("`.`").append(getCollection().getName()).append("` SET ");
-        List<QueryEntry> queryEntries = getEntries();
+        List<QueryEntry> queryEntries = new ArrayList<>(getEntries());
         queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
         boolean first = true;
+        AtomicInteger index = new AtomicInteger(1);
         for (QueryEntry queryEntry : queryEntries) {
             if(queryEntry.getOperator() == QueryOperator.SET) {
                 if(!first) queryString.append(",");

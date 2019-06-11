@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 06.05.19, 21:06
+ * @since 11.06.19, 21:25
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,29 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core;
+package net.prematic.databasequery.core.impl;
 
-public enum Aggregation {
+public enum QueryOperator {
 
-    MIN,
-    MAX,
-    COUNT,
-    AVG,
-    SUM
-
+    WHERE(),
+    WHERE_PATTERN(),
+    WHERE_COMPARE(),
+    NOT(),
+    BETWEEN(),
+    AND(),
+    OR(),
+    LIMIT(),
+    ORDER_BY(),
+    HAVING(),
+    GROUP_BY(),
+    MIN(),
+    MAX(),
+    COUNT(),
+    AVG(),
+    SUM(),
+    GET(),
+    CREATE(),
+    ENGINE(),
+    COLLECTION_TYPE(),
+    SET()
 }

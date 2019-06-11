@@ -20,9 +20,13 @@
 package net.prematic.databasequery.core.query.result;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
-public interface QueryResultEntry {
+public interface QueryResultEntry extends Iterable<Map.Entry<String, Object>> {
+
+    Map<String, Object> asMap();
 
     <T> T getAsObject(Class<T> clazz);
 
@@ -73,4 +77,9 @@ public interface QueryResultEntry {
     boolean contains(String key);
 
     boolean contains(int index);
+
+    @Override
+    default Iterator<Map.Entry<String, Object>> iterator() {
+        return asMap().entrySet().iterator();
+    }
 }

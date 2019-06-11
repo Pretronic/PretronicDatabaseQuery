@@ -19,16 +19,14 @@
 
 package net.prematic.databasequery.core.entity;
 
-import net.prematic.databasequery.core.ForeignKeyOption;
-
 public @interface ForeignKey {
 
     String collection();
 
     String field();
 
-    ForeignKeyOption deleteOption() default ForeignKeyOption.DEFAULT;
+    net.prematic.databasequery.core.ForeignKey.Option deleteOption() default net.prematic.databasequery.core.ForeignKey.Option.DEFAULT;
 
-    ForeignKeyOption updateOption() default ForeignKeyOption.DEFAULT;
+    net.prematic.databasequery.core.ForeignKey.Option updateOption() default net.prematic.databasequery.core.ForeignKey.Option.DEFAULT;
 
 }

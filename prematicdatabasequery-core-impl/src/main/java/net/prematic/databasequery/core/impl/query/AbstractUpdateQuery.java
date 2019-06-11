@@ -20,7 +20,7 @@
 package net.prematic.databasequery.core.impl.query;
 
 import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.helper.SearchQueryHelper;
 import net.prematic.databasequery.core.query.UpdateQuery;
 

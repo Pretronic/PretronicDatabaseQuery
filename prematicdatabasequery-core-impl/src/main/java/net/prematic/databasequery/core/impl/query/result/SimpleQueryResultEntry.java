@@ -36,6 +36,11 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
     }
 
     @Override
+    public Map<String, Object> asMap() {
+        return this.results;
+    }
+
+    @Override
     public <T> T getAsObject(Class<T> clazz) {
         try {
             T object = UnsafeInstanceCreator.newInstance(clazz);

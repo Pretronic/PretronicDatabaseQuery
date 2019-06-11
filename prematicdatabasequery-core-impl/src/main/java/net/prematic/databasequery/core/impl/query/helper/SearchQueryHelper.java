@@ -19,9 +19,9 @@
 
 package net.prematic.databasequery.core.impl.query.helper;
 
-import net.prematic.databasequery.core.Aggregation;
 import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.QueryOperator;
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.query.SearchQuery;
@@ -29,9 +29,8 @@ import net.prematic.databasequery.core.query.option.OrderOption;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelper implements SearchQuery<T> {
+public abstract class SearchQueryHelper<T extends SearchQuery> extends EntryHelper<T> implements SearchQuery<T> {
 
     private final DatabaseCollection collection;
 
@@ -52,16 +51,16 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T where(String field, String pattern) {
+    public T wherePattern(String field, String pattern) {
         addEntry(new QueryEntry(QueryOperator.WHERE_PATTERN)
                 .addData("field", field)
-                .addDataIfNotNull("pattern", pattern));
+                .addDataIfNotNull("value", pattern));
         return (T) this;
     }
 
     @Override
     public T where(String field, String operator, Object value) {
-        addEntry(new QueryEntry(QueryOperator.WHERE_AGGREGATION)
+        addEntry(new QueryEntry(QueryOperator.WHERE_COMPARE)
                 .addData("field", field)
                 .addData("operator", operator)
                 .addDataIfNotNull("value", value));
@@ -75,11 +74,10 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T not(SearchQueryConsumer searchQuery) {
+    public T not(SearchQuery.Consumer searchQuery) {
         SearchQuery resultQuery = this.collection.find();
         searchQuery.accept(resultQuery);
-        resultQuery.not(resultQuery);
-        return (T) this;
+        return not(resultQuery);
     }
 
     @Override
@@ -95,9 +93,9 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T and(SearchQueryConsumer... searchQueries) {
+    public T and(SearchQuery.Consumer... searchQueries) {
         List<SearchQuery> resultQueries = new ArrayList<>();
-        for (Consumer<SearchQuery> searchQueryConsumer : searchQueries) {
+        for (Consumer searchQueryConsumer : searchQueries) {
             SearchQuery searchQuery = this.collection.find();
             searchQueryConsumer.accept(searchQuery);
             resultQueries.add(searchQuery);
@@ -118,9 +116,9 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     }
 
     @Override
-    public T or(SearchQueryConsumer... searchQueries) {
+    public T or(SearchQuery.Consumer... searchQueries) {
         List<SearchQuery> resultQueries = new ArrayList<>();
-        for (Consumer<SearchQuery> searchQueryConsumer : searchQueries) {
+        for (Consumer searchQueryConsumer : searchQueries) {
             SearchQuery searchQuery = this.collection.find();
             searchQueryConsumer.accept(searchQuery);
             resultQueries.add(searchQuery);
@@ -140,67 +138,98 @@ public abstract class SearchQueryHelper<T extends SearchQuery> extends QueryHelp
     @Override
     public T limit(int limit, int offset) {
         addEntry(new QueryEntry(QueryOperator.LIMIT)
-                .addData("limit", limit, (value)-> value instanceof Integer && (int) value != -1)
-                .addData("offset", offset, (value)-> value instanceof Integer && (int) value != -1));
+                .addData("limit", limit)
+                .addData("offset", offset));
         return (T) this;
     }
 
     @Override
     public T orderBy(String field, OrderOption orderOption) {
-        addEntry(new QueryEntry(QueryOperator.ORDER_BY).addData("field", field).addData("orderOption", orderOption));
+        addEntry(new QueryEntry(QueryOperator.ORDER_BY).addData("value", field)
+                .addDataIfNotNull("orderOption", orderOption));
+        return (T) this;
+    }
+
+    @Override
+    public T orderBy(AggregationBuilder aggregationBuilder, OrderOption orderOption) {
+        addEntry(new QueryEntry(QueryOperator.ORDER_BY).addData("value", aggregationBuilder)
+                .addDataIfNotNull("orderOption", orderOption));
         return (T) this;
     }
 
     @Override
     public T groupBy(String... fields) {
-        for (String field : fields) {
-            groupBy(field, null);
-        }
+        addEntry(new QueryEntry(QueryOperator.GROUP_BY).addData("value", fields));
         return (T) this;
     }
 
     @Override
-    public T groupBy(String field, Aggregation aggregation) {
-        addEntry(new QueryEntry(QueryOperator.GROUP_BY).addDataIfNotNull("field", field).addDataIfNotNull("aggregation", aggregation));
+    public T groupBy(AggregationBuilder... aggregationBuilders) {
+        addEntry(new QueryEntry(QueryOperator.GROUP_BY).addData("value", aggregationBuilders));
         return (T) this;
     }
 
     @Override
     public T having(Object first, String operator, Object second) {
+        if(first instanceof AggregationBuilder.Consumer) {
+            AggregationBuilder aggregationBuilder = this.collection.newAggregationBuilder(false);
+            ((AggregationBuilder.Consumer) first).accept(aggregationBuilder);
+            first = aggregationBuilder;
+        }
+        if(second instanceof AggregationBuilder.Consumer) {
+            AggregationBuilder aggregationBuilder = this.collection.newAggregationBuilder(false);
+            ((AggregationBuilder.Consumer) second).accept(aggregationBuilder);
+            second = aggregationBuilder;
+        }
         addEntry(new QueryEntry(QueryOperator.HAVING)
-                .addDataIfNotNull("findQuery", first)
+                .addDataIfNotNull("first", first)
+                .addData("operator", operator)
+                .addDataIfNotNull("second", second));
+        return (T) this;
+    }
+
+    @Override
+    public T min(Object first, String operator, Object second) {
+        addEntry(new QueryEntry(QueryOperator.MIN)
+                .addData("first", first)
                 .addDataIfNotNull("operator", operator)
                 .addDataIfNotNull("second", second));
         return (T) this;
     }
 
     @Override
-    public T min(String field) {
-        addEntry(new QueryEntry(QueryOperator.MIN).addDataIfNotNull("field", field));
+    public T max(Object first, String operator, Object second) {
+        addEntry(new QueryEntry(QueryOperator.MAX)
+                .addData("first", first)
+                .addDataIfNotNull("operator", operator)
+                .addDataIfNotNull("second", second));
         return (T) this;
     }
 
     @Override
-    public T max(String field) {
-        addEntry(new QueryEntry(QueryOperator.MAX).addDataIfNotNull("field", field));
+    public T count(Object first, String operator, Object second) {
+        addEntry(new QueryEntry(QueryOperator.COUNT)
+                .addData("first", first)
+                .addDataIfNotNull("operator", operator)
+                .addDataIfNotNull("second", second));
         return (T) this;
     }
 
     @Override
-    public T count(String field) {
-        addEntry(new QueryEntry(QueryOperator.COUNT).addDataIfNotNull("field", field));
+    public T avg(Object first, String operator, Object second) {
+        addEntry(new QueryEntry(QueryOperator.AVG)
+                .addData("first", first)
+                .addDataIfNotNull("operator", operator)
+                .addDataIfNotNull("second", second));
         return (T) this;
     }
 
     @Override
-    public T avg(String field) {
-        addEntry(new QueryEntry(QueryOperator.AVG).addDataIfNotNull("field", field));
-        return (T) this;
-    }
-
-    @Override
-    public T sum(String field) {
-        addEntry(new QueryEntry(QueryOperator.SUM).addDataIfNotNull("field", field));
+    public T sum(Object first, String operator, Object second) {
+        addEntry(new QueryEntry(QueryOperator.SUM)
+                .addData("first", first)
+                .addDataIfNotNull("operator", operator)
+                .addDataIfNotNull("second", second));
         return (T) this;
     }
 }

@@ -20,8 +20,9 @@
 
 package net.prematic.databasequery.core;
 
-import net.prematic.databasequery.core.datatype.DataTypeAdapter;
-import net.prematic.databasequery.core.datatype.adapters.UUIDDataTypeAdapter;
+import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.datatype.adapter.defaults.UUIDDataTypeAdapter;
+import net.prematic.libraries.utility.annonations.NotNull;
 import net.prematic.libraries.utility.annonations.Nullable;
 
 import java.util.Collection;
@@ -45,7 +46,7 @@ public interface DatabaseDriver {
 
     Collection<DataTypeAdapter> getDataTypeAdapters();
 
-    default void registerDataTypeAdapter(DataTypeAdapter adapter) {
+    default void registerDataTypeAdapter(@NotNull DataTypeAdapter adapter) {
         getDataTypeAdapters().add(adapter);
     }
 
@@ -62,7 +63,7 @@ public interface DatabaseDriver {
     }
 
     @Nullable
-    default DataTypeAdapter getDataTypeAdapterByWriteClass(Class<?> writeClass) {
+    default DataTypeAdapter getDataTypeAdapterByWriteClass(@NotNull Class<?> writeClass) {
         for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
             if(dataTypeAdapter.getWriteClass() == writeClass) return dataTypeAdapter;
         }
@@ -70,7 +71,7 @@ public interface DatabaseDriver {
     }
 
     @Nullable
-    default DataTypeAdapter getDataTypeAdapterByReadClass(Class<?> readClass) {
+    default DataTypeAdapter getDataTypeAdapterByReadClass(@NotNull Class<?> readClass) {
         for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
             if(dataTypeAdapter.getReadClass() == readClass) return dataTypeAdapter;
         }

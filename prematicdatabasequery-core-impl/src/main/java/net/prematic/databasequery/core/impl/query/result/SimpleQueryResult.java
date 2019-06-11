@@ -35,12 +35,12 @@ public class SimpleQueryResult implements QueryResult {
     }
 
     @Override
-    public QueryResultEntry getFirst() {
+    public QueryResultEntry first() {
         return entries.get(0);
     }
 
     @Override
-    public QueryResultEntry getLast() {
+    public QueryResultEntry last() {
         return entries.get(entries.size()-1);
     }
 

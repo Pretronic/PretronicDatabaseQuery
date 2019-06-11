@@ -19,59 +19,21 @@
 
 package net.prematic.databasequery.core.query;
 
-import net.prematic.databasequery.core.Aggregation;
-import java.util.List;
-import java.util.function.Consumer;
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 
 public interface FindQuery extends SearchQuery<FindQuery> {
 
     FindQuery get(String... fields);
 
-    FindQuery get(GetBuilder... getBuilders);
+    FindQuery get(AggregationBuilder... aggregationBuilders);
 
-    FindQuery get(GetBuilderConsumer... getBuilders);
+    FindQuery get(AggregationBuilder.Consumer... aggregationBuilders);
 
-    GetBuilder getGetBuilder();
-
-    default FindQuery get(Object... fieldsAndGetBuilders) {
-        for (Object fieldsAndGetBuilder : fieldsAndGetBuilders) {
-            if(fieldsAndGetBuilder instanceof String) get((String)fieldsAndGetBuilder);
-            else if(fieldsAndGetBuilder instanceof GetBuilder) get((GetBuilder)fieldsAndGetBuilder);
+    default FindQuery get(Object... fieldsAndAggregationBuilders) {
+        for (Object fieldsAndAggregationBuilder : fieldsAndAggregationBuilders) {
+            if(fieldsAndAggregationBuilder instanceof String) get((String)fieldsAndAggregationBuilder);
+            else if(fieldsAndAggregationBuilder instanceof AggregationBuilder.Consumer) get((AggregationBuilder) fieldsAndAggregationBuilder);
         }
         return this;
     }
-
-    interface GetBuilder {
-
-        List<Entry> getEntries();
-
-        GetBuilder withField(String field);
-
-        GetBuilder withOperator(String operator);
-
-        GetBuilder withAggregation(Aggregation aggregation, String field);
-
-        GetBuilder withReturnAlias(String alias);
-
-        GetBuilder withGetBuilder(GetBuilder getBuilder);
-
-        interface Entry {
-
-            Type getType();
-
-            Object getValue();
-
-            enum Type {
-
-                FIELD,
-                OPERATOR,
-                AGGREGATION,
-                ALIAS,
-                GET_BUILDER
-
-            }
-        }
-    }
-
-    interface GetBuilderConsumer extends Consumer<GetBuilder> {}
 }

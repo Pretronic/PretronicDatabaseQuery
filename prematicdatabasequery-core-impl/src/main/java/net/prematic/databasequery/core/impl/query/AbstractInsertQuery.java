@@ -19,11 +19,11 @@
 
 package net.prematic.databasequery.core.impl.query;
 
-import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.impl.query.helper.QueryHelper;
+import net.prematic.databasequery.core.impl.QueryOperator;
+import net.prematic.databasequery.core.impl.query.helper.EntryHelper;
 import net.prematic.databasequery.core.query.InsertQuery;
 
-public abstract class AbstractInsertQuery extends QueryHelper implements InsertQuery {
+public abstract class AbstractInsertQuery extends EntryHelper<InsertQuery> implements InsertQuery {
 
     @Override
     public InsertQuery set(String field, Object value) {

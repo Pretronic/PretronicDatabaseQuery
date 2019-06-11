@@ -21,7 +21,7 @@ package net.prematic.databasequery.sql.mysql;
 
 import com.zaxxer.hikari.HikariConfig;
 import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.core.datatype.DataTypeAdapter;
+import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
 
 import java.util.Collection;

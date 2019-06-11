@@ -25,11 +25,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class QueryHelper {
+public class EntryHelper<T> {
 
     private final List<QueryEntry> entries;
 
-    public QueryHelper() {
+    public EntryHelper() {
         this.entries = new ArrayList<>();
     }
 
@@ -37,9 +37,9 @@ public class QueryHelper {
         return entries;
     }
 
-    public QueryHelper addEntry(QueryEntry entry) {
+    public T addEntry(QueryEntry entry) {
         this.entries.add(entry);
-        return this;
+        return (T) this;
     }
 
     public List<Object> getDataDeep(String... keys) {

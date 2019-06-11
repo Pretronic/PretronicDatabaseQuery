@@ -21,6 +21,7 @@ package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.DatabaseCollectionType;
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.*;
 import net.prematic.databasequery.sql.mysql.query.MySqlFindQuery;
 import net.prematic.databasequery.sql.mysql.query.MySqlInsertQuery;
@@ -85,5 +86,10 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
     @Override
     public QueryTransaction transact() {
         return null;
+    }
+
+    @Override
+    public AggregationBuilder newAggregationBuilder(boolean aliasAble) {
+        return getDatabase().newAggregationBuilder(aliasAble);
     }
 }

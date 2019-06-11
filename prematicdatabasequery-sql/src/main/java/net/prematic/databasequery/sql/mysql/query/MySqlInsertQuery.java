@@ -20,8 +20,8 @@
 package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.QueryOperator;
-import net.prematic.databasequery.core.datatype.DataTypeAdapter;
+import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
 import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
@@ -31,8 +31,6 @@ import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MySqlInsertQuery extends AbstractInsertQuery implements QueryStringBuildAble {
 
@@ -47,24 +45,31 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
     public QueryResult execute(Object... values) {
         try(Connection connection = ((MySqlDatabaseCollection)this.collection).getDatabase().getDriver().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            List<Integer> indexToPrepare = new ArrayList<>();
-            int index = 1;
+            int index = 0;
             for (QueryEntry queryEntry : getEntries()) {
+                queryEntry.getValues().clear();
                 if(queryEntry.getOperator() == QueryOperator.SET) {
                     if(queryEntry.hasData("value")) {
+
                         Object value = queryEntry.getData("value");
 
                         DataTypeAdapter adapter = ((MySqlDatabaseCollection) this.collection).getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                        preparedStatement.setObject(index, adapter != null ? adapter.write(value) : value);
+                        queryEntry.addValue(adapter != null ? adapter.write(value) : value);
+                    } else {
+                        Object value = values[index];
+                        DataTypeAdapter adapter = ((MySqlDatabaseCollection) this.collection).getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+
+                        queryEntry.addValue(adapter != null ? adapter.write(value) : value);
                     }
-                    else indexToPrepare.add(index);
                     index++;
                 }
             }
-            index = 0;
-            for (Object value : values) {
-                preparedStatement.setObject(indexToPrepare.get(index), value);
-                index++;
+            index = 1;
+            for (QueryEntry queryEntry : getEntries()) {
+                for (Object value : queryEntry.getValuesDeep()) {
+                    preparedStatement.setObject(index, value);
+                    index++;
+                }
             }
             preparedStatement.executeUpdate();
         } catch (SQLException exception) {

@@ -22,9 +22,9 @@ package net.prematic.databasequery.core;
 public class ForeignKey {
 
     private final String database, collection, field;
-    private final ForeignKeyOption deleteOption, updateOption;
+    private final Option deleteOption, updateOption;
 
-    public ForeignKey(String database, String collection, String field, ForeignKeyOption deleteOption, ForeignKeyOption updateOption) {
+    public ForeignKey(String database, String collection, String field, Option deleteOption, Option updateOption) {
         this.database = database;
         this.collection = collection;
         this.field = field;
@@ -44,11 +44,19 @@ public class ForeignKey {
         return field;
     }
 
-    public ForeignKeyOption getDeleteOption() {
+    public Option getDeleteOption() {
         return deleteOption;
     }
 
-    public ForeignKeyOption getUpdateOption() {
+    public Option getUpdateOption() {
         return updateOption;
+    }
+
+    public enum Option {
+
+        DEFAULT,
+        CASCADE,
+        SET_NULL
+
     }
 }

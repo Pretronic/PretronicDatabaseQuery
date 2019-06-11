@@ -19,10 +19,12 @@
 
 package net.prematic.databasequery.core;
 
+import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 import net.prematic.databasequery.core.query.result.QueryResult;
+
 import java.util.List;
 
 public interface Database {
@@ -58,4 +60,6 @@ public interface Database {
     List<QueryResult> execute(Query... queries);
 
     QueryTransaction transact();
+
+    AggregationBuilder newAggregationBuilder(boolean aliasAble);
 }

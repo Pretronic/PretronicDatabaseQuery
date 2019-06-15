@@ -19,6 +19,17 @@
 
 package net.prematic.databasequery.core.query;
 
-public interface InsertQuery extends ChangeQuery<InsertQuery> {
+public interface InsertQuery extends Query {
+
+    default InsertQuery set(String field){
+        return set(field,Query.EMPTY_OBJECT_ARRAY);
+    }
+
+    InsertQuery set(String field, Object... values);
+
+    InsertQuery attribute(String... fields);
+
+    InsertQuery value(Object... values);
+
 
 }

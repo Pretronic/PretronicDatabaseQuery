@@ -19,15 +19,71 @@
 
 package net.prematic.databasequery.core.impl.query;
 
-import net.prematic.databasequery.core.impl.QueryOperator;
-import net.prematic.databasequery.core.impl.query.helper.EntryHelper;
 import net.prematic.databasequery.core.query.InsertQuery;
+import net.prematic.libraries.utility.Iterators;
 
-public abstract class AbstractInsertQuery extends EntryHelper<InsertQuery> implements InsertQuery {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-    @Override
-    public InsertQuery set(String field, Object value) {
-        addEntry(new QueryEntry(QueryOperator.SET).addData("field", field).addDataIfNotNull("value", value));
+public abstract class AbstractInsertQuery implements InsertQuery {
+
+    private final List<Entry> entries;
+
+    public AbstractInsertQuery() {
+        this.entries = new ArrayList<>();
+    }
+
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
+    public Entry getEntry(String name){
+        return Iterators.findOne(this.entries, entry -> entry.field.equalsIgnoreCase(name));
+    }
+
+    public InsertQuery set(String field, Object... values) {
+        Entry entry = getEntry(field);
+        if(entry == null){
+            entry = new Entry(field, Arrays.asList(values));
+            this.entries.add(entry);
+        }else entry.values.addAll(Arrays.asList(values));
         return this;
+    }
+
+    public InsertQuery attribute(String... fields) {
+        for(String field : fields){
+            if(getEntry(field) == null) this.entries.add(new Entry(field));
+        }
+        return this;
+    }
+
+    public InsertQuery value(Object... values) {
+        if(values.length != entries.size()) throw new IllegalArgumentException("Invalid values length.");
+        for(int i = 0;i<values.length;i++) entries.get(i).values.add(values[i]);
+        return this;
+    }
+
+    protected class Entry {
+
+        private final String field;
+        private final List<Object> values;
+
+        Entry(String field) {
+            this(field,new ArrayList<>());
+        }
+
+        Entry(String field, List<Object> values) {
+            this.field = field;
+            this.values = values;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public List<Object> getValues() {
+            return values;
+        }
     }
 }

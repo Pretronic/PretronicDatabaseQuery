@@ -22,12 +22,10 @@ package net.prematic.databasequery.core.query;
 
 public interface QueryTransaction {
 
-    void start();
-
     void commit();
 
-    void rollBack();
+    void rollback();
 
-    void execute(Query query);
+    void execute(Query query, Object... values);
 
 }

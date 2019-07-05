@@ -21,22 +21,31 @@ package net.prematic.databasequery.sql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.core.datatype.DataType;
+import net.prematic.databasequery.core.impl.DataTypeInformation;
 
-import javax.print.DocFlavor;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class SqlDatabaseDriver implements DatabaseDriver {
 
     private HikariDataSource dataSource;
     private final String name;
     private final HikariConfig config;
+    private final Set<DataTypeInformation> dataTypeInformation;
 
     public SqlDatabaseDriver(String name, HikariConfig config) {
         this.name = name == null ? getType() : name;
         this.config = config;
+        this.dataTypeInformation = new HashSet<>();
+        registerDataTypeInformation();
+    }
+
+    public HikariDataSource getDataSource() {
+        return this.dataSource;
     }
 
     @Override
@@ -44,17 +53,19 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         return this.name;
     }
 
-    public HikariDataSource getDataSource() {
-        return dataSource;
+    public Set<DataTypeInformation> getDataTypeInformation() {
+        return dataTypeInformation;
     }
 
-    public Connection getConnection() {
-        try {
-            if(getDataSource().isRunning()) return getDataSource().getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public DataTypeInformation getDataTypeInformation(DataType dataType) {
+        for (DataTypeInformation dataTypeInformation : getDataTypeInformation()) {
+            if(dataTypeInformation.getDataType() == dataType) return dataTypeInformation;
         }
-        return null;
+        return new DataTypeInformation(dataType, dataType.toString());
+    }
+
+    public Connection getConnection() throws SQLException {
+        return getDataSource() == null ? null : getDataSource().getConnection();
     }
 
     @Override
@@ -64,11 +75,30 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
 
     @Override
     public void connect() {
+        this.config.setAutoCommit(false);
         this.dataSource = new HikariDataSource(this.config);
     }
 
     @Override
     public void disconnect() {
         this.dataSource.close();
+    }
+
+    public void registerDataTypeInformation() {
+        //@Todo specify default sizes
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.DOUBLE, "DOUBLE"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.DECIMAL, "DECIMAL"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.FLOAT, "FLOAT"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.INTEGER, "INTEGER"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.LONG, "BIGINT"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.CHAR, "CHAR"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.STRING, "VARCHAR", 255));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.LONG_TEXT, "LONGTEXT"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.DATE, "DATE"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.DATETIME, "DATETIME"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.TIMESTAMP, "TIMESTAMP"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.BINARY, "BINARY"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.BLOB, "BLOB", false));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.UUID, "BINARY", true,16));
     }
 }

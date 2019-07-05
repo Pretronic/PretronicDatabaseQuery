@@ -19,59 +19,54 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.QueryOperator;
 import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
-import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.sql.mysql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class MySqlInsertQuery extends AbstractInsertQuery implements QueryStringBuildAble {
+public class MySqlInsertQuery extends AbstractInsertQuery implements QueryStringBuildAble, CommitOnExecute {
 
-    private final DatabaseCollection collection;
-    private String queryString;
+    private final MySqlDatabaseCollection databaseCollection;
+    private int valuesPerField;
 
-    public MySqlInsertQuery(DatabaseCollection collection) {
-        this.collection = collection;
+    public MySqlInsertQuery(MySqlDatabaseCollection databaseCollection) {
+        this.databaseCollection = databaseCollection;
+        this.valuesPerField = 0;
+    }
+
+    public int getValuesPerField() {
+        return valuesPerField;
     }
 
     @Override
-    public QueryResult execute(Object... values) {
-        try(Connection connection = ((MySqlDatabaseCollection)this.collection).getDatabase().getDriver().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            int index = 0;
-            for (QueryEntry queryEntry : getEntries()) {
-                queryEntry.getValues().clear();
-                if(queryEntry.getOperator() == QueryOperator.SET) {
-                    if(queryEntry.hasData("value")) {
-
-                        Object value = queryEntry.getData("value");
-
-                        DataTypeAdapter adapter = ((MySqlDatabaseCollection) this.collection).getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                        queryEntry.addValue(adapter != null ? adapter.write(value) : value);
+    public QueryResult execute(boolean commit, Object... values) {
+        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString(values));
+            int index = 1;
+            int valueGet = 0;
+            for (int i = 0; i < this.valuesPerField; i++) {
+                for (Entry entry : getEntries()) {
+                    Object value;
+                    if(entry.getValues().size() > i) {
+                        value = entry.getValues().get(i);
                     } else {
-                        Object value = values[index];
-                        DataTypeAdapter adapter = ((MySqlDatabaseCollection) this.collection).getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-
-                        queryEntry.addValue(adapter != null ? adapter.write(value) : value);
+                        value = values[valueGet];
+                        valueGet++;
                     }
-                    index++;
-                }
-            }
-            index = 1;
-            for (QueryEntry queryEntry : getEntries()) {
-                for (Object value : queryEntry.getValuesDeep()) {
+                    DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                    if(adapter != null) value = adapter.write(value);
                     preparedStatement.setObject(index, value);
                     index++;
                 }
             }
             preparedStatement.executeUpdate();
+            if(commit) connection.commit();
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -79,23 +74,45 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
     }
 
     @Override
-    public String buildExecuteString(boolean rebuild) {
-        if(!rebuild && this.queryString != null) return this.queryString;
-        StringBuilder queryString = new StringBuilder();
-        StringBuilder subQueryString = new StringBuilder().append("(");
-        queryString.append("INSERT INTO `").append(((MySqlDatabaseCollection)this.collection).getDatabase().getName())
-                .append("`.`").append(this.collection.getName()).append("` (");
-        boolean first = true;
-        for (QueryEntry queryEntry : getEntries()) {
-            if(!first) {
-                queryString.append(",");
-                subQueryString.append(",");
-            }
-            else first = false;
-            queryString.append("`").append(queryEntry.getData("field")).append("`");
-            subQueryString.append("?");
+    public QueryResult execute(Object... values) {
+        return execute(true, values);
+    }
+
+    @Override
+    public String buildExecuteString(Object... values) {
+        StringBuilder fieldQueryBuilder = new StringBuilder();
+        StringBuilder valueQueryBuilder = new StringBuilder();
+
+        int fieldCount = getEntries().size();
+        int valueCount = values.length;
+
+        for (Entry entry : getEntries()) {
+            if(fieldQueryBuilder.length() == 0) fieldQueryBuilder.append("(");
+            else fieldQueryBuilder.append(",");
+            fieldQueryBuilder.append("`").append(entry.getField()).append("`");
+            valueCount+=entry.getValues().size();
         }
-        this.queryString = queryString.append(") VALUES ").append(subQueryString).append(");").toString();
-        return this.queryString;
+
+        this.valuesPerField = valueCount/fieldCount;
+
+        for (int i = 0; i < valuesPerField; i++) {
+            if(valueQueryBuilder.length() != 0) valueQueryBuilder.append(",(");
+            else valueQueryBuilder.append(" VALUES (");
+            for (int i1 = 0; i1 < fieldCount; i1++) {
+                if(i1 != 0) valueQueryBuilder.append(",");
+                valueQueryBuilder.append("?");
+            }
+            valueQueryBuilder.append(")");
+        }
+
+        return "INSERT INTO `" +
+                this.databaseCollection.getDatabase().getName() +
+                "`.`" +
+                this.databaseCollection.getName() +
+                "` " +
+                fieldQueryBuilder +
+                ")" +
+                valueQueryBuilder +
+                ";";
     }
 }

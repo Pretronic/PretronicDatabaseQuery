@@ -21,14 +21,16 @@ package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.sql.mysql.query.MySqlCreateQuery;
+import net.prematic.libraries.utility.exceptions.NotImplementedException;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class MySqlDatabase implements Database {
@@ -47,12 +49,12 @@ public class MySqlDatabase implements Database {
     }
 
     public MySqlDatabaseDriver getDriver() {
-        return driver;
+        return this.driver;
     }
 
     @Override
     public DatabaseCollection getCollection(String name) {
-        return new MySqlDatabaseCollection(name, DatabaseCollectionType.NORMAL, this);
+        return new MySqlDatabaseCollection(name, DatabaseCollection.Type.NORMAL, this);
     }
 
     @Override
@@ -62,37 +64,45 @@ public class MySqlDatabase implements Database {
 
     @Override
     public DatabaseCollection createCollection(Class<?> clazz) {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public DatabaseCollection updateCollectionStructure(String collection, Class<?> clazz) {
-        return null;
-    }
-
-    @Override
-    public void deleteCollection(String name) {
-
+        throw new NotImplementedException();
     }
 
     @Override
     public void dropCollection(String name) {
-
+        try(Connection connection = getDriver().getConnection()) {
+            connection.prepareStatement("DROP TABLE IF EXISTS `" + this.name + "`.`" + name + "`");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
     public void drop() {
-
+        try(Connection connection = getDriver().getConnection()) {
+            connection.prepareStatement("DROP DATABASE IF EXISTS `" + getName() + "`");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
     public List<QueryResult> execute(Query... queries) {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public QueryTransaction transact() {
-        return new MySqlQueryTransaction(getDriver().getConnection());
+        try {
+            return new MySqlQueryTransaction(getDriver().getConnection());
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+        return null;
     }
 
     @Override

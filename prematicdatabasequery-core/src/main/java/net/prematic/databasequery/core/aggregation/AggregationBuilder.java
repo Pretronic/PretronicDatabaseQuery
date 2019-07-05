@@ -22,8 +22,6 @@ package net.prematic.databasequery.core.aggregation;
 import net.prematic.libraries.utility.annonations.NotNull;
 import net.prematic.libraries.utility.annonations.Nullable;
 
-import java.util.List;
-
 /**
  * A builder to build aggregations for methods in {@link net.prematic.databasequery.core.query.SearchQuery}
  * and in {@link net.prematic.databasequery.core.query.FindQuery}
@@ -32,13 +30,6 @@ import java.util.List;
  * or with {@link net.prematic.databasequery.core.DatabaseCollection#newAggregationBuilder(boolean)}
  */
 public interface AggregationBuilder {
-
-    /**
-     * Lists all entries in this AggregationBuilder instance
-     *
-     * @return the list of entries
-     */
-    List<Entry> getEntries();
 
     /**
      * Adds a field to the entries
@@ -90,7 +81,7 @@ public interface AggregationBuilder {
     AggregationBuilder value(@Nullable Object value);
 
     /**
-     * Adds a empty value entry to the entries.
+     * Adds an empty value.
      * You have to set the value later in the {@link net.prematic.databasequery.core.query.Query#execute(Object...)} method
      *
      * @return the AggregationBuilder instance
@@ -112,42 +103,6 @@ public interface AggregationBuilder {
      * @return the AggregationBuilder instance
      */
     AggregationBuilder alias(@NotNull String alias);
-
-    interface Entry {
-
-        /**
-         * Returns the type of the entry
-         *
-         * @return type of entry
-         */
-        Type getType();
-
-        /**
-         * Returns the value of the entry
-         * It can be null with the type {@link Type#VALUE},
-         * then you have to set the value later in {@link net.prematic.databasequery.core.query.Query#execute(Object...)}
-         *
-         * @return value of entry
-         */
-        @Nullable
-        Object getValue();
-
-        /**
-         * Represents the entry type of the AggregationBuilder
-         * The {@link Type#ALIAS} type is only considered, if the AggregationBuilder is aliasAble
-         *
-         * @see AggregationBuilder#alias(String)
-         */
-        enum Type {
-
-            FIELD,
-            OPERATOR,
-            AGGREGATION,
-            BUILDER,
-            VALUE,
-            ALIAS
-        }
-    }
 
     interface Consumer extends java.util.function.Consumer<AggregationBuilder> {}
 }

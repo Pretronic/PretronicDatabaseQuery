@@ -64,7 +64,7 @@ public abstract class AbstractInsertQuery implements InsertQuery {
         return this;
     }
 
-    protected class Entry {
+    public class Entry {
 
         private final String field;
         private final List<Object> values;

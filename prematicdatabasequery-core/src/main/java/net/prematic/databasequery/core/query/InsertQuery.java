@@ -19,6 +19,9 @@
 
 package net.prematic.databasequery.core.query;
 
+/**
+ * No query order
+ */
 public interface InsertQuery extends Query {
 
     default InsertQuery set(String field){
@@ -30,6 +33,5 @@ public interface InsertQuery extends Query {
     InsertQuery attribute(String... fields);
 
     InsertQuery value(Object... values);
-
 
 }

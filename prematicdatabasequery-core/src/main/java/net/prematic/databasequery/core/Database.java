@@ -47,8 +47,6 @@ public interface Database {
         return updateCollectionStructure(collection.getName(), clazz);
     }
 
-    void deleteCollection(String name);
-
     void dropCollection(String name);
 
     default void dropCollection(DatabaseCollection collection) {

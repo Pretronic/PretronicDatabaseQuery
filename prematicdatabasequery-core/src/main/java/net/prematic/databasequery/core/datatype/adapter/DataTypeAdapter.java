@@ -19,27 +19,33 @@
 
 package net.prematic.databasequery.core.datatype.adapter;
 
-import java.lang.reflect.ParameterizedType;
+/**
+ * This class is for converting the specific class {@link W} in {@link R} and reversed.
+ *
+ * {@link W} represents the type, you get by inserting the value and with
+ * {@link R} you specify in which type, it will be convert.
+ *
+ * So reversed it means, by reading, you get the type of {@link R} and you have to return it
+ * with the type of {@link W}.
+ *
+ * @param <W> write class
+ * @param <R> read class
+ */
+public interface DataTypeAdapter<W, R> {
 
-public abstract class DataTypeAdapter<W, R> {
+    /**
+     * Converts the input type {@link W} into the output type {@link R}.
+     *
+     * @param value to convert in {@link R}
+     * @return the converted value {@link R}
+     */
+    R write(W value);
 
-    private final Class<W> writeClass;
-    private final Class<R> readClass;
-
-    public DataTypeAdapter() {
-        this.writeClass = (Class<W>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        this.readClass = (Class<R>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
-    }
-
-    public Class<W> getWriteClass() {
-        return writeClass;
-    }
-
-    public Class<R> getReadClass() {
-        return readClass;
-    }
-
-    public abstract R write(W value);
-
-    public abstract W read(R value);
+    /**
+     * Converts input type {@link R} into the output type {@link W}.
+     *
+     * @param value to connert in {@link W}
+     * @return the converted value {@link W}
+     */
+    W read(R value);
 }

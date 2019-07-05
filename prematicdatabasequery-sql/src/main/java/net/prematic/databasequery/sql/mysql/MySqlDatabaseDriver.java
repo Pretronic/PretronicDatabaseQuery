@@ -24,6 +24,8 @@ import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -49,7 +51,11 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
     @Override
     public void dropDatabase(String name) {
-
+        try(Connection connection = getConnection()) {
+            connection.prepareStatement("DROP DATABASE IF EXISTS `" + name + "`");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override

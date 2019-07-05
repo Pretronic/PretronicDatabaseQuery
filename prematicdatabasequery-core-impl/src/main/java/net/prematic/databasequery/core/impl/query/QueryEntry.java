@@ -24,6 +24,7 @@ import net.prematic.databasequery.core.impl.QueryOperator;
 import java.util.*;
 import java.util.function.Predicate;
 
+@Deprecated
 public class QueryEntry {
 
     private boolean hasParentEntry;

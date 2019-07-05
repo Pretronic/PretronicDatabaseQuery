@@ -20,20 +20,20 @@
 package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.DatabaseCollectionType;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.*;
-import net.prematic.databasequery.sql.mysql.query.MySqlFindQuery;
-import net.prematic.databasequery.sql.mysql.query.MySqlInsertQuery;
-import net.prematic.databasequery.sql.mysql.query.MySqlUpdateQuery;
+import net.prematic.databasequery.sql.mysql.query.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class MySqlDatabaseCollection implements DatabaseCollection {
 
     private final String name;
-    private final DatabaseCollectionType type;
+    private final DatabaseCollection.Type type;
     private final MySqlDatabase database;
 
-    public MySqlDatabaseCollection(String name, DatabaseCollectionType type, MySqlDatabase database) {
+    public MySqlDatabaseCollection(String name, DatabaseCollection.Type type, MySqlDatabase database) {
         this.name = name;
         this.type = type;
         this.database = database;
@@ -45,12 +45,12 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
     }
 
     @Override
-    public DatabaseCollectionType getType() {
+    public DatabaseCollection.Type getType() {
         return this.type;
     }
 
     public MySqlDatabase getDatabase() {
-        return database;
+        return this.database;
     }
 
     @Override
@@ -75,16 +75,39 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
 
     @Override
     public ReplaceQuery replace() {
-        return null;
+        return new MySqlReplaceQuery(this);
     }
 
     @Override
     public DeleteQuery delete() {
-        return null;
+        return new MySqlDeleteQuery(this);
+    }
+
+    @Override
+    public void drop() {
+        try(Connection connection = getDatabase().getDriver().getConnection()) {
+            connection.prepareStatement("DROP TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @Override
+    public void truncate() {
+        try(Connection connection = getDatabase().getDriver().getConnection()) {
+            connection.prepareStatement("TRUNCATE TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`");
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
     public QueryTransaction transact() {
+        try {
+            return new MySqlQueryTransaction(getDatabase().getDriver().getConnection());
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
         return null;
     }
 

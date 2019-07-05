@@ -21,6 +21,11 @@ package net.prematic.databasequery.core.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 
+/**
+ * Query order:
+ * - all methods from this class
+ * - order of {@link SearchQuery}
+ */
 public interface FindQuery extends SearchQuery<FindQuery> {
 
     FindQuery get(String... fields);

@@ -26,7 +26,7 @@ public interface DatabaseCollection {
 
     String getName();
 
-    DatabaseCollectionType getType();
+    Type getType();
 
     int getSize();
 
@@ -40,7 +40,17 @@ public interface DatabaseCollection {
 
     DeleteQuery delete();
 
+    void drop();
+
+    void truncate();
+
     QueryTransaction transact();
 
     AggregationBuilder newAggregationBuilder(boolean aliasAble);
+
+    enum Type {
+
+        NORMAL,
+        EDGE
+    }
 }

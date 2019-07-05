@@ -19,49 +19,134 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
+import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
-import net.prematic.databasequery.core.impl.QueryOperator;
-import net.prematic.databasequery.core.impl.query.AbstractCreateQuery;
-import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
+import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.option.CreateOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.sql.mysql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
-import net.prematic.databasequery.sql.mysql.MySqlUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 
-public class MySqlCreateQuery extends AbstractCreateQuery implements QueryStringBuildAble {
+public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, CommitOnExecute {
 
+    private final String name;
     private final MySqlDatabase database;
-    private String queryString;
+    private final StringBuilder createQueryBuilder;
+    private final String mainQuery;
+    private String engine;
+    private boolean first;
+    private final List<Object> values;
 
-    public MySqlCreateQuery(String collectionName, MySqlDatabase database) {
-        super(collectionName);
+    public MySqlCreateQuery(String name, MySqlDatabase database) {
+        this.name = name;
         this.database = database;
+        this.createQueryBuilder = new StringBuilder();
+        this.mainQuery = "CREATE TABLE IF NOT EXISTS `"
+                + database.getName()
+                + "`.`"
+                + name
+                + "`(";
+        this.values = new ArrayList<>();
+        this.first = true;
     }
 
     @Override
-    public QueryResult execute(Object... values) {
-        try(Connection connection = database.getDriver().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            System.out.println(buildExecuteString());
-            int index = 1;
-            for (QueryEntry entry : getEntries()) {
-                if(entry.getOperator() == QueryOperator.CREATE) {
-                    if(entry.hasData("defaultValue")) {
-                        preparedStatement.setObject(index, entry.getData("defaultValue"));
-                        index++;
+    public CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
+        if(!first) createQueryBuilder.append(",");
+        else first = false;
+        boolean uniqueIndex = false;
+        boolean index = false;
+        DataTypeInformation dataTypeInformation = this.database.getDriver().getDataTypeInformation(dataType);
+        createQueryBuilder.append("`").append(field).append("` ")
+                .append(dataTypeInformation.getName());
+        if(dataTypeInformation.isSizeAble()) {
+            if(fieldSize != -1) createQueryBuilder.append("(").append(fieldSize).append(")");
+            else if(dataTypeInformation.getDefaultSize() != -1) createQueryBuilder.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
+        }
+        if(defaultValue != null) {
+            this.values.add(defaultValue);
+            createQueryBuilder.append(" DEFAULT ?");
+        }
+        if(createOptions.length != 0) {
+            for (CreateOption createOption : createOptions) {
+                switch (createOption) {
+                    case INDEX: {
+                        index = true;
+                        continue;
+                    }
+                    case UNIQUE_INDEX: {
+                        uniqueIndex = true;
+                        continue;
+                    }
+                    case PRIMARY_KEY: {
+                        createQueryBuilder.append(" PRIMARY KEY");
+                        continue;
+                    }
+                    case NOT_NULL: {
+                        createQueryBuilder.append(" NOT NULL");
+                        continue;
+                    }
+                    default: {
+                        createQueryBuilder.append(" ").append(createOption.toString());
                     }
                 }
             }
+        }
+        if(uniqueIndex) {
+            createQueryBuilder.append(",UNIQUE INDEX `").append(this.name).append(field).append("`(`").append(field).append("`)");
+        }else if(index) {
+            createQueryBuilder.append(",INDEX `").append(this.name).append(field).append("`(`").append(field).append("`)");
+        }
+        if(foreignKey != null) buildForeignKey(field, foreignKey);
+        return this;
+    }
+
+    @Override
+    public CreateQuery engine(String engine) {
+        this.engine = engine;
+        return this;
+    }
+
+    @Override
+    public CreateQuery collectionType(DatabaseCollection.Type collectionType) {
+        return this;
+    }
+
+    @Override
+    public CreateQuery foreignKey(String field, ForeignKey foreignKey) {
+        return buildForeignKey(field, foreignKey);
+    }
+
+
+
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
+        try(Connection connection = this.database.getDriver().getConnection()) {
+            int index = 1;
+            int valueGet = 0;
+            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            for (Object value : this.values) {
+                if(value == null) {
+                    value = values[valueGet];
+                    valueGet++;
+                }
+                DataTypeAdapter adapter = this.database.getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                if(adapter != null) value = adapter.write(value);
+                preparedStatement.setObject(index, value);
+                index++;
+            }
             preparedStatement.executeUpdate();
+            if(commit) connection.commit();
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -69,95 +154,36 @@ public class MySqlCreateQuery extends AbstractCreateQuery implements QueryString
     }
 
     @Override
-    public String buildExecuteString(boolean rebuild) {
-        if(!rebuild && this.queryString != null) return this.queryString;
-        StringBuilder queryString = new StringBuilder();
-        queryString.append("CREATE TABLE IF NOT EXISTS `").append(this.database.getName()).append("`.`").append(getCollectionName()).append("`(");
+    public QueryResult execute(Object... values) {
+        return execute(true, values);
+    }
 
-        List<QueryEntry> queryEntries = getEntries();
-        queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
-        String engine = null;
-        boolean first = true;
-        for (QueryEntry queryEntry : queryEntries) {
-            switch (queryEntry.getOperator()) {
-                case CREATE: {
-                    if(!first) queryString.append(",");
-                    else first = false;
-                    String field = (String) queryEntry.getData("field");
-                    boolean uniqueIndex = false;
-                    boolean index = false;
-                    DataTypeInformation dataTypeInformation = MySqlUtils.getDataTypeInformation((DataType) queryEntry.getData("dataType"));
-                    queryString.append("`").append(field).append("` ")
-                            .append(dataTypeInformation.getName());
-                    if(dataTypeInformation.isSizeAble()) {
-                        int fieldSize = (int) queryEntry.getData("fieldSize");
-                        if(fieldSize != -1) queryString.append("(").append(fieldSize).append(")");
-                        else if(dataTypeInformation.getDefaultSize() != -1) queryString.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
-                    }
-                    if(queryEntry.containsData("defaultValue")) {
-                        queryString.append(" DEFAULT ?");
-                    }
-                    if(queryEntry.containsData("createOptions")) {
-                        CreateOption[] createOptions = (CreateOption[]) queryEntry.getData("createOptions");
-                        for (CreateOption createOption : createOptions) {
-                            switch (createOption) {
-                                case INDEX: {
-                                    index = true;
-                                    continue;
-                                }
-                                case UNIQUE_INDEX: {
-                                    uniqueIndex = true;
-                                    continue;
-                                }
-                                case PRIMARY_KEY: {
-                                    queryString.append(" PRIMARY KEY");
-                                    continue;
-                                }
-                                case NOT_NULL: {
-                                    queryString.append(" NOT NULL");
-                                    continue;
-                                }
-                                default: {
-                                    queryString.append(" ").append(createOption.toString());
-                                }
-                            }
-                        }
-                    }
-                    if(uniqueIndex) {
-                        queryString.append(",UNIQUE INDEX `").append(getCollectionName()).append(field).append("`(`").append(field).append("`)");
-                    }else if(index) {
-                        queryString.append(",INDEX `").append(getCollectionName()).append(field).append("`(`").append(field).append("`)");
-                    }
-                    if(queryEntry.containsData("foreignKey")) {
-                        ForeignKey foreignKey = (ForeignKey) queryEntry.getData("foreignKey");
-                        queryString.append(", FOREIGN KEY(`")
-                                .append(field)
-                                .append("`) REFERENCES `")
-                                .append(foreignKey.getDatabase())
-                                .append("`.`")
-                                .append(foreignKey.getCollection())
-                                .append("`(`")
-                                .append(foreignKey.getField()).append("`)");
-                        if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
-                            queryString.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
-                        }
-                        if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKey.Option.DEFAULT) {
-                            queryString.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
-                        }
-                    }
-                    continue;
-                }
-                case ENGINE: {
-                    engine = (String) queryEntry.getData("engine");
-                    continue;
-                }
-                case COLLECTION_TYPE: {
-
-                    continue;
-                }
-            }
+    private CreateQuery buildForeignKey(String field, ForeignKey foreignKey) {
+        if(!first) createQueryBuilder.append(",");
+        else first = false;
+        createQueryBuilder.append("FOREIGN KEY(`")
+                .append(field)
+                .append("`) REFERENCES `")
+                .append(foreignKey.getDatabase())
+                .append("`.`")
+                .append(foreignKey.getCollection())
+                .append("`(`")
+                .append(foreignKey.getField()).append("`)");
+        if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
+            createQueryBuilder.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
-        this.queryString = queryString.append(")").append(engine != null ? " ENGINE="+engine : "").append(";").toString();
-        return this.queryString;
+        if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKey.Option.DEFAULT) {
+            createQueryBuilder.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
+        }
+        return this;
+    }
+
+    @Override
+    public String buildExecuteString(Object... values) {
+        return mainQuery +
+                createQueryBuilder +
+                ")" +
+                (engine != null ? " ENGINE=" + this.engine : "") +
+                ";";
     }
 }

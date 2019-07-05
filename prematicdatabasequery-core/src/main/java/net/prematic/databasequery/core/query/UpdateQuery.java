@@ -19,6 +19,11 @@
 
 package net.prematic.databasequery.core.query;
 
+/**
+ * Query order:
+ * - order of {@link ChangeQuery}
+ * - order of {@link SearchQuery}
+ */
 public interface UpdateQuery extends ChangeQuery<UpdateQuery>, SearchQuery<UpdateQuery> {
 
 

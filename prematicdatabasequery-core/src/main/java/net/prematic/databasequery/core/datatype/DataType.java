@@ -22,6 +22,10 @@ package net.prematic.databasequery.core.datatype;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class holds all possible data types to create a {@link net.prematic.databasequery.core.DatabaseCollection}
+ * with the {@link net.prematic.databasequery.core.query.CreateQuery}
+ */
 public enum DataType {
 
     DOUBLE,
@@ -39,13 +43,16 @@ public enum DataType {
     BLOB,
     UUID;
 
-
     private final Class<?>[] javaClasses;
 
     DataType(Class... javaClasses) {
         this.javaClasses = javaClasses;
     }
 
+    /**
+     * Returns all equivalent java classes for the given data type.
+     * @return array with classes
+     */
     public Class[] getJavaClasses() {
         return javaClasses;
     }
@@ -58,9 +65,5 @@ public enum DataType {
                 DATA_TYPES.put(javaClass, value);
             }
         }
-    }
-
-    public static DataType getDataTypeByClass(Class<?> clazz) {
-        return DATA_TYPES.get(clazz);
     }
 }

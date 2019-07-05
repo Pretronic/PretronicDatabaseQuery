@@ -21,10 +21,6 @@ package net.prematic.databasequery.core.impl.query;
 
 public interface QueryStringBuildAble {
 
-    String buildExecuteString(boolean rebuild);
-
-    default String buildExecuteString() {
-        return buildExecuteString(false);
-    }
+    String buildExecuteString(Object... values);
 
 }

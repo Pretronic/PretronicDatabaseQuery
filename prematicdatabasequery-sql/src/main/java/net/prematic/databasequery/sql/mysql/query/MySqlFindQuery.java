@@ -21,9 +21,6 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.QueryOperator;
-import net.prematic.databasequery.core.impl.query.AbstractFindQuery;
-import net.prematic.databasequery.core.impl.query.QueryEntry;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
@@ -32,43 +29,74 @@ import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
-import net.prematic.databasequery.sql.mysql.MySqlUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuildAble {
+public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements FindQuery, QueryStringBuildAble {
 
-    private String queryString;
+    private final StringBuilder getQueryBuilder;
     private final List<String> fields;
 
-    public MySqlFindQuery(MySqlDatabaseCollection collection) {
-        super(collection);
+    public MySqlFindQuery(MySqlDatabaseCollection databaseCollection) {
+        super(databaseCollection);
+        this.getQueryBuilder = new StringBuilder();
         this.fields = new ArrayList<>();
+    }
+
+    @Override
+    public FindQuery get(String... fields) {
+        for (String field : fields) {
+            if(!first) getQueryBuilder.append(",");
+            else first = false;
+            getQueryBuilder.append("`").append(field).append("`");
+            this.fields.add(field);
+        }
+        return this;
+    }
+
+    @Override
+    public FindQuery get(AggregationBuilder... aggregationBuilders) {
+        for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
+            if(!first) getQueryBuilder.append(",");
+            else first = false;
+            getQueryBuilder.append(((MySqlAggregationBuilder) aggregationBuilder).getAggregationBuilder());
+            this.fields.add(((MySqlAggregationBuilder) aggregationBuilder).getAlias());
+        }
+        return this;
+    }
+
+    @Override
+    public FindQuery get(AggregationBuilder.Consumer... aggregationBuilders) {
+        AggregationBuilder[] results = new AggregationBuilder[aggregationBuilders.length];
+        for (int i = 0; i < aggregationBuilders.length; i++) {
+            AggregationBuilder aggregationBuilder = this.databaseCollection.getDatabase().newAggregationBuilder(true);
+            aggregationBuilders[i].accept(aggregationBuilder);
+            results[i] = aggregationBuilder;
+        }
+        return get(results);
     }
 
     @Override
     public QueryResult execute(Object... values) {
         List<QueryResultEntry> resultEntries = new ArrayList<>();
-        try(Connection connection = ((MySqlDatabaseCollection)getCollection()).getDatabase().getDriver().getConnection()) {
-            AtomicInteger index = new AtomicInteger(0);
-            for (QueryEntry queryEntry : getEntries()) {
-                queryEntry.getValues().clear();
-                MySqlUtils.prepareQueryEntry(queryEntry, index, values);
-            }
-            System.out.println(buildExecuteString());
+        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
+            int index = 1;
+            int valueGet = 0;
             PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            List<QueryEntry> queryEntries = new ArrayList<>(getEntries());
-            queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
-            index.set(1);
-            for (QueryEntry queryEntry : queryEntries) {
-                for (Object value : queryEntry.getValuesDeep()) {
-                    preparedStatement.setObject(index.getAndIncrement(), value);
+            for (Object value : this.values) {
+                if(value == null) {
+                    value = values[valueGet];
+                    valueGet++;
                 }
+                preparedStatement.setObject(index, value);
+                index++;
             }
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -77,13 +105,13 @@ public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuil
                 if(!this.fields.isEmpty()) {
                     for (String field : this.fields) {
                         Object value = resultSet.getObject(field);
-                        DataTypeAdapter dataTypeAdapter = ((MySqlDatabaseCollection) getCollection()).getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                        DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
                         results.put(field, dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
                     }
                 } else {
                     for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                         Object value = resultSet.getObject(i);
-                        DataTypeAdapter dataTypeAdapter = ((MySqlDatabaseCollection) getCollection()).getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                        DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
                         results.put(resultSet.getMetaData().getColumnName(i), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
                     }
                 }
@@ -96,50 +124,19 @@ public class MySqlFindQuery extends AbstractFindQuery implements QueryStringBuil
     }
 
     @Override
-    public String buildExecuteString(boolean rebuild) {
-        if(!rebuild && this.queryString != null) return this.queryString;
+    public String buildExecuteString(Object... values) {
         StringBuilder queryString = new StringBuilder();
         queryString.append("SELECT ");
-        List<QueryEntry> queryEntries = new ArrayList<>(getEntries());
-        queryEntries.sort(Comparator.comparingInt(queryEntry -> MySqlUtils.getQueryOperatorPriority(queryEntry.getOperator())));
-        boolean first = true;
-        boolean returnValue = false;
-        for (QueryEntry queryEntry : queryEntries) {
-            if(queryEntry.getOperator() == QueryOperator.GET) {
-                returnValue = true;
-                if(queryEntry.containsData("fields")) {
-                    for (String field : (String[]) queryEntry.getData("fields")) {
-                        if(!first) queryString.append(",");
-                        else first = false;
-                        queryString.append("`").append(field).append("`");
-                        fields.add(field);
-                    }
-                } else if(queryEntry.containsData("aggregationBuilders")) {
-                    for (AggregationBuilder aggregationBuilder : (AggregationBuilder[]) queryEntry.getData("aggregationBuilders")) {
-                        if(!first) queryString.append(",");
-                        else first = false;
-                        queryString.append(((MySqlAggregationBuilder) aggregationBuilder).buildExecuteString());
-                        fields.add(((MySqlAggregationBuilder) aggregationBuilder).getAlias());
-                    }
-                }
-            }
-        }
-        if(!returnValue) queryString.append("*");
-        queryString.append(" FROM `").append(((MySqlDatabaseCollection)getCollection()).getDatabase().getName())
-                .append("`.`").append(getCollection().getName()).append("`");
-        MySqlUtils.buildSearchQuery(queryString, queryEntries);
-        this.queryString = queryString.append(";").toString();
-        return this.queryString;
-    }
-
-    @Override
-    public FindQuery get(AggregationBuilder.Consumer... aggregationBuilders) {
-        AggregationBuilder[] results = new AggregationBuilder[aggregationBuilders.length];
-        for (int i = 0; i < aggregationBuilders.length; i++) {
-            AggregationBuilder aggregationBuilder = ((MySqlDatabaseCollection)getCollection()).getDatabase().newAggregationBuilder(true);
-            aggregationBuilders[i].accept(aggregationBuilder);
-            results[i] = aggregationBuilder;
-        }
-        return get(results);
+        if(this.fields.isEmpty()) queryString.append("*");
+        else queryString.append(this.getQueryBuilder);
+        queryString.append(" FROM `").append(this.databaseCollection.getDatabase().getName())
+                .append("`.`").append(this.databaseCollection.getName()).append("`");
+        if(this.searchQueryBuilder.length() != 0) queryString.append(this.searchQueryBuilder);
+        if(this.whereAggregationQueryBuilder.length() != 0) queryString.append(this.whereAggregationQueryBuilder);
+        if(this.groupByQueryBuilder.length() != 0) queryString.append(this.groupByQueryBuilder);
+        if(this.orderByQueryBuilder.length() != 0) queryString.append(this.orderByQueryBuilder);
+        if(this.limit != null) queryString.append(this.limit);
+        System.out.println(queryString.toString());
+        return queryString.append(";").toString();
     }
 }

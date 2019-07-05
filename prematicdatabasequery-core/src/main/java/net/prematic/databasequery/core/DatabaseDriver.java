@@ -24,7 +24,9 @@ import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.core.datatype.adapter.defaults.UUIDDataTypeAdapter;
 import net.prematic.libraries.utility.annonations.NotNull;
 import net.prematic.libraries.utility.annonations.Nullable;
+import net.prematic.libraries.utility.reflect.TypeReference;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -63,17 +65,23 @@ public interface DatabaseDriver {
     }
 
     @Nullable
-    default DataTypeAdapter getDataTypeAdapterByWriteClass(@NotNull Class<?> writeClass) {
+    default DataTypeAdapter getDataTypeAdapterByWriteClass(Class<?> writeClass) {
+        if(writeClass == null) return null;
         for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
-            if(dataTypeAdapter.getWriteClass() == writeClass) return dataTypeAdapter;
+            TypeReference typeReference = new TypeReference(dataTypeAdapter.getClass());
+            Type[] type = typeReference.getGenericInterfaceArgument(0, 0);
+            if(type[0] == writeClass) return dataTypeAdapter;
         }
         return null;
     }
 
     @Nullable
-    default DataTypeAdapter getDataTypeAdapterByReadClass(@NotNull Class<?> readClass) {
+    default DataTypeAdapter getDataTypeAdapterByReadClass(Class<?> readClass) {
+        if(readClass == null) return null;
         for (DataTypeAdapter dataTypeAdapter : getDataTypeAdapters()) {
-            if(dataTypeAdapter.getReadClass() == readClass) return dataTypeAdapter;
+            TypeReference typeReference = new TypeReference(dataTypeAdapter.getClass());
+            Type[] type = typeReference.getGenericInterfaceArgument(0, 1);
+            if(type[0] == readClass) return dataTypeAdapter;
         }
         return null;
     }

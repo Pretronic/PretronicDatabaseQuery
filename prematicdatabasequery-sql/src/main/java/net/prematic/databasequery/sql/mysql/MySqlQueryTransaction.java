@@ -19,12 +19,10 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class MySqlQueryTransaction implements QueryTransaction {
@@ -36,28 +34,26 @@ public class MySqlQueryTransaction implements QueryTransaction {
     }
 
     @Override
-    public void start() {
-
-    }
-
-    @Override
     public void commit() {
-
-    }
-
-    @Override
-    public void rollBack() {
-
-    }
-
-    @Override
-    public void execute(Query query) {
-        StringBuilder queryString = new StringBuilder();
-        if(query instanceof QueryStringBuildAble) queryString.append(((QueryStringBuildAble)query).buildExecuteString());
-        try(PreparedStatement preparedStatement = this.connection.prepareStatement(queryString.toString())) {
-
+        try {
+            this.connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void rollback() {
+        try {
+            this.connection.rollback();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void execute(Query query, Object... values) {
+        if(query instanceof CommitOnExecute) ((CommitOnExecute)query).execute(false, values);
+        else query.execute(values);
     }
 }

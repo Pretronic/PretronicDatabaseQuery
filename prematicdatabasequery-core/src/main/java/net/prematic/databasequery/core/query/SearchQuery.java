@@ -23,6 +23,14 @@ import net.prematic.databasequery.core.Pattern;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.query.option.OrderOption;
 
+/**
+ * Query order:
+ * - methods {@link #where(Object, String, Object)} and all extending methods
+ * - methods {@link #groupBy(String...)} and {@link #groupBy(AggregationBuilder...)}
+ * - methods {@link #orderBy(String, OrderOption)} and {@link #orderBy(AggregationBuilder, OrderOption)}
+ * - methods {@link #limit(int, int)} and all extending methods
+ * @param <T>
+ */
 public interface SearchQuery<T extends SearchQuery> extends Query {
 
     T where(String field, Object value);
@@ -31,27 +39,46 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return where(field, null);
     }
 
-    default T wherePattern(String field, Pattern pattern) {
+    default T whereLike(String field, Pattern pattern) {
         return where(field, pattern.build());
     }
 
-    T wherePattern(String field, String pattern);
+    T whereLike(String field, String pattern);
 
     T where(String field, String operator, Object value);
 
-    T not(SearchQuery searchQuery);
+    T where(Object first, String operator, Object second);
+
+    default T where(AggregationBuilder first, String operator, Object second) {
+        return where((Object) first, operator, second);
+    }
+
+    default T where(AggregationBuilder.Consumer first, String operator, Object second) {
+        return where((Object)first, operator, second);
+    }
+
+    default T where(Object first, String operator, AggregationBuilder second) {
+        return where(first, operator, (Object) second);
+    }
+
+    default T where(Object first, String operator, AggregationBuilder.Consumer second) {
+        return where(first, operator, (Object)second);
+    }
+
+    default T where(AggregationBuilder first, String operator, AggregationBuilder second) {
+        return where((Object) first, operator, (Object)second);
+    }
+
+    default T where(AggregationBuilder.Consumer first, String operator, AggregationBuilder.Consumer second) {
+        return where((Object) first, operator, (Object) second);
+    }
 
     T not(Consumer searchQuery);
 
-    T and(SearchQuery... searchQueries);
-
     T and(Consumer... searchQueries);
-
-    T or(SearchQuery... searchQueries);
 
     T or(Consumer... searchQueries);
 
-    //Aggregation
     T between(String field, Object value1, Object value2);
 
     default T between(String field, AggregationBuilder value1, AggregationBuilder value2) {
@@ -85,7 +112,6 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return limit(1, 0);
     }
 
-
     T orderBy(String field, OrderOption orderOption);
 
     T orderBy(AggregationBuilder aggregationBuilder, OrderOption orderOption);
@@ -93,32 +119,6 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
     T groupBy(String... fields);
 
     T groupBy(AggregationBuilder... aggregationBuilders);
-
-    T having(Object first, String operator, Object second);
-
-    default T having(AggregationBuilder first, String operator, Object second) {
-        return having((Object) first, operator, second);
-    }
-
-    default T having(AggregationBuilder.Consumer first, String operator, Object second) {
-        return having((Object)first, operator, second);
-    }
-
-    default T having(Object first, String operator, AggregationBuilder second) {
-        return having(first, operator, (Object) second);
-    }
-
-    default T having(Object first, String operator, AggregationBuilder.Consumer second) {
-        return having(first, operator, (Object)second);
-    }
-
-    default T having(AggregationBuilder first, String operator, AggregationBuilder second) {
-        return having((Object) first, operator, second);
-    }
-
-    default T having(AggregationBuilder.Consumer first, String operator, AggregationBuilder.Consumer second) {
-        return having((Object) first, operator, (Object) second);
-    }
 
     T min(Object first, String operator, Object second);
 

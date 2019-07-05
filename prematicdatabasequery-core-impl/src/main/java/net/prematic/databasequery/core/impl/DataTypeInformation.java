@@ -28,13 +28,6 @@ public class DataTypeInformation {
     private final boolean sizeAble;
     private final int defaultSize;
 
-    public DataTypeInformation(DataType dataType, String name, boolean sizeAble, int defaultSize, boolean onQueryEnd) {
-        this.dataType = dataType;
-        this.name = name;
-        this.sizeAble = sizeAble;
-        this.defaultSize = defaultSize;
-    }
-
     public DataTypeInformation(DataType dataType, String name, boolean sizeAble, int defaultSize) {
         this.dataType = dataType;
         this.name = name;
@@ -54,6 +47,13 @@ public class DataTypeInformation {
         this.name = name;
         this.sizeAble = sizeAble;
         this.defaultSize = -1;
+    }
+
+    public DataTypeInformation(DataType dataType, String name, int defaultSize) {
+        this.dataType = dataType;
+        this.name = name;
+        this.defaultSize = defaultSize;
+        this.sizeAble = true;
     }
 
     public DataType getDataType() {

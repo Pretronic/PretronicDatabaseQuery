@@ -19,6 +19,9 @@
 
 package net.prematic.databasequery.core.query;
 
+/**
+ * Query order of {@link SearchQuery}
+ */
 public interface DeleteQuery extends SearchQuery<DeleteQuery> {
 
 }

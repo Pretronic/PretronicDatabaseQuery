@@ -19,11 +19,14 @@
 
 package net.prematic.databasequery.core.query;
 
-import net.prematic.databasequery.core.DatabaseCollectionType;
+import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
+/**
+ * No query order
+ */
 public interface CreateQuery extends Query {
 
     CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions);
@@ -42,5 +45,7 @@ public interface CreateQuery extends Query {
 
     CreateQuery engine(String engine);
 
-    CreateQuery collectionType(DatabaseCollectionType collectionType);
+    CreateQuery collectionType(DatabaseCollection.Type collectionType);
+
+    CreateQuery foreignKey(String field, ForeignKey foreignKey);
 }

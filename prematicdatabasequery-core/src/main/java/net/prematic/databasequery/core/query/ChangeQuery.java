@@ -19,6 +19,10 @@
 
 package net.prematic.databasequery.core.query;
 
+/**
+ * No query order
+ * @param <T>
+ */
 public interface ChangeQuery<T extends ChangeQuery> extends Query {
 
     T set(String field, Object value);

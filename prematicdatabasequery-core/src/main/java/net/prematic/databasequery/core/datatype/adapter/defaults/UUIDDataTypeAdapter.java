@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
-public class UUIDDataTypeAdapter extends DataTypeAdapter<UUID, byte[]> {
+public class UUIDDataTypeAdapter implements DataTypeAdapter<UUID, byte[]> {
 
     @Override
     public byte[] write(UUID value) {

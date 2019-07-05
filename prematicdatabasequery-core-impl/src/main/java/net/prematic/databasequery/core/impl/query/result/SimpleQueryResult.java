@@ -56,6 +56,8 @@ public class SimpleQueryResult implements QueryResult {
 
     @Override
     public <T> void loadIn(Collection<T> collection, Function<QueryResultEntry, T> loader) {
-
+        for (QueryResultEntry entry : entries) {
+            collection.add(loader.apply(entry));
+        }
     }
 }

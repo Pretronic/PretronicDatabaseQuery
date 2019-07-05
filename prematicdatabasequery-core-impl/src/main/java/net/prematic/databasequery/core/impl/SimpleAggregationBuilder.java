@@ -22,22 +22,53 @@ package net.prematic.databasequery.core.impl;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.aggregation.Aggregation;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.libraries.utility.map.Pair;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SimpleAggregationBuilder implements AggregationBuilder {
 
     private final Database database;
-    private final List<Entry> entries;
+    //private final List<Entry> entries;
 
     public SimpleAggregationBuilder(Database database) {
         this.database = database;
-        this.entries = new ArrayList<>();
+        //this.entries = new ArrayList<>();
     }
 
     @Override
+    public AggregationBuilder field(String field) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder operator(String operator) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder aggregation(Aggregation aggregation, String field) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder builder(AggregationBuilder builder) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder builder(Consumer consumer) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder value(Object value) {
+        return null;
+    }
+
+    @Override
+    public AggregationBuilder alias(String alias) {
+        return null;
+    }
+
+    /*@Override
     public List<Entry> getEntries() {
         return this.entries;
     }
@@ -103,5 +134,5 @@ public class SimpleAggregationBuilder implements AggregationBuilder {
         public Object getValue() {
             return this.value;
         }
-    }
+    }*/
 }

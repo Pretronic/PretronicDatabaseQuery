@@ -20,15 +20,22 @@
 package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
+import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.sql.mysql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T> {
+public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T>, QueryStringBuildAble, CommitOnExecute {
 
     protected final MySqlDatabaseCollection databaseCollection;
     protected final StringBuilder searchQueryBuilder, whereAggregationQueryBuilder, groupByQueryBuilder, orderByQueryBuilder;
@@ -97,22 +104,20 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     public T where(Object first, String operator, Object second) {
         if(whereAggregationQueryBuilder.length() == 0) whereAggregationQueryBuilder.append(" HAVING ");
         else whereAggregationQueryBuilder.append(" AND ");
-        if(first instanceof AggregationBuilder) {
-            whereAggregationQueryBuilder.append(((MySqlAggregationBuilder)first).getAggregationBuilder());
-            this.values.addAll(((MySqlAggregationBuilder)first).getValues());
-        } else if(!(first instanceof String)) {
-            whereAggregationQueryBuilder.append("?");
-            this.values.add(first);
-        } else whereAggregationQueryBuilder.append("`").append(first).append("`");
+        buildWhereAggregation(first);
         whereAggregationQueryBuilder.append(" ").append(operator).append(" ");
-        if(second instanceof AggregationBuilder) {
-            whereAggregationQueryBuilder.append(((MySqlAggregationBuilder)second).getAggregationBuilder());
-            this.values.addAll(((MySqlAggregationBuilder)second).getValues());
-        } else if(!(second instanceof String)) {
-            whereAggregationQueryBuilder.append("?");
-            this.values.add(second);
-        } else whereAggregationQueryBuilder.append("`").append(second).append("`");
+        buildWhereAggregation(second);
         return (T) this;
+    }
+
+    private void buildWhereAggregation(Object value) {
+        if(value instanceof AggregationBuilder) {
+            whereAggregationQueryBuilder.append(((MySqlAggregationBuilder)value).getAggregationBuilder());
+            this.values.addAll(((MySqlAggregationBuilder)value).getValues());
+        } else if(!(value instanceof String)) {
+            whereAggregationQueryBuilder.append("?");
+            this.values.add(value);
+        } else whereAggregationQueryBuilder.append("`").append(value).append("`");
     }
 
     @Override
@@ -130,6 +135,15 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T and(Consumer... searchQueries) {
+        return andOr("AND", searchQueries);
+    }
+
+    @Override
+    public T or(Consumer... searchQueries) {
+        return andOr("OR", searchQueries);
+    }
+
+    private T andOr(String operator, Consumer... searchQueries) {
         SearchQuery[] resultQueries = new SearchQuery[searchQueries.length];
         boolean first = true;
         for (int i = 0; i < searchQueries.length; i++) {
@@ -142,37 +156,10 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         }
         if(!first) {
             if(where) searchQueryBuilder.append(" WHERE ");
-            else searchQueryBuilder.append(" AND ");
+            else searchQueryBuilder.append(" ").append(operator).append(" ");
         }
         if(negate) searchQueryBuilder.append("NOT ");
         searchQueryBuilder.append("(");
-        first = true;
-        for (SearchQuery searchQuery : resultQueries) {
-            searchQueryBuilder.append(((MySqlSearchQueryHelper)searchQuery).searchQueryBuilder);
-            this.values.addAll(((MySqlSearchQueryHelper)searchQuery).values);
-        }
-        searchQueryBuilder.append(")");
-        return (T) this;
-    }
-
-    @Override
-    public T or(Consumer... searchQueries) {
-        SearchQuery[] resultQueries = new SearchQuery[searchQueries.length];
-        boolean first = true;
-        for (int i = 0; i < searchQueries.length; i++) {
-            SearchQuery searchQuery = this.databaseCollection.find();
-            ((MySqlSearchQueryHelper)searchQuery).first = first;
-            searchQueries[i].accept(searchQuery);
-            resultQueries[i] = searchQuery;
-            first = false;
-        }
-        if(!first) {
-            if(where) searchQueryBuilder.append(" WHERE ");
-            else searchQueryBuilder.append(" OR ");
-        }
-        if(negate) searchQueryBuilder.append("NOT ");
-        searchQueryBuilder.append("(");
-        first = true;
         for (SearchQuery searchQuery : resultQueries) {
             searchQueryBuilder.append(((MySqlSearchQueryHelper)searchQuery).searchQueryBuilder);
             this.values.addAll(((MySqlSearchQueryHelper)searchQuery).values);
@@ -289,6 +276,13 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     private T aggregation(String aggregation, Object first, String operator, Object second) {
         searchQueryBuilder.append(aggregation).append("(");
+        buildAggregationPart(first);
+        if(operator != null) searchQueryBuilder.append(" ").append(operator).append(" ");
+        buildAggregationPart(second);
+        return (T) this;
+    }
+
+    private void buildAggregationPart(Object first) {
         if(first instanceof MySqlAggregationBuilder) {
             searchQueryBuilder.append(((MySqlAggregationBuilder)first).getAggregationBuilder());
             this.values.addAll(((MySqlAggregationBuilder)first).getValues());
@@ -298,16 +292,34 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
             searchQueryBuilder.append("?");
             this.values.add(first);
         }
-        if(operator != null) searchQueryBuilder.append(" ").append(operator).append(" ");
-        if(second instanceof MySqlAggregationBuilder) {
-            searchQueryBuilder.append(((MySqlAggregationBuilder)second).getAggregationBuilder());
-            this.values.addAll(((MySqlAggregationBuilder)second).getValues());
-        } else if(second instanceof String) {
-            searchQueryBuilder.append("`").append(second).append("`");
-        } else {
-            searchQueryBuilder.append("?");
-            this.values.add(second);
+    }
+
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
+        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
+            int index = 1;
+            int valueGet = 0;
+            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            for (Object value : this.values) {
+                if(value == null) {
+                    value = values[valueGet];
+                    valueGet++;
+                }
+                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                if(adapter != null) value = adapter.write(value);
+                preparedStatement.setObject(index, value);
+                index++;
+            }
+            preparedStatement.executeUpdate();
+            if(commit) connection.commit();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
         }
-        return (T) this;
+        return null;
+    }
+
+    @Override
+    public QueryResult execute(Object... values) {
+        return execute(true, values);
     }
 }

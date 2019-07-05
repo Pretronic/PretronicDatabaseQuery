@@ -21,7 +21,6 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.core.query.FindQuery;
@@ -39,7 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements FindQuery, QueryStringBuildAble {
+public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements FindQuery {
 
     private final StringBuilder getQueryBuilder;
     private final List<String> fields;
@@ -136,7 +135,6 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
         if(this.groupByQueryBuilder.length() != 0) queryString.append(this.groupByQueryBuilder);
         if(this.orderByQueryBuilder.length() != 0) queryString.append(this.orderByQueryBuilder);
         if(this.limit != null) queryString.append(this.limit);
-        System.out.println(queryString.toString());
         return queryString.append(";").toString();
     }
 }

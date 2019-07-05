@@ -19,18 +19,10 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.UpdateQuery;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implements UpdateQuery, QueryStringBuildAble, CommitOnExecute {
+public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implements UpdateQuery {
 
     private final StringBuilder setQueryBuilder;
     private final String mainQuery;
@@ -55,35 +47,6 @@ public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implem
         this.setQueryBuilder.append("`").append(field).append("`").append("=?");
         this.values.add(value);
         return this;
-    }
-
-    @Override
-    public QueryResult execute(boolean commit, Object... values) {
-        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            int index = 1;
-            int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            for (Object value : this.values) {
-                if(value == null) {
-                    value = values[valueGet];
-                    valueGet++;
-                }
-                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                if(adapter != null) value = adapter.write(value);
-                preparedStatement.setObject(index, value);
-                index++;
-            }
-            preparedStatement.executeUpdate();
-            if(commit) connection.commit();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public QueryResult execute(Object... values) {
-        return execute(true, values);
     }
 
     @Override

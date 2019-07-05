@@ -19,18 +19,10 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.DeleteQuery;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implements DeleteQuery, QueryStringBuildAble, CommitOnExecute {
+public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implements DeleteQuery {
 
     private final String mainQuery;
 
@@ -41,35 +33,6 @@ public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implem
                 + "`.`"
                 + databaseCollection.getName()
                 + "` ";
-    }
-
-    @Override
-    public QueryResult execute(boolean commit, Object... values) {
-        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            int index = 1;
-            int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
-            for (Object value : this.values) {
-                if(value == null) {
-                    value = values[valueGet];
-                    valueGet++;
-                }
-                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                if(adapter != null) value = adapter.write(value);
-                preparedStatement.setObject(index, value);
-                index++;
-            }
-            preparedStatement.executeUpdate();
-            if(commit) connection.commit();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public QueryResult execute(Object... values) {
-        return execute(true, values);
     }
 
     @Override

@@ -98,6 +98,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
                     }
                     default: {
                         createQueryBuilder.append(" ").append(createOption.toString());
+                        break;
                     }
                 }
             }

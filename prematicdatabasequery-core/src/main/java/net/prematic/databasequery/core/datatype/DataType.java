@@ -43,6 +43,16 @@ public enum DataType {
     BLOB,
     UUID;
 
+    public static final Map<Class<?>, DataType> DATA_TYPES = new HashMap<>();
+
+    static {
+        for (DataType value : DataType.values()) {
+            for (Class javaClass : value.getJavaClasses()) {
+                DATA_TYPES.put(javaClass, value);
+            }
+        }
+    }
+
     private final Class<?>[] javaClasses;
 
     DataType(Class... javaClasses) {
@@ -55,15 +65,5 @@ public enum DataType {
      */
     public Class[] getJavaClasses() {
         return javaClasses;
-    }
-
-    public static final Map<Class<?>, DataType> DATA_TYPES = new HashMap<>();
-
-    static {
-        for (DataType value : DataType.values()) {
-            for (Class javaClass : value.getJavaClasses()) {
-                DATA_TYPES.put(javaClass, value);
-            }
-        }
     }
 }

@@ -82,19 +82,19 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
                 switch (createOption) {
                     case INDEX: {
                         index = true;
-                        continue;
+                        break;
                     }
                     case UNIQUE_INDEX: {
                         uniqueIndex = true;
-                        continue;
+                        break;
                     }
                     case PRIMARY_KEY: {
                         createQueryBuilder.append(" PRIMARY KEY");
-                        continue;
+                        break;
                     }
                     case NOT_NULL: {
                         createQueryBuilder.append(" NOT NULL");
-                        continue;
+                        break;
                     }
                     default: {
                         createQueryBuilder.append(" ").append(createOption.toString());

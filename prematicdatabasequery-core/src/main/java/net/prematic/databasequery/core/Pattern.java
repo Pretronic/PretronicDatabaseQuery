@@ -23,10 +23,6 @@ public class Pattern {
 
     private String pattern, startsWith, endsWith, contains;
 
-    public Pattern() {
-
-    }
-
     public Pattern withPattern(String pattern) {
         this.pattern = pattern;
         return this;

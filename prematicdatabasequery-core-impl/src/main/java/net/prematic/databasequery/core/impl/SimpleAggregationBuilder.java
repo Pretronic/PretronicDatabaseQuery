@@ -22,75 +22,43 @@ package net.prematic.databasequery.core.impl;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.aggregation.Aggregation;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.libraries.utility.map.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleAggregationBuilder implements AggregationBuilder {
 
     private final Database database;
-    //private final List<Entry> entries;
+    private final List<Entry> entries;
 
     public SimpleAggregationBuilder(Database database) {
         this.database = database;
-        //this.entries = new ArrayList<>();
+        this.entries = new ArrayList<>();
     }
 
-    @Override
-    public AggregationBuilder field(String field) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder operator(String operator) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder aggregation(Aggregation aggregation, String field) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder builder(AggregationBuilder builder) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder builder(Consumer consumer) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder value(Object value) {
-        return null;
-    }
-
-    @Override
-    public AggregationBuilder alias(String alias) {
-        return null;
-    }
-
-    /*@Override
     public List<Entry> getEntries() {
         return this.entries;
     }
 
     @Override
     public AggregationBuilder field(String field) {
-        return addEntry(new SimpleEntry(Entry.Type.FIELD, field));
+        return addEntry(new Entry(Entry.Type.FIELD, field));
     }
 
     @Override
     public AggregationBuilder operator(String operator) {
-        return addEntry(new SimpleEntry(Entry.Type.OPERATOR, operator));
+        return addEntry(new Entry(Entry.Type.OPERATOR, operator));
     }
 
     @Override
     public AggregationBuilder aggregation(Aggregation aggregation, String field) {
-        return addEntry(new SimpleEntry(Entry.Type.AGGREGATION, new Pair<>(aggregation, field)));
+        return addEntry(new Entry(Entry.Type.AGGREGATION, new Pair<>(aggregation, field)));
     }
 
     @Override
     public AggregationBuilder builder(AggregationBuilder builder) {
-        return addEntry(new SimpleEntry(Entry.Type.BUILDER, builder));
+        return addEntry(new Entry(Entry.Type.BUILDER, builder));
     }
 
     @Override
@@ -102,12 +70,12 @@ public class SimpleAggregationBuilder implements AggregationBuilder {
 
     @Override
     public AggregationBuilder value(Object value) {
-        return addEntry(new SimpleEntry(Entry.Type.VALUE, value));
+        return addEntry(new Entry(Entry.Type.VALUE, value));
     }
 
     @Override
     public AggregationBuilder alias(String alias) {
-        return addEntry(new SimpleEntry(Entry.Type.ALIAS, alias));
+        return addEntry(new Entry(Entry.Type.ALIAS, alias));
     }
 
     private AggregationBuilder addEntry(Entry entry) {
@@ -115,24 +83,33 @@ public class SimpleAggregationBuilder implements AggregationBuilder {
         return this;
     }
 
-    private class SimpleEntry implements Entry {
+    public static class Entry {
 
         private final Type type;
         private final Object value;
 
-        public SimpleEntry(Type type, Object value) {
+        public Entry(Type type, Object value) {
             this.type = type;
             this.value = value;
         }
 
-        @Override
         public Type getType() {
             return this.type;
         }
 
-        @Override
         public Object getValue() {
             return this.value;
         }
-    }*/
+
+        public enum Type {
+
+            FIELD,
+            OPERATOR,
+            AGGREGATION,
+            BUILDER,
+            VALUE,
+            ALIAS
+
+        }
+    }
 }

@@ -22,6 +22,7 @@ package net.prematic.databasequery.core;
 
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.core.datatype.adapter.defaults.UUIDDataTypeAdapter;
+import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.annonations.NotNull;
 import net.prematic.libraries.utility.annonations.Nullable;
 import net.prematic.libraries.utility.reflect.TypeReference;
@@ -89,4 +90,6 @@ public interface DatabaseDriver {
     default void registerDefaultAdapters() {
         registerDataTypeAdapter(new UUIDDataTypeAdapter());
     }
+
+    PrematicLogger getLogger();
 }

@@ -23,12 +23,13 @@ import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.option.CreateOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
+import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 
 import java.sql.Connection;
@@ -135,7 +136,8 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         try(Connection connection = this.database.getDriver().getConnection()) {
             int index = 1;
             int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            String query = buildExecuteString(values);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (Object value : this.values) {
                 if(value == null) {
                     value = values[valueGet];
@@ -148,8 +150,9 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
             }
             preparedStatement.executeUpdate();
             if(commit) connection.commit();
+            if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         return null;
     }

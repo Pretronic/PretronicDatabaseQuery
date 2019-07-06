@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 03.07.19, 20:00
+ * @since 06.07.19, 17:22
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
  * under the License.
  */
 
-package net.prematic.databasequery.sql.mysql;
+package net.prematic.databasequery.core.exceptions.transaction;
 
-import net.prematic.databasequery.core.query.result.QueryResult;
+public class DatabaseQueryRollbackTransactionException extends DatabaseQueryTransactionException {
 
-public interface CommitOnExecute {
-
-    QueryResult execute(boolean commit, Object... values);
-
+    public DatabaseQueryRollbackTransactionException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

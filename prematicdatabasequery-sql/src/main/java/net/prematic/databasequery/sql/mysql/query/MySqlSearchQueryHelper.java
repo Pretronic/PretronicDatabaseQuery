@@ -21,11 +21,12 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
+import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
@@ -299,7 +300,8 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
             int index = 1;
             int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            String query = buildExecuteString(values);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (Object value : this.values) {
                 if(value == null) {
                     value = values[valueGet];
@@ -312,8 +314,9 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
             }
             preparedStatement.executeUpdate();
             if(commit) connection.commit();
+            if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         return null;
     }

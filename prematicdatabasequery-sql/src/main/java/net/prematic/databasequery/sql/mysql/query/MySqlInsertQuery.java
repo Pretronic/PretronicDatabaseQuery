@@ -20,10 +20,11 @@
 package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
+import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 import java.sql.Connection;
@@ -47,9 +48,10 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
     @Override
     public QueryResult execute(boolean commit, Object... values) {
         try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString(values));
             int index = 1;
             int valueGet = 0;
+            String query = buildExecuteString(values);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (int i = 0; i < this.valuesPerField; i++) {
                 for (Entry entry : getEntries()) {
                     Object value;
@@ -67,8 +69,9 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
             }
             preparedStatement.executeUpdate();
             if(commit) connection.commit();
+            if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         return null;
     }

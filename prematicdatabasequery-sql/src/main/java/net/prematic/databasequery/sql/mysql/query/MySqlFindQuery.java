@@ -21,6 +21,7 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.core.query.FindQuery;
@@ -88,7 +89,8 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
         try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
             int index = 1;
             int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
+            String query = buildExecuteString(values);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (Object value : this.values) {
                 if(value == null) {
                     value = values[valueGet];
@@ -98,6 +100,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
                 index++;
             }
             ResultSet resultSet = preparedStatement.executeQuery();
+            if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
             while (resultSet.next()) {
 
                 Map<String, Object> results = new LinkedHashMap<>();
@@ -117,7 +120,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
                 resultEntries.add(new SimpleQueryResultEntry(results));
             }
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         return new SimpleQueryResult(resultEntries);
     }

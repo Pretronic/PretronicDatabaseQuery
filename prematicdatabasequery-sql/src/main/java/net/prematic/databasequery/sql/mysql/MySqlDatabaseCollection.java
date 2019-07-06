@@ -21,8 +21,10 @@ package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.query.*;
 import net.prematic.databasequery.sql.mysql.query.*;
+import net.prematic.libraries.logging.PrematicLogger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -86,33 +88,38 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
     @Override
     public void drop() {
         try(Connection connection = getDatabase().getDriver().getConnection()) {
-            connection.prepareStatement("DROP TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`");
+            String query = "DROP TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`";
+            connection.prepareStatement(query);
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void truncate() {
         try(Connection connection = getDatabase().getDriver().getConnection()) {
-            connection.prepareStatement("TRUNCATE TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`");
+            String query = "TRUNCATE TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`";
+            connection.prepareStatement(query);
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public QueryTransaction transact() {
-        try {
-            return new MySqlQueryTransaction(getDatabase().getDriver().getConnection());
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
+        MySqlQueryTransaction transaction = new MySqlQueryTransaction(this.getDatabase());
+        if(getLogger().isDebugging()) getLogger().debug("Created sql transaction: {}", transaction);
+        return transaction;
     }
 
     @Override
     public AggregationBuilder newAggregationBuilder(boolean aliasAble) {
         return getDatabase().newAggregationBuilder(aliasAble);
+    }
+
+    public PrematicLogger getLogger() {
+        return getDatabase().getLogger();
     }
 }

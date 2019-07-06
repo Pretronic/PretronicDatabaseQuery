@@ -19,26 +19,38 @@
 
 package net.prematic.databasequery.sql.mysql;
 
+import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryCommitTransactionException;
+import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryCreateTransactionException;
+import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryRollbackTransactionException;
+import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
+import net.prematic.databasequery.sql.CommitOnExecute;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class MySqlQueryTransaction implements QueryTransaction {
 
+    private final MySqlDatabase database;
     private final Connection connection;
 
-    public MySqlQueryTransaction(Connection connection) {
-        this.connection = connection;
+    public MySqlQueryTransaction(MySqlDatabase database) {
+        this.database = database;
+        try {
+            this.connection = database.getDriver().getConnection();
+        } catch (SQLException exception) {
+            throw new DatabaseQueryCreateTransactionException(exception.getMessage(), exception);
+        }
     }
 
     @Override
     public void commit() {
         try {
             this.connection.commit();
-        } catch (SQLException e) {
-            e.printStackTrace();
+            if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Committed in transaction {}", this);
+        } catch (SQLException exception) {
+            throw new DatabaseQueryCommitTransactionException(exception.getMessage(), exception);
         }
     }
 
@@ -46,14 +58,17 @@ public class MySqlQueryTransaction implements QueryTransaction {
     public void rollback() {
         try {
             this.connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
+            if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Roll backed in transaction {}", this);
+        } catch (SQLException exception) {
+            throw new DatabaseQueryRollbackTransactionException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void execute(Query query, Object... values) {
+        String queryString = ((QueryStringBuildAble)query).buildExecuteString(values);
         if(query instanceof CommitOnExecute) ((CommitOnExecute)query).execute(false, values);
         else query.execute(values);
+        if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Executed sql query ({}) in transaction {}", queryString, this);
     }
 }

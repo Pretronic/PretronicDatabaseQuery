@@ -23,7 +23,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.prematic.databasequery.core.DatabaseDriver;
 import net.prematic.databasequery.core.datatype.DataType;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryConnectException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
+import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.logging.bridge.slf4j.SLF4JBridge;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,16 +35,21 @@ import java.util.Set;
 
 public abstract class SqlDatabaseDriver implements DatabaseDriver {
 
+    private static boolean IS_HIKARI_LOGGER_OVERRIDDEN = false;
+
     private HikariDataSource dataSource;
     private final String name;
     private final HikariConfig config;
     private final Set<DataTypeInformation> dataTypeInformation;
+    private final PrematicLogger logger;
 
-    public SqlDatabaseDriver(String name, HikariConfig config) {
+    public SqlDatabaseDriver(String name, HikariConfig config, PrematicLogger logger) {
         this.name = name == null ? getType() : name;
         this.config = config;
+        this.logger = logger;
         this.dataTypeInformation = new HashSet<>();
         registerDataTypeInformation();
+        overrideHikariLoggers();
     }
 
     public HikariDataSource getDataSource() {
@@ -77,21 +85,34 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
     public void connect() {
         this.config.setAutoCommit(false);
         this.dataSource = new HikariDataSource(this.config);
+        try {
+            this.dataSource.getConnection();
+            getLogger().info("Connected to sql database at {}", this.dataSource.getJdbcUrl());
+        } catch (SQLException exception) {
+            getLogger().info("Failed to connect to sql database at {}", this.dataSource.getJdbcUrl());
+            throw new DatabaseQueryConnectException(exception.getMessage(), exception);
+        }
     }
 
     @Override
     public void disconnect() {
         this.dataSource.close();
+        getLogger().info("Disconnected from sql database at {}", this.dataSource.getJdbcUrl());
     }
 
-    public void registerDataTypeInformation() {
+    @Override
+    public PrematicLogger getLogger() {
+        return this.logger;
+    }
+
+    private void registerDataTypeInformation() {
         //@Todo specify default sizes
         this.dataTypeInformation.add(new DataTypeInformation(DataType.DOUBLE, "DOUBLE"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.DECIMAL, "DECIMAL"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.FLOAT, "FLOAT"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.INTEGER, "INTEGER"));
-        this.dataTypeInformation.add(new DataTypeInformation(DataType.LONG, "BIGINT"));
-        this.dataTypeInformation.add(new DataTypeInformation(DataType.CHAR, "CHAR"));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.LONG, "BIGINT", 8));
+        this.dataTypeInformation.add(new DataTypeInformation(DataType.CHAR, "CHAR", 1));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.STRING, "VARCHAR", 255));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.LONG_TEXT, "LONGTEXT"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.DATE, "DATE"));
@@ -100,5 +121,17 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         this.dataTypeInformation.add(new DataTypeInformation(DataType.BINARY, "BINARY"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.BLOB, "BLOB", false));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.UUID, "BINARY", true,16));
+    }
+
+    private void overrideHikariLoggers() {
+        if(!IS_HIKARI_LOGGER_OVERRIDDEN) {
+            IS_HIKARI_LOGGER_OVERRIDDEN = true;
+            SLF4JBridge slf4JBridge = new SLF4JBridge(this.logger);
+            //@Todo override slf4j logger
+            /*Set<Class<?>> toOverrideLoggerClasses = new HashSet<>(Arrays.asList(HikariConfig.class,
+                    HikariDataSource.class, HikariConnectionProvider.class, HikariPool.class, PoolBase.class,
+                    PoolEntry.class, ProxyConnection.class, ProxyLeakTask.class, ConcurrentBag.class,
+                    DriverDataSource.class, FastList.class, ));*/
+        }
     }
 }

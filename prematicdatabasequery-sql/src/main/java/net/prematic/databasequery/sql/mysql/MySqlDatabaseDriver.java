@@ -22,7 +22,9 @@ package net.prematic.databasequery.sql.mysql;
 import com.zaxxer.hikari.HikariConfig;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
+import net.prematic.libraries.logging.PrematicLogger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,8 +36,8 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
     private static final String TYPE = "MySql";
     private final Collection<DataTypeAdapter> dataTypeAdapters;
 
-    public MySqlDatabaseDriver(String name, HikariConfig config) {
-        super(name, config);
+    public MySqlDatabaseDriver(String name, HikariConfig config, PrematicLogger logger) {
+        super(name, config, logger);
         this.dataTypeAdapters = new HashSet<>();
     }
 
@@ -52,9 +54,11 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
     @Override
     public void dropDatabase(String name) {
         try(Connection connection = getConnection()) {
-            connection.prepareStatement("DROP DATABASE IF EXISTS `" + name + "`");
+            String query = "DROP DATABASE IF EXISTS `" + name + "`";
+            connection.prepareStatement(query);
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: ", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
     }
 

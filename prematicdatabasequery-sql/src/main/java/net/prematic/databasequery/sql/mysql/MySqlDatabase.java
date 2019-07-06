@@ -22,11 +22,13 @@ package net.prematic.databasequery.sql.mysql;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.sql.mysql.query.MySqlCreateQuery;
+import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.exceptions.NotImplementedException;
 
 import java.sql.Connection;
@@ -75,18 +77,22 @@ public class MySqlDatabase implements Database {
     @Override
     public void dropCollection(String name) {
         try(Connection connection = getDriver().getConnection()) {
-            connection.prepareStatement("DROP TABLE IF EXISTS `" + this.name + "`.`" + name + "`");
+            String query = "DROP TABLE IF EXISTS `" + this.name + "`.`" + name + "`";
+            connection.prepareStatement(query);
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: ", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void drop() {
         try(Connection connection = getDriver().getConnection()) {
-            connection.prepareStatement("DROP DATABASE IF EXISTS `" + getName() + "`");
+            String query = "DROP DATABASE IF EXISTS `" + getName() + "`";
+            connection.prepareStatement(query);
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
     }
 
@@ -97,16 +103,17 @@ public class MySqlDatabase implements Database {
 
     @Override
     public QueryTransaction transact() {
-        try {
-            return new MySqlQueryTransaction(getDriver().getConnection());
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
+        MySqlQueryTransaction transaction = new MySqlQueryTransaction(this);
+        if(getLogger().isDebugging()) getLogger().debug("Created sql transaction: {}", transaction);
+        return transaction;
     }
 
     @Override
     public AggregationBuilder newAggregationBuilder(boolean aliasAble) {
         return new MySqlAggregationBuilder(this, aliasAble);
+    }
+
+    public PrematicLogger getLogger() {
+        return getDriver().getLogger();
     }
 }

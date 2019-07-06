@@ -21,12 +21,13 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.ReplaceQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.mysql.CommitOnExecute;
+import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 import java.sql.Connection;
@@ -162,9 +163,10 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Co
     @Override
     public QueryResult execute(boolean commit, Object... values) {
         try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(buildExecuteString());
             int index = 1;
             int valueGet = 0;
+            String query = buildExecuteString(values);
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (Object value : this.deleteQuery.values) {
                 if(value == null) {
                     value = values[valueGet];
@@ -192,8 +194,9 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Co
             }
             preparedStatement.executeUpdate();
             if(commit) connection.commit();
+            this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         return null;
     }
@@ -205,7 +208,7 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Co
 
     @Override
     public String buildExecuteString(Object... values) {
-        return this.deleteQuery.buildExecuteString() +
-                this.insertQuery.buildExecuteString();
+        return this.deleteQuery.buildExecuteString(values) +
+                this.insertQuery.buildExecuteString(values);
     }
 }

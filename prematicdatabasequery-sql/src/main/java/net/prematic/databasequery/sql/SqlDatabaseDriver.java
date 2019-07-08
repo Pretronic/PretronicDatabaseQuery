@@ -26,7 +26,6 @@ import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.exceptions.DatabaseQueryConnectException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.libraries.logging.PrematicLogger;
-import net.prematic.libraries.logging.bridge.slf4j.SLF4JBridge;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,8 +33,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class SqlDatabaseDriver implements DatabaseDriver {
-
-    private static boolean IS_HIKARI_LOGGER_OVERRIDDEN = false;
 
     private HikariDataSource dataSource;
     private final String name;
@@ -49,7 +46,6 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         this.logger = logger;
         this.dataTypeInformation = new HashSet<>();
         registerDataTypeInformation();
-        overrideHikariLoggers();
     }
 
     public HikariDataSource getDataSource() {
@@ -121,17 +117,5 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         this.dataTypeInformation.add(new DataTypeInformation(DataType.BINARY, "BINARY"));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.BLOB, "BLOB", false));
         this.dataTypeInformation.add(new DataTypeInformation(DataType.UUID, "BINARY", true,16));
-    }
-
-    private void overrideHikariLoggers() {
-        if(!IS_HIKARI_LOGGER_OVERRIDDEN) {
-            IS_HIKARI_LOGGER_OVERRIDDEN = true;
-            SLF4JBridge slf4JBridge = new SLF4JBridge(this.logger);
-            //@Todo override slf4j logger
-            /*Set<Class<?>> toOverrideLoggerClasses = new HashSet<>(Arrays.asList(HikariConfig.class,
-                    HikariDataSource.class, HikariConnectionProvider.class, HikariPool.class, PoolBase.class,
-                    PoolEntry.class, ProxyConnection.class, ProxyLeakTask.class, ConcurrentBag.class,
-                    DriverDataSource.class, FastList.class, ));*/
-        }
     }
 }

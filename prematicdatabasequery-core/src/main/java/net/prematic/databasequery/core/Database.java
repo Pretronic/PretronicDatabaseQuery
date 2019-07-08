@@ -41,6 +41,10 @@ public interface Database {
         return createCollection(object.getClass());
     }
 
+    default void createCollectionsByFile(CollectionCreator collectionCreator) {
+        collectionCreator.createDatabaseCollections(this);
+    }
+
     DatabaseCollection updateCollectionStructure(String collection, Class<?> clazz);
 
     default DatabaseCollection updateCollectionStructure(DatabaseCollection collection, Class<?> clazz) {

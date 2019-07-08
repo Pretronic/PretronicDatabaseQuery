@@ -47,6 +47,13 @@
             <groupId>net.prematic.libraries</groupId>
             <artifactId>prematiclibraries-logging</artifactId>
             <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.prematic.libraries</groupId>
+            <artifactId>prematiclibraries-document</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

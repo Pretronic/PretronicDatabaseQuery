@@ -48,4 +48,6 @@ public interface CreateQuery extends Query {
     CreateQuery collectionType(DatabaseCollection.Type collectionType);
 
     CreateQuery foreignKey(String field, ForeignKey foreignKey);
+
+    CreateQuery collectionName(String name);
 }

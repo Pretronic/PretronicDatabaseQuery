@@ -26,6 +26,8 @@ import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.option.CreateOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
@@ -35,12 +37,11 @@ import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, CommitOnExecute {
 
-    private final String name;
+    private String name;
     private final MySqlDatabase database;
     private final StringBuilder createQueryBuilder;
     private final String mainQuery;
@@ -54,9 +55,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         this.createQueryBuilder = new StringBuilder();
         this.mainQuery = "CREATE TABLE IF NOT EXISTS `"
                 + database.getName()
-                + "`.`"
-                + name
-                + "`(";
+                + "`.`%s`(";
         this.values = new ArrayList<>();
         this.first = true;
     }
@@ -78,7 +77,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
             this.values.add(defaultValue);
             createQueryBuilder.append(" DEFAULT ?");
         }
-        if(createOptions.length != 0) {
+        if(createOptions!= null && createOptions.length != 0) {
             for (CreateOption createOption : createOptions) {
                 switch (createOption) {
                     case INDEX: {
@@ -105,9 +104,9 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
             }
         }
         if(uniqueIndex) {
-            createQueryBuilder.append(",UNIQUE INDEX `").append(this.name).append(field).append("`(`").append(field).append("`)");
+            createQueryBuilder.append(",UNIQUE INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
         }else if(index) {
-            createQueryBuilder.append(",INDEX `").append(this.name).append(field).append("`(`").append(field).append("`)");
+            createQueryBuilder.append(",INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
         }
         if(foreignKey != null) buildForeignKey(field, foreignKey);
         return this;
@@ -129,7 +128,11 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         return buildForeignKey(field, foreignKey);
     }
 
-
+    @Override
+    public CreateQuery collectionName(String name) {
+        this.name = name;
+        return this;
+    }
 
     @Override
     public QueryResult execute(boolean commit, Object... values) {
@@ -154,7 +157,10 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         } catch (SQLException exception) {
             throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
-        return null;
+        Map<String, Object> results = new HashMap<>();
+        results.put("databaseCollection", this.database.getCollection(this.name));
+        SimpleQueryResultEntry queryResultEntry = new SimpleQueryResultEntry(results);
+        return new SimpleQueryResult(Collections.singletonList(queryResultEntry));
     }
 
     @Override
@@ -184,7 +190,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
 
     @Override
     public String buildExecuteString(Object... values) {
-        return mainQuery +
+        return String.format(mainQuery, this.name) +
                 createQueryBuilder +
                 ")" +
                 (engine != null ? " ENGINE=" + this.engine : "") +

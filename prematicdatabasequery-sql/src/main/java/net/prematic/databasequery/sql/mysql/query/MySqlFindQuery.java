@@ -84,13 +84,14 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
     }
 
     @Override
-    public QueryResult execute(Object... values) {
+    public QueryResult execute(boolean commit, Object... values) {
         List<QueryResultEntry> resultEntries = new ArrayList<>();
         try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
             int index = 1;
             int valueGet = 0;
             String query = buildExecuteString(values);
             PreparedStatement preparedStatement = connection.prepareStatement(query);
+
             for (Object value : this.values) {
                 if(value == null) {
                     value = values[valueGet];
@@ -100,6 +101,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
                 index++;
             }
             ResultSet resultSet = preparedStatement.executeQuery();
+            if(commit) connection.commit();
             if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
             while (resultSet.next()) {
 

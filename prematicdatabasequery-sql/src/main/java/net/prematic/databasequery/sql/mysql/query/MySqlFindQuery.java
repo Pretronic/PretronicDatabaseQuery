@@ -41,21 +41,22 @@ import java.util.Map;
 
 public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements FindQuery {
 
-    private final StringBuilder getQueryBuilder;
     private final List<String> fields;
+    private final boolean first;
+    private final StringBuilder getQueryBuilder;
 
     public MySqlFindQuery(MySqlDatabaseCollection databaseCollection) {
         super(databaseCollection);
-        this.getQueryBuilder = new StringBuilder();
         this.fields = new ArrayList<>();
+        this.first = true;
+        this.getQueryBuilder = new StringBuilder();
     }
 
     @Override
     public FindQuery get(String... fields) {
         for (String field : fields) {
-            if(!first) getQueryBuilder.append(",");
-            else first = false;
-            getQueryBuilder.append("`").append(field).append("`");
+            if(!this.first) this.getQueryBuilder.append(",");
+            this.getQueryBuilder.append("`").append(field).append("`");
             this.fields.add(field);
         }
         return this;
@@ -64,9 +65,8 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
     @Override
     public FindQuery get(AggregationBuilder... aggregationBuilders) {
         for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
-            if(!first) getQueryBuilder.append(",");
-            else first = false;
-            getQueryBuilder.append(((MySqlAggregationBuilder) aggregationBuilder).getAggregationBuilder());
+            if(!this.first) this.getQueryBuilder.append(",");
+            this.getQueryBuilder.append(((MySqlAggregationBuilder) aggregationBuilder).getAggregationBuilder());
             this.fields.add(((MySqlAggregationBuilder) aggregationBuilder).getAlias());
         }
         return this;
@@ -90,6 +90,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
             int index = 1;
             int valueGet = 0;
             String query = buildExecuteString(values);
+            System.out.println(query);
             PreparedStatement preparedStatement = connection.prepareStatement(query);
 
             for (Object value : this.values) {
@@ -133,13 +134,9 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
         queryString.append("SELECT ");
         if(this.fields.isEmpty()) queryString.append("*");
         else queryString.append(this.getQueryBuilder);
-        queryString.append(" FROM `").append(this.databaseCollection.getDatabase().getName())
-                .append("`.`").append(this.databaseCollection.getName()).append("`");
-        if(this.searchQueryBuilder.length() != 0) queryString.append(this.searchQueryBuilder);
-        if(this.whereAggregationQueryBuilder.length() != 0) queryString.append(this.whereAggregationQueryBuilder);
-        if(this.groupByQueryBuilder.length() != 0) queryString.append(this.groupByQueryBuilder);
-        if(this.orderByQueryBuilder.length() != 0) queryString.append(this.orderByQueryBuilder);
-        if(this.limit != null) queryString.append(this.limit);
-        return queryString.append(";").toString();
+        return queryString.append(" FROM `")
+                .append(this.databaseCollection.getDatabase().getName())
+                .append("`.`").append(this.databaseCollection.getName())
+                .append("` ").append(this.queryBuilder).append(";").toString();
     }
 }

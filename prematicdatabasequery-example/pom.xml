@@ -3,7 +3,7 @@
   ~ (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
   ~
   ~ @author Philipp Elvin Friedhoff
-  ~ @since 12.05.19, 18:26
+  ~ @since 08.07.19, 17:24
   ~
   ~ The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -28,27 +28,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>prematicdatabasequery-sql</artifactId>
-
+    <artifactId>prematicdatabasequery-example</artifactId>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -56,18 +41,29 @@
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>net.prematic.databasequery</groupId>
-            <artifactId>prematicdatabasequery-core-impl</artifactId>
+            <artifactId>prematicdatabasequery-sql</artifactId>
             <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>3.3.1</version>
+            <groupId>net.prematic.databasequery</groupId>
+            <artifactId>prematicdatabasequery-entity</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.prematic.libraries</groupId>
+            <artifactId>prematiclibraries-document</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>2.4.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

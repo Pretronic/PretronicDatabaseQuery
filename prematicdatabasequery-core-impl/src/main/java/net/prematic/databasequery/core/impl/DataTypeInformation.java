@@ -23,37 +23,14 @@ import net.prematic.databasequery.core.datatype.DataType;
 
 public class DataTypeInformation {
 
-    private final DataType dataType;
-    private final String name;
-    private final boolean sizeAble;
-    private final int defaultSize;
+    private DataType dataType;
+    private String[] names;
+    private boolean sizeAble;
+    private int defaultSize;
 
-    public DataTypeInformation(DataType dataType, String name, boolean sizeAble, int defaultSize) {
-        this.dataType = dataType;
-        this.name = name;
-        this.sizeAble = sizeAble;
-        this.defaultSize = defaultSize;
-    }
-
-    public DataTypeInformation(DataType dataType, String name) {
-        this.dataType = dataType;
-        this.name = name;
+    private DataTypeInformation() {
         this.sizeAble = true;
         this.defaultSize = -1;
-    }
-
-    public DataTypeInformation(DataType dataType, String name, boolean sizeAble) {
-        this.dataType = dataType;
-        this.name = name;
-        this.sizeAble = sizeAble;
-        this.defaultSize = -1;
-    }
-
-    public DataTypeInformation(DataType dataType, String name, int defaultSize) {
-        this.dataType = dataType;
-        this.name = name;
-        this.defaultSize = defaultSize;
-        this.sizeAble = true;
     }
 
     public DataType getDataType() {
@@ -61,14 +38,42 @@ public class DataTypeInformation {
     }
 
     public String getName() {
-        return name;
+        return this.names[0];
+    }
+
+    public String[] getNames() {
+        return names;
     }
 
     public boolean isSizeAble() {
-        return sizeAble;
+        return defaultSize != -1 || sizeAble;
     }
 
     public int getDefaultSize() {
         return defaultSize;
+    }
+
+    public DataTypeInformation dataType(DataType dataType) {
+        this.dataType = dataType;
+        return this;
+    }
+
+    public DataTypeInformation names(String... names) {
+        this.names = names;
+        return this;
+    }
+
+    public DataTypeInformation sizeAble(boolean sizeAble) {
+        this.sizeAble = sizeAble;
+        return this;
+    }
+
+    public DataTypeInformation defaultSize(int defaultSize) {
+        this.defaultSize = defaultSize;
+        return this;
+    }
+
+    public static DataTypeInformation from() {
+        return new DataTypeInformation();
     }
 }

@@ -24,41 +24,31 @@ import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implements UpdateQuery {
 
-    private final StringBuilder setQueryBuilder;
-    private final String mainQuery;
+    private boolean first;
 
     public MySqlUpdateQuery(MySqlDatabaseCollection databaseCollection) {
         super(databaseCollection);
-        this.setQueryBuilder = new StringBuilder();
-        this.mainQuery = "UPDATE `"
-                + databaseCollection.getDatabase().getName()
-                + "`.`"
-                + databaseCollection.getName()
-                + "` ";
+        this.queryBuilder.append("UPDATE `")
+                .append(databaseCollection.getDatabase().getName())
+                .append("`.`").append(databaseCollection.getName())
+                .append("` ");
+        this.first = true;
     }
 
     @Override
     public UpdateQuery set(String field, Object value) {
-        if(this.setQueryBuilder.length() == 0) {
-            this.setQueryBuilder.append("SET ");
+        if(this.first) {
+            this.queryBuilder.append("SET ");
         } else {
-            this.setQueryBuilder.append(",");
+            this.queryBuilder.append(",");
         }
-        this.setQueryBuilder.append("`").append(field).append("`").append("=?");
+        this.queryBuilder.append("`").append(field).append("`").append("=?");
         this.values.add(value);
         return this;
     }
 
     @Override
     public String buildExecuteString(Object... values) {
-        StringBuilder queryString = new StringBuilder();
-        queryString.append(this.mainQuery)
-                .append(this.setQueryBuilder);
-        if(this.searchQueryBuilder.length() != 0) queryString.append(this.searchQueryBuilder);
-        if(this.whereAggregationQueryBuilder.length() != 0) queryString.append(this.whereAggregationQueryBuilder);
-        if(this.groupByQueryBuilder.length() != 0) queryString.append(this.groupByQueryBuilder);
-        if(this.orderByQueryBuilder.length() != 0) queryString.append(this.orderByQueryBuilder);
-        if(this.limit != null) queryString.append(this.limit);
-        return queryString.append(";").toString();
+        return this.queryBuilder + ";";
     }
 }

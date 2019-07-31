@@ -25,7 +25,8 @@ import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
 /**
- * No query order
+ * Query order:
+ * - method {@link #engine(String)} at the end
  */
 public interface CreateQuery extends Query {
 
@@ -50,4 +51,8 @@ public interface CreateQuery extends Query {
     CreateQuery foreignKey(String field, ForeignKey foreignKey);
 
     CreateQuery collectionName(String name);
+
+    default DatabaseCollection create(Object... values) {
+        return (DatabaseCollection) execute(values).first().getObject("databaseCollection");
+    }
 }

@@ -29,6 +29,8 @@ import java.util.List;
 
 public interface Database {
 
+    DatabaseDriver getDriver();
+
     String getName();
 
     DatabaseCollection getCollection(String name);

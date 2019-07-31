@@ -39,98 +39,100 @@ import java.util.List;
 public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T>, QueryStringBuildAble, CommitOnExecute {
 
     protected final MySqlDatabaseCollection databaseCollection;
-    protected final StringBuilder searchQueryBuilder, whereAggregationQueryBuilder, groupByQueryBuilder, orderByQueryBuilder;
-    protected String limit;
+    protected final StringBuilder queryBuilder;
     protected final List<Object> values;
-    protected boolean where, first, negate;
+    protected boolean where, operator, negate, whereAggregation, orderBy, groupBy;
 
     public MySqlSearchQueryHelper(MySqlDatabaseCollection databaseCollection) {
         this.databaseCollection = databaseCollection;
-        this.searchQueryBuilder = new StringBuilder();
-        this.whereAggregationQueryBuilder = new StringBuilder();
-        this.orderByQueryBuilder = new StringBuilder();
-        this.groupByQueryBuilder = new StringBuilder();
+        this.queryBuilder = new StringBuilder();
         this.values = new ArrayList<>();
         this.where = true;
-        this.first = false;
+        this.operator = true;
         this.negate = false;
+        this.whereAggregation = true;
+        this.orderBy = true;
+        this.groupBy = true;
     }
 
     @Override
     public T where(String field, Object value) {
         this.values.add(value);
-        if(!first) {
-            if(where) {
-                searchQueryBuilder.append(" WHERE ");
+        if(this.operator) {
+            if(this.where) {
+                this.queryBuilder.append(" WHERE ");
                 this.where = false;
+                System.out.println("where: " + this.where);
             }
-            else searchQueryBuilder.append(" AND ");
+            else this.queryBuilder.append(" AND ");
         }
-        if(negate) searchQueryBuilder.append("NOT ");
-        searchQueryBuilder.append("`").append(field).append("`=?");
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("`").append(field).append("`=?");
         return (T) this;
     }
 
     @Override
     public T whereLike(String field, String pattern) {
         this.values.add(pattern);
-        if(!first) {
+        if(this.operator) {
             if(where) {
-                searchQueryBuilder.append(" WHERE ");
+                this.queryBuilder.append(" WHERE ");
                 this.where = false;
             }
-            else searchQueryBuilder.append(" AND ");
+            else this.queryBuilder.append(" AND ");
         }
-        if(negate) searchQueryBuilder.append("NOT ");
-        searchQueryBuilder.append("`").append(field).append("` LIKE ?");
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("`").append(field).append("` LIKE ?");
         return (T) this;
     }
 
     @Override
     public T where(String field, String operator, Object value) {
         this.values.add(value);
-        if(!first) {
+        if(this.operator) {
             if(where) {
-                searchQueryBuilder.append(" WHERE ");
+                this.queryBuilder.append(" WHERE ");
                 this.where = false;
             }
-            else searchQueryBuilder.append(" AND ");
+            else this.queryBuilder.append(" AND ");
         }
-        if(negate) searchQueryBuilder.append("NOT ");
-        searchQueryBuilder.append("`").append(field).append("` ").append(operator).append(" ?");
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("`").append(field).append("` ").append(operator).append(" ?");
         return (T) this;
     }
 
     @Override
     public T where(Object first, String operator, Object second) {
-        if(whereAggregationQueryBuilder.length() == 0) whereAggregationQueryBuilder.append(" HAVING ");
-        else whereAggregationQueryBuilder.append(" AND ");
+        if(this.whereAggregation) {
+            this.queryBuilder.append(" HAVING ");
+            this.whereAggregation = false;
+        }
+        else this.queryBuilder.append(" AND ");
         buildWhereAggregation(first);
-        whereAggregationQueryBuilder.append(" ").append(operator).append(" ");
+        this.queryBuilder.append(" ").append(operator).append(" ");
         buildWhereAggregation(second);
         return (T) this;
     }
 
     private void buildWhereAggregation(Object value) {
         if(value instanceof AggregationBuilder) {
-            whereAggregationQueryBuilder.append(((MySqlAggregationBuilder)value).getAggregationBuilder());
+            this.queryBuilder.append(((MySqlAggregationBuilder)value).getAggregationBuilder());
             this.values.addAll(((MySqlAggregationBuilder)value).getValues());
         } else if(!(value instanceof String)) {
-            whereAggregationQueryBuilder.append("?");
+            this.queryBuilder.append("?");
             this.values.add(value);
-        } else whereAggregationQueryBuilder.append("`").append(value).append("`");
+        } else this.queryBuilder.append("`").append(value).append("`");
     }
 
     @Override
     public T not(Consumer searchQuery) {
         SearchQuery resultQuery = this.databaseCollection.find();
         ((MySqlSearchQueryHelper)resultQuery).negate = true;
-        if(this.searchQueryBuilder.length() != 0) {
-            ((MySqlSearchQueryHelper)resultQuery).where = false;
-        }
+        ((MySqlSearchQueryHelper)resultQuery).where = where;
         searchQuery.accept(resultQuery);
-        searchQueryBuilder.append(((MySqlFindQuery)resultQuery).searchQueryBuilder);
+        this.queryBuilder.append(((MySqlFindQuery)resultQuery).queryBuilder);
         this.values.addAll(((MySqlSearchQueryHelper)resultQuery).values);
+        this.where = ((MySqlSearchQueryHelper)resultQuery).where;
         return (T) this;
     }
 
@@ -146,51 +148,57 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     private T andOr(String operator, Consumer... searchQueries) {
         SearchQuery[] resultQueries = new SearchQuery[searchQueries.length];
-        boolean first = true;
+        boolean withOperator = false;
         for (int i = 0; i < searchQueries.length; i++) {
             SearchQuery searchQuery = this.databaseCollection.find();
-            ((MySqlSearchQueryHelper)searchQuery).first = first;
+            ((MySqlSearchQueryHelper)searchQuery).operator = withOperator;
             ((MySqlSearchQueryHelper)searchQuery).where = false;
             searchQueries[i].accept(searchQuery);
             resultQueries[i] = searchQuery;
-            first = false;
+            withOperator = true;
         }
-        if(!first) {
-            if(where) searchQueryBuilder.append(" WHERE ");
-            else searchQueryBuilder.append(" ").append(operator).append(" ");
+
+        if(this.operator) {
+            if(this.where) {
+                System.out.println(this.where);
+                this.queryBuilder.append(" WHERE ");
+                this.where = false;
+            }
+            else this.queryBuilder.append(" ").append(operator).append(" ");
         }
-        if(negate) searchQueryBuilder.append("NOT ");
-        searchQueryBuilder.append("(");
+
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("(");
         for (SearchQuery searchQuery : resultQueries) {
-            searchQueryBuilder.append(((MySqlSearchQueryHelper)searchQuery).searchQueryBuilder);
+            this.queryBuilder.append(((MySqlSearchQueryHelper)searchQuery).queryBuilder);
             this.values.addAll(((MySqlSearchQueryHelper)searchQuery).values);
         }
-        searchQueryBuilder.append(")");
+        this.queryBuilder.append(")");
         return (T) this;
     }
 
     @Override
     public T between(String field, Object value1, Object value2) {
-        if(!first) {
-            if(where) searchQueryBuilder.append(" WHERE ");
-            else searchQueryBuilder.append(" AND ");
+        if(this.operator) {
+            if(where) this.queryBuilder.append(" WHERE ");
+            else this.queryBuilder.append(" AND ");
         }
-        searchQueryBuilder.append("`").append(field).append("`");
-        if(negate) searchQueryBuilder.append(" NOT");
-        searchQueryBuilder.append(" BETWEEN ");
+        this.queryBuilder.append("`").append(field).append("`");
+        if(negate) this.queryBuilder.append(" NOT");
+        this.queryBuilder.append(" BETWEEN ");
 
         if(value1 instanceof MySqlAggregationBuilder) {
-            searchQueryBuilder.append(((MySqlAggregationBuilder)value1).getAggregationBuilder()).append(" AND ");
+            this.queryBuilder.append(((MySqlAggregationBuilder)value1).getAggregationBuilder()).append(" AND ");
             this.values.addAll(((MySqlAggregationBuilder)value1).getValues());
         } else {
-            searchQueryBuilder.append("? AND ");
+            this.queryBuilder.append("? AND ");
             this.values.add(value1);
         }
         if(value2 instanceof MySqlAggregationBuilder) {
-            searchQueryBuilder.append(((MySqlAggregationBuilder)value2).getAggregationBuilder());
+            this.queryBuilder.append(((MySqlAggregationBuilder)value2).getAggregationBuilder());
             this.values.addAll(((MySqlAggregationBuilder)value2).getValues());
         } else {
-            searchQueryBuilder.append("?");
+            this.queryBuilder.append("?");
             this.values.add(value2);
         }
         return (T) this;
@@ -198,7 +206,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T limit(int limit, int offset) {
-        this.limit = " LIMIT ?,?";
+        this.queryBuilder.append(" LIMIT ?,?");
         if(limit != -1) this.values.add(limit);
         if(offset != -1) this.values.add(offset);
         return (T) this;
@@ -206,45 +214,57 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T orderBy(String field, OrderOption orderOption) {
-        if(this.orderByQueryBuilder.length() == 0) orderByQueryBuilder.append(" ORDER BY ");
-        else orderByQueryBuilder.append(",");
-        orderByQueryBuilder.append("`").append(field).append("`");
-        if(orderOption != null) orderByQueryBuilder.append(" ").append(orderByQueryBuilder);
+        if(this.orderBy) {
+            this.queryBuilder.append(" ORDER BY ");
+            this.orderBy = false;
+        }
+        else this.queryBuilder.append(",");
+        this.queryBuilder.append("`").append(field).append("`");
+        if(orderOption != null) this.queryBuilder.append(" ").append(orderOption);
         return (T) this;
     }
 
     @Override
     public T orderBy(AggregationBuilder aggregationBuilder, OrderOption orderOption) {
-        if(this.orderByQueryBuilder.length() == 0) orderByQueryBuilder.append(" ORDER BY ");
-        else orderByQueryBuilder.append(",");
-        orderByQueryBuilder.append(((MySqlAggregationBuilder)aggregationBuilder).getAggregationBuilder());
+        if(this.orderBy) {
+            this.queryBuilder.append(" ORDER BY ");
+            this.orderBy = false;
+        }
+        else this.queryBuilder.append(",");
+        this.queryBuilder.append(((MySqlAggregationBuilder)aggregationBuilder).getAggregationBuilder());
         this.values.addAll(((MySqlAggregationBuilder)aggregationBuilder).getValues());
-        if(orderOption != null) orderByQueryBuilder.append(" ").append(orderByQueryBuilder);
+        if(orderOption != null) this.queryBuilder.append(" ").append(orderOption);
         return (T) this;
     }
 
     @Override
     public T groupBy(String... fields) {
-        if(this.groupByQueryBuilder.length() == 0) groupByQueryBuilder.append(" GROUP BY ");
-        else groupByQueryBuilder.append(" AND ");
-        this.first = true;
+        if(this.groupBy) {
+            this.queryBuilder.append(" GROUP BY ");
+            this.groupBy = false;
+        }
+        else this.queryBuilder.append(" AND ");
+        boolean first = true;
         for(String field : fields) {
-            if(!first) groupByQueryBuilder.append(",");
+            if(!first) this.queryBuilder.append(",");
             else first = false;
-            groupByQueryBuilder.append("`").append(field).append("`");
+            this.queryBuilder.append("`").append(field).append("`");
         }
         return (T) this;
     }
 
     @Override
     public T groupBy(AggregationBuilder... aggregationBuilders) {
-        if(this.groupByQueryBuilder.length() == 0) groupByQueryBuilder.append(" GROUP BY ");
-        else groupByQueryBuilder.append(" AND ");
-        this.first = true;
+        if(this.groupBy) {
+            this.queryBuilder.append(" GROUP BY ");
+            this.groupBy = false;
+        }
+        else this.queryBuilder.append(" AND ");
+        boolean first = true;
         for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
-            if(!first) groupByQueryBuilder.append(",");
+            if(!first) this.queryBuilder.append(",");
             else first = false;
-            groupByQueryBuilder.append(((MySqlAggregationBuilder)aggregationBuilder).getAggregationBuilder());
+            this.queryBuilder.append(((MySqlAggregationBuilder)aggregationBuilder).getAggregationBuilder());
             this.values.addAll(((MySqlAggregationBuilder)aggregationBuilder).getValues());
         }
         return (T) this;
@@ -275,22 +295,22 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         return aggregation("SUM", first, operator, second);
     }
 
-    private T aggregation(String aggregation, Object first, String operator, Object second) {
-        searchQueryBuilder.append(aggregation).append("(");
+    protected T aggregation(String aggregation, Object first, String operator, Object second) {
+        this.queryBuilder.append(aggregation).append("(");
         buildAggregationPart(first);
-        if(operator != null) searchQueryBuilder.append(" ").append(operator).append(" ");
+        if(operator != null) this.queryBuilder.append(" ").append(operator).append(" ");
         buildAggregationPart(second);
         return (T) this;
     }
 
-    private void buildAggregationPart(Object first) {
+    protected void buildAggregationPart(Object first) {
         if(first instanceof MySqlAggregationBuilder) {
-            searchQueryBuilder.append(((MySqlAggregationBuilder)first).getAggregationBuilder());
+            this.queryBuilder.append(((MySqlAggregationBuilder)first).getAggregationBuilder());
             this.values.addAll(((MySqlAggregationBuilder)first).getValues());
         } else if(first instanceof String) {
-            searchQueryBuilder.append("`").append(first).append("`");
+            this.queryBuilder.append("`").append(first).append("`");
         } else {
-            searchQueryBuilder.append("?");
+            this.queryBuilder.append("?");
             this.values.add(first);
         }
     }

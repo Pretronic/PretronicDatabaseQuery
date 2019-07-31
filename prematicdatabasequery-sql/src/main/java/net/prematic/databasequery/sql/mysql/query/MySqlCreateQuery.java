@@ -43,39 +43,39 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
 
     private String name;
     private final MySqlDatabase database;
-    private final StringBuilder createQueryBuilder;
-    private final String mainQuery;
-    private String engine;
+    private final StringBuilder queryBuilder;
     private boolean first;
     private final List<Object> values;
 
     public MySqlCreateQuery(String name, MySqlDatabase database) {
         this.name = name;
         this.database = database;
-        this.createQueryBuilder = new StringBuilder();
-        this.mainQuery = "CREATE TABLE IF NOT EXISTS `"
-                + database.getName()
-                + "`.`%s`(";
+        this.queryBuilder = new StringBuilder()
+                .append("CREATE TABLE IF NOT EXISTS `")
+                .append(database.getName())
+                .append("`.`")
+                .append(name)
+                .append("`(");
         this.values = new ArrayList<>();
         this.first = true;
     }
 
     @Override
     public CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
-        if(!first) createQueryBuilder.append(",");
+        if(!first) queryBuilder.append(",");
         else first = false;
         boolean uniqueIndex = false;
         boolean index = false;
-        DataTypeInformation dataTypeInformation = this.database.getDriver().getDataTypeInformation(dataType);
-        createQueryBuilder.append("`").append(field).append("` ")
+        DataTypeInformation dataTypeInformation = this.database.getDriver().getDataTypeInformationByDataType(dataType);
+        queryBuilder.append("`").append(field).append("` ")
                 .append(dataTypeInformation.getName());
         if(dataTypeInformation.isSizeAble()) {
-            if(fieldSize != -1) createQueryBuilder.append("(").append(fieldSize).append(")");
-            else if(dataTypeInformation.getDefaultSize() != -1) createQueryBuilder.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
+            if(fieldSize != -1) queryBuilder.append("(").append(fieldSize).append(")");
+            else if(dataTypeInformation.getDefaultSize() != -1) queryBuilder.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
         }
         if(defaultValue != null) {
             this.values.add(defaultValue);
-            createQueryBuilder.append(" DEFAULT ?");
+            queryBuilder.append(" DEFAULT ?");
         }
         if(createOptions!= null && createOptions.length != 0) {
             for (CreateOption createOption : createOptions) {
@@ -89,24 +89,24 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
                         break;
                     }
                     case PRIMARY_KEY: {
-                        createQueryBuilder.append(" PRIMARY KEY");
+                        queryBuilder.append(" PRIMARY KEY");
                         break;
                     }
                     case NOT_NULL: {
-                        createQueryBuilder.append(" NOT NULL");
+                        queryBuilder.append(" NOT NULL");
                         break;
                     }
                     default: {
-                        createQueryBuilder.append(" ").append(createOption.toString());
+                        queryBuilder.append(" ").append(createOption.toString());
                         break;
                     }
                 }
             }
         }
         if(uniqueIndex) {
-            createQueryBuilder.append(",UNIQUE INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
+            queryBuilder.append(",UNIQUE INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
         }else if(index) {
-            createQueryBuilder.append(",INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
+            queryBuilder.append(",INDEX `").append(this.database.getName()).append(this.name).append(field).append("`(`").append(field).append("`)");
         }
         if(foreignKey != null) buildForeignKey(field, foreignKey);
         return this;
@@ -114,7 +114,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
 
     @Override
     public CreateQuery engine(String engine) {
-        this.engine = engine;
+        this.queryBuilder.append(") ENGINE=").append(engine).append(";");
         return this;
     }
 
@@ -136,10 +136,10 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
 
     @Override
     public QueryResult execute(boolean commit, Object... values) {
+        String query = buildExecuteString(values);
         try(Connection connection = this.database.getDriver().getConnection()) {
             int index = 1;
             int valueGet = 0;
-            String query = buildExecuteString(values);
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             for (Object value : this.values) {
                 if(value == null) {
@@ -155,7 +155,10 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
             if(commit) connection.commit();
             if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Executed sql query: {}", query);
         } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+            if(this.database.getLogger().isDebugging()) {
+                this.database.getLogger().debug("Error executing sql query: {}", query);
+                throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+            }else throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
         }
         Map<String, Object> results = new HashMap<>();
         results.put("databaseCollection", this.database.getCollection(this.name));
@@ -169,9 +172,13 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
     }
 
     private CreateQuery buildForeignKey(String field, ForeignKey foreignKey) {
-        if(!first) createQueryBuilder.append(",");
+        if(!first) queryBuilder.append(",");
         else first = false;
-        createQueryBuilder.append("FOREIGN KEY(`")
+        this.queryBuilder.append("CONSTRAINT `")
+                .append(this.database.getName())
+                .append(this.name)
+                .append(field)
+                .append("` FOREIGN KEY(`")
                 .append(field)
                 .append("`) REFERENCES `")
                 .append(foreignKey.getDatabase())
@@ -180,20 +187,16 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
                 .append("`(`")
                 .append(foreignKey.getField()).append("`)");
         if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
-            createQueryBuilder.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
+            this.queryBuilder.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
         if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKey.Option.DEFAULT) {
-            createQueryBuilder.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
+            this.queryBuilder.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
         return this;
     }
 
     @Override
     public String buildExecuteString(Object... values) {
-        return String.format(mainQuery, this.name) +
-                createQueryBuilder +
-                ")" +
-                (engine != null ? " ENGINE=" + this.engine : "") +
-                ";";
+        return this.queryBuilder.append(");").toString();
     }
 }

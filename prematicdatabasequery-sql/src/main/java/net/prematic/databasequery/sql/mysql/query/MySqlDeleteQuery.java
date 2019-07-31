@@ -37,12 +37,6 @@ public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implem
 
     @Override
     public String buildExecuteString(Object... values) {
-        StringBuilder queryString = new StringBuilder().append(this.mainQuery);
-        if(this.searchQueryBuilder.length() != 0) queryString.append(this.searchQueryBuilder);
-        if(this.whereAggregationQueryBuilder.length() != 0) queryString.append(this.whereAggregationQueryBuilder);
-        if(this.groupByQueryBuilder.length() != 0) queryString.append(this.groupByQueryBuilder);
-        if(this.orderByQueryBuilder.length() != 0) queryString.append(this.orderByQueryBuilder);
-        if(this.limit != null) queryString.append(this.limit);
-        return queryString.append(";").toString();
+        return this.mainQuery + this.queryBuilder.toString();
     }
 }

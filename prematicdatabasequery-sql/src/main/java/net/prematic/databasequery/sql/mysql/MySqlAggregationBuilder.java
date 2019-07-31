@@ -68,7 +68,9 @@ public class MySqlAggregationBuilder implements AggregationBuilder {
 
     @Override
     public AggregationBuilder aggregation(Aggregation aggregation, String field) {
-        this.aggregationBuilder.append(aggregation).append("(`").append(field).append("`)");
+        this.aggregationBuilder.append(aggregation).append("(");
+        if(field.equals("*")) this.aggregationBuilder.append(field).append(")");
+        else this.aggregationBuilder.append("`").append(field).append("`)");
         return this;
     }
 

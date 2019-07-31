@@ -20,25 +20,32 @@
 package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.DatabaseCollection;
+import net.prematic.databasequery.core.DatabaseCollectionField;
+import net.prematic.databasequery.core.aggregation.Aggregation;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.query.*;
 import net.prematic.databasequery.sql.mysql.query.*;
 import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.utility.Iterators;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashSet;
 
 public class MySqlDatabaseCollection implements DatabaseCollection {
 
     private final String name;
     private final DatabaseCollection.Type type;
     private final MySqlDatabase database;
+    private final Collection<DatabaseCollectionField> fields;
 
     public MySqlDatabaseCollection(String name, DatabaseCollection.Type type, MySqlDatabase database) {
         this.name = name;
         this.type = type;
         this.database = database;
+        this.fields = new HashSet<>();
     }
 
     @Override
@@ -56,8 +63,8 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
     }
 
     @Override
-    public int getSize() {
-        return 0;
+    public long getSize() {
+        return find().get(aggregationBuilder -> aggregationBuilder.aggregation(Aggregation.COUNT, "*")).execute().first().getLong(0);
     }
 
     @Override
@@ -117,6 +124,32 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
     @Override
     public AggregationBuilder newAggregationBuilder(boolean aliasAble) {
         return getDatabase().newAggregationBuilder(aliasAble);
+    }
+
+    @Override
+    public Collection<DatabaseCollectionField> getFields() {
+        return null;
+    }
+
+    @Override
+    public boolean hasField(String name) {
+        return false;
+    }
+
+    @Override
+    public DatabaseCollectionField getField(String name) {
+        DatabaseCollectionField collectionField = Iterators.findOne(this.fields, field -> field.getName().equalsIgnoreCase(name));
+        return collectionField == null ? getField(name) : collectionField;
+    }
+
+    @Override
+    public void addField(DatabaseCollectionField field) {
+
+    }
+
+    @Override
+    public void removeField(String field) {
+
     }
 
     public PrematicLogger getLogger() {

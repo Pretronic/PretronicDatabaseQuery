@@ -19,6 +19,7 @@
 
 package net.prematic.databasequery.core.datatype;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,20 +29,20 @@ import java.util.Map;
  */
 public enum DataType {
 
-    DOUBLE,
+    DOUBLE(double.class),
     DECIMAL,
-    FLOAT,
-    INTEGER,
-    LONG,
-    CHAR,
-    STRING,
+    FLOAT(float.class),
+    INTEGER(int.class),
+    LONG(long.class),
+    CHAR(char.class),
+    STRING(String.class),
     LONG_TEXT,
-    DATE,
+    DATE(Date.class),
     DATETIME,
     TIMESTAMP,
-    BINARY,
+    BINARY(byte.class, byte[].class),
     BLOB,
-    UUID;
+    UUID(java.util.UUID.class);
 
     public static final Map<Class<?>, DataType> DATA_TYPES = new HashMap<>();
 
@@ -65,5 +66,14 @@ public enum DataType {
      */
     public Class[] getJavaClasses() {
         return javaClasses;
+    }
+
+    public static DataType getDataTypeByClass(Class<?> clazz) {
+        for (DataType dataType : DataType.values()) {
+            for (Class javaClass : dataType.getJavaClasses()) {
+                if(clazz == javaClass) return dataType;
+            }
+        }
+        return null;
     }
 }

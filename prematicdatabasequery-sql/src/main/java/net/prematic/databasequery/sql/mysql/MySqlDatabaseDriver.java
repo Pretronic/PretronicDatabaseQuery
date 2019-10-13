@@ -19,15 +19,15 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import com.zaxxer.hikari.HikariConfig;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
+import net.prematic.databasequery.sql.SqlDatabaseConnectionHolder;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
+import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
 import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.utility.StringUtil;
+import net.prematic.libraries.utility.Validate;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -35,11 +35,16 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
     private static final String TYPE = "MySql";
     private final Collection<DataTypeAdapter> dataTypeAdapters;
+    protected SqlDatabaseConnectionHolder connectionHolder;
 
-    public MySqlDatabaseDriver(String name, HikariConfig config, PrematicLogger logger) {
+    public MySqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger) {
         super(name, config, logger);
         this.dataTypeAdapters = new HashSet<>();
+        if(getConfig().isMultipleDatabaseConnectionsAble()) {
+            this.connectionHolder = createConnectionHolder(this, logger, null);
+        }
     }
+
 
     @Override
     public String getType() {
@@ -48,22 +53,66 @@ public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
     @Override
     public Database getDatabase(String name) {
-        return new MySqlDatabase(name, this);
+        return new MySqlDatabase(name, this) {
+            @Override
+            public SqlDatabaseConnectionHolder getConnectionHolder() {
+                if(getConfig().isMultipleDatabaseConnectionsAble() && this.getDriver().connectionHolder != null  && this.getDriver().connectionHolder.isConnected()) {
+                    return this.getDriver().connectionHolder;
+                }
+                String jdbcUrl = this.driver.createBaseJdbcUrl();
+                String[] splitted = StringUtil.splitAndKeep(jdbcUrl, "[&;]");
+                String newJdbcUrl = "";
+                Validate.isTrue(splitted[0].contains("jdbc"), "Not valid jdbc url {}", jdbcUrl);
+                if(splitted[0].contains("jdbc")) {
+                    if(splitted[0].endsWith("/")) newJdbcUrl+=splitted[0]+name;
+                    else newJdbcUrl+="/"+splitted[0]+name;
+                }
+                for (int i = 1; i < splitted.length; i++) {
+                    newJdbcUrl+=splitted[i];
+                }
+                SqlDatabaseConnectionHolder connectionHolder = createConnectionHolder(this.getDriver(), getLogger(), newJdbcUrl);
+                connectionHolder.connect();
+                return connectionHolder;
+            }
+        };
     }
 
     @Override
     public void dropDatabase(String name) {
-        try(Connection connection = getConnection()) {
-            String query = "DROP DATABASE IF EXISTS `" + name + "`";
-            connection.prepareStatement(query);
-            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: ", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
+        ((MySqlDatabase)getDatabase(name)).executeSimpleUpdateQuery("DROP DATABASE IF EXISTS `" + name + "`", true);
     }
 
     @Override
     public Collection<DataTypeAdapter> getDataTypeAdapters() {
         return this.dataTypeAdapters;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return this.connectionHolder.isConnected();
+    }
+
+    @Override
+    public void connect() {
+        if(this.connectionHolder != null) this.connectionHolder.connect();
+    }
+
+    @Override
+    public void disconnect() {
+        if(this.connectionHolder != null) this.connectionHolder.disconnect();
+    }
+
+    @Override
+    public String createBaseJdbcUrl() {
+        return getConfig().getJdbcUrl() != null ? getConfig().getJdbcUrl() : String.format("jdbc:mysql://%s:%s", getConfig().getHost(), getConfig().getPort() == 0 ? 3306 : getConfig().getPort());
+    }
+
+    private static SqlDatabaseConnectionHolder createConnectionHolder(SqlDatabaseDriver driver, PrematicLogger logger, String jdbcUrl) {
+        SqlDatabaseDriverConfig config = driver.getConfig();
+        if(config.isMultipleDatabaseConnectionsAble()) {
+            return config.getDataSourceConfig() == null ? new SqlDatabaseConnectionHolder.SingleConnection(driver, logger, jdbcUrl) : new SqlDatabaseConnectionHolder.DataSource(driver, logger, jdbcUrl);
+        } else {
+            return config.getDataSourceConfig() == null ? new SqlDatabaseConnectionHolder.SingleConnection(driver, logger, jdbcUrl) : new SqlDatabaseConnectionHolder.DataSource(driver, logger, jdbcUrl);
+        }
     }
 }

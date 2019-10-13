@@ -21,8 +21,10 @@ package net.prematic.databasequery.sql;
 
 import net.prematic.databasequery.core.query.result.QueryResult;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface CommitOnExecute {
 
-    QueryResult execute(boolean commit, Object... values);
+    CompletableFuture<QueryResult> execute(boolean commit, Object... values);
 
 }

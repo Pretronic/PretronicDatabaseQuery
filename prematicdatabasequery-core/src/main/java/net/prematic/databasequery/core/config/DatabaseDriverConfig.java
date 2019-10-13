@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 03.05.19, 23:47
+ * @since 17.09.19, 13:32
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,27 @@
  * under the License.
  */
 
-package net.prematic.databasequery.core.query;
+package net.prematic.databasequery.core.config;
 
-import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.core.DatabaseDriver;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
-public interface Query {
+public interface DatabaseDriverConfig<T extends DatabaseDriverConfig> {
 
-    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    Class<? extends DatabaseDriver> getDriverClass();
 
-    default CompletableFuture<QueryResult> execute() {
-        return execute(EMPTY_OBJECT_ARRAY);
-    }
+    Map<String, Object> getProperties();
 
-    CompletableFuture<QueryResult> execute(Object... values);
+    Object getProperty(String key);
+
+    T addProperty(String key, Object value);
+
+    String getHost();
+
+    T setHost(String host);
+
+    int getPort();
+
+    T setPort(int port);
 }

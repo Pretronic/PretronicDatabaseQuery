@@ -28,9 +28,14 @@ public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implem
 
     public MySqlUpdateQuery(MySqlDatabaseCollection databaseCollection) {
         super(databaseCollection);
-        this.queryBuilder.append("UPDATE `")
-                .append(databaseCollection.getDatabase().getName())
-                .append("`.`").append(databaseCollection.getName())
+        this.queryBuilder.append("UPDATE `");
+
+        if(databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            this.queryBuilder.append(databaseCollection.getDatabase().getName())
+                    .append("`.`");
+        }
+
+        this.queryBuilder.append(databaseCollection.getName())
                 .append("` ");
         this.first = true;
     }

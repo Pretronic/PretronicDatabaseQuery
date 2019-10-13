@@ -21,39 +21,94 @@ package net.prematic.databasequery.sql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.util.IsolationLevel;
 import net.prematic.databasequery.core.DatabaseDriver;
 import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryConnectException;
 import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.utility.annonations.Internal;
+import net.prematic.sqlconnectionpool.PrematicDataSourceBuilder;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 public abstract class SqlDatabaseDriver implements DatabaseDriver {
 
-    private HikariDataSource dataSource;
-    private final String name;
-    private final HikariConfig config;
-    private final Set<DataTypeInformation> dataTypeInformation;
-    private final PrematicLogger logger;
+    public static Map<Class<?>, BiFunction<SqlDatabaseDriver, String, DataSource>> DATA_SOURCE_CREATORS = new HashMap<>();
 
-    public SqlDatabaseDriver(String name, HikariConfig config, PrematicLogger logger) {
-        this.name = name == null ? getType() : name;
-        this.config = config;
-        this.logger = logger;
-        this.dataTypeInformation = new HashSet<>();
-        registerDataTypeInformation();
+    //Initialize default data source creators
+    static {
+        try {
+            Class<?> dataSourceClass = Class.forName("net.prematic.sqlconnectionpool.PrematicDataSource");
+            registerDataSourceCreator(dataSourceClass, (driver, jdbcUrl) -> {
+                PrematicDataSourceBuilder builder = new PrematicDataSourceBuilder();
+                SqlDatabaseDriverConfig config = driver.getConfig();
+                //Todo executor service
+                return builder.jdbcUrl(jdbcUrl == null ? driver.createBaseJdbcUrl() : jdbcUrl)
+                        .username(config.getUsername())
+                        .password(config.getPassword())
+                        .driverClassName(config.getDriverClassName())
+                        .connectionCatalog(config.getConnectionCatalog())
+                        .connectionSchema(config.getConnectionSchema())
+                        .logger(driver.getLogger())
+                        .autoCommit(config.isAutoCommit())
+                        .connectionReadOnly(config.isConnectionReadOnly())
+                        .connectionExpireAfterAccess(config.getDataSourceConfig().getConnectionExpireAfterAccess())
+                        .connectionExpire(config.getDataSourceConfig().getConnectionExpire())
+                        .connectionLoginTimeout(config.getDataSourceConfig().getConnectionLoginTimeout())
+                        .maximumPoolSize(config.getDataSourceConfig().getMaximumPoolSize())
+                        .minimumIdleConnectionPoolSize(config.getDataSourceConfig().getMinimumIdleConnectionPoolSize())
+                        .connectionIsolationLevel(config.getConnectionIsolationLevel())
+                        .connectionNetworkTimeout(config.getConnectionNetworkTimeout())
+                        .build();
+            });
+        } catch (ClassNotFoundException ignored) {}
+
+        //@Todo logger
+        try {
+            Class<?> dataSourceClass = Class.forName("com.zaxxer.hikari.HikariDataSource");
+            registerDataSourceCreator(dataSourceClass, (driver, jdbcUrl) -> {
+                SqlDatabaseDriverConfig config = driver.getConfig();
+                HikariConfig hikariConfig = new HikariConfig();
+                hikariConfig.setJdbcUrl(driver.createBaseJdbcUrl());
+                if(config.getUsername() != null) hikariConfig.setUsername(config.getUsername());
+                if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());
+                hikariConfig.setLeakDetectionThreshold(60 * 1000);
+                /*if(config.getDriverClassName() != null) hikariConfig.setDriverClassName(config.getDriverClassName());
+                if(config.getConnectionCatalog() != null) hikariConfig.setCatalog(config.getConnectionCatalog());
+                if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
+                hikariConfig.setAutoCommit(config.isAutoCommit());
+                hikariConfig.setReadOnly(config.isConnectionReadOnly());
+                if(config.getDataSourceConfig() != null) {
+                    if(config.getDataSourceConfig().getConnectionExpire() != 0) hikariConfig.setMaxLifetime(config.getDataSourceConfig().getConnectionExpire());
+                    if(config.getDataSourceConfig().getConnectionExpireAfterAccess() != 0) hikariConfig.setIdleTimeout(config.getDataSourceConfig().getConnectionExpireAfterAccess());
+                    if(config.getDataSourceConfig().getConnectionLoginTimeout() != 0) hikariConfig.setConnectionTimeout(config.getDataSourceConfig().getConnectionLoginTimeout());
+                    if(config.getDataSourceConfig().getMaximumPoolSize() != 0) hikariConfig.setMaximumPoolSize(config.getDataSourceConfig().getMaximumPoolSize());
+                    if(config.getDataSourceConfig().getMinimumIdleConnectionPoolSize() != 0) hikariConfig.setMinimumIdle(config.getDataSourceConfig().getMinimumIdleConnectionPoolSize());
+                }
+                if(config.getConnectionIsolationLevel() != 0) hikariConfig.setTransactionIsolation(convertToHikariIsolationLevel(config.getConnectionIsolationLevel()));*/
+                return new HikariDataSource(hikariConfig);
+            });
+        } catch (ClassNotFoundException ignored) {}
     }
 
-    public HikariDataSource getDataSource() {
-        return this.dataSource;
+    private final String name;
+    private final Set<DataTypeInformation> dataTypeInformation;
+    private final PrematicLogger logger;
+    private final SqlDatabaseDriverConfig config;
+
+    public SqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger) {
+        this.name = name == null ? getType() : name;
+        this.logger = logger;
+        this.config = config;
+        this.dataTypeInformation = new HashSet<>();
+        registerDataTypeInformation();
     }
 
     @Override
@@ -61,10 +116,17 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         return this.name;
     }
 
+    @Internal
+    public boolean useDataSource() {
+        return this.config.getDataSourceConfig() != null;
+    }
+
+    @Internal
     public Set<DataTypeInformation> getDataTypeInformation() {
         return dataTypeInformation;
     }
 
+    @Internal
     public DataTypeInformation getDataTypeInformationByDataType(DataType dataType) {
         for (DataTypeInformation dataTypeInformation : getDataTypeInformation()) {
             if(dataTypeInformation.getDataType() == dataType) return dataTypeInformation;
@@ -72,6 +134,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         return DataTypeInformation.from().dataType(dataType).names(dataType.toString());
     }
 
+    @Internal
     public DataTypeInformation getDataTypeInformationByName(String name) {
         for (DataTypeInformation dataTypeInformation : getDataTypeInformation()) {
             for (String dataTypeName : dataTypeInformation.getNames()) {
@@ -81,64 +144,25 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         return null;
     }
 
-    public Connection getConnection() throws SQLException {
-        return getDataSource() == null ? null : getDataSource().getConnection();
-    }
+    @Override
+    public abstract boolean isConnected();
 
     @Override
-    public boolean isConnected() {
-        return this.dataSource.isRunning();
-    }
+    public abstract void connect();
 
     @Override
-    public void connect() {
-        this.config.setAutoCommit(false);
-        this.dataSource = new HikariDataSource(this.config);
-        try {
-            this.dataSource.getConnection();
-            getLogger().info("Connected to sql database at {}", this.dataSource.getJdbcUrl());
-        } catch (SQLException exception) {
-            getLogger().info("Failed to connect to sql database at {}", this.dataSource.getJdbcUrl());
-            throw new DatabaseQueryConnectException(exception.getMessage(), exception);
-        }
-    }
-
-    @Override
-    public void disconnect() {
-        this.dataSource.close();
-        getLogger().info("Disconnected from sql database at {}", this.dataSource.getJdbcUrl());
-    }
+    public abstract void disconnect();
 
     @Override
     public PrematicLogger getLogger() {
         return this.logger;
     }
 
-    public void executeSimpleUpdateQuery(String sql) {
-        executeUpdateQuery(sql, ignored -> {});
+    public SqlDatabaseDriverConfig getConfig() {
+        return config;
     }
 
-    public void executeResultQuery(String sql, Consumer<PreparedStatement> preparedStatementConsumer, Consumer<ResultSet> resultSetConsumer) {
-        try(Connection connection = getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatementConsumer.accept(preparedStatement);
-            resultSetConsumer.accept(preparedStatement.executeQuery());
-            connection.commit();
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
-    }
-
-    public void executeUpdateQuery(String sql, Consumer<PreparedStatement> preparedStatementConsumer) {
-        try(Connection connection = getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatementConsumer.accept(preparedStatement);
-            preparedStatement.executeUpdate();
-            connection.commit();
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
-    }
+    public abstract String createBaseJdbcUrl();
 
     private void registerDataTypeInformation() {
         //@Todo specify default sizes
@@ -156,5 +180,22 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.BINARY).names("BINARY"));
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.BLOB).names("BLOB").sizeAble(false));
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.UUID).names("BINARY").defaultSize(16));
+    }
+
+    @Internal
+    public void handleDatabaseQueryExecuteFailedException(SQLException exception, String query) {
+        getLogger().info("Error executing sql query: {}", query);
+        throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+    }
+
+    public static void registerDataSourceCreator(Class<?> dataSourceClassName, BiFunction<SqlDatabaseDriver, String, DataSource> creator) {
+        DATA_SOURCE_CREATORS.put(dataSourceClassName, creator);
+    }
+
+    private static String convertToHikariIsolationLevel(int level) {
+        for (IsolationLevel value : IsolationLevel.values()) {
+            if(value.getLevelId() == level) return value.name();
+        }
+        return null;
     }
 }

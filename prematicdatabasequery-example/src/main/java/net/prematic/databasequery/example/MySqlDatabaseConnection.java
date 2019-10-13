@@ -19,29 +19,74 @@
 
 package net.prematic.databasequery.example;
 
-import com.zaxxer.hikari.HikariConfig;
+import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.core.datatype.DataType;
+import net.prematic.databasequery.core.query.option.CreateOption;
+import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.core.query.result.QueryResultEntry;
+import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
+import net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
+import net.prematic.libraries.logging.LoggingUncaughtExceptionHandler;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.logging.SimplePrematicLogger;
 import net.prematic.libraries.logging.bridge.slf4j.SLF4JStaticBridge;
+import net.prematic.libraries.logging.level.LogLevel;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class MySqlDatabaseConnection {
 
-    public static void main(String[] args) {
-
-        //Create a new prematic logger and set it as SLF4J logger
+    @Test
+    public void testConnection() throws InterruptedException {
         PrematicLogger logger = new SimplePrematicLogger();
+        LoggingUncaughtExceptionHandler.hook(logger);
+        logger.setLevel(LogLevel.DEBUG);
         SLF4JStaticBridge.setLogger(logger);
 
-        //Simple hikari config. For more show on github of hikaricp
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://127.0.0.1:3306");
-        config.setUsername("root");
-        config.setPassword("your_password");
+        SqlDatabaseDriverConfig config = new SqlDatabaseDriverConfig(H2PortableDatabaseDriver.class);
+        config.setHost("127.0.0.1").setPort(3306).setUsername("root");
+        config.useDataSource().setClassName("com.zaxxer.hikari.HikariDataSource");
+        config.setMultipleDatabaseConnectionsAble(true);
 
-        DatabaseDriver databaseDriver = new MySqlDatabaseDriver("Name of driver", config, logger);
-        databaseDriver.connect();
-        databaseDriver.registerDefaultAdapters();
+        DatabaseDriver driver = new MySqlDatabaseDriver("Production", config, logger);
+        driver.connect();
+        Database database = driver.getDatabase("production");
+
+        database.createCollection("user")
+                .attribute("id", DataType.INTEGER, CreateOption.PRIMARY_KEY, CreateOption.AUTO_INCREMENT)
+                .attribute("name", DataType.LONG_TEXT, CreateOption.NOT_NULL)
+                .attribute("number", DataType.INTEGER, CreateOption.NOT_NULL)
+                .create().thenAccept(user -> {
+            for (int i = 0; i < 1; i++) {
+                CompletableFuture<QueryResult> future = user.insert().set("name", "peter").set("number", i).executeAndGetGeneratedKeys("id");
+                future.thenAccept(result -> {
+                    for (QueryResultEntry resultEntry : result) {
+                        logger.info("----------");
+                        logger.info("Generated Keys:");
+                        for (Map.Entry<String, Object> entry : resultEntry) {
+                            logger.info(entry.getKey() + " | " + entry.getValue());
+                        }
+                    }
+                    logger.info("----------");
+                });
+            }
+
+            user.find().execute().thenAccept(result -> {
+                for (QueryResultEntry resultEntry : result) {
+                    logger.info("----------");
+                    logger.info("Entry:");
+                    for (Map.Entry<String, Object> entry : resultEntry) {
+                        logger.info(entry.getKey() + " | " + entry.getValue());
+                    }
+                }
+                logger.info("----------");
+            });
+        });
+        Thread.sleep(3000);
+        driver.disconnect();
     }
 }

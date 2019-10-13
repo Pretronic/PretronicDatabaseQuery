@@ -1,0 +1,39 @@
+{
+  "collections": [
+    {
+      "name": "test",
+      "type:": "NORMAL",
+      "engine": "InnoDB",
+      "fields": [
+        {
+          "name": "id",
+          "dataType": "INTEGER",
+          "options": [
+            "INDEX"
+          ]
+        },
+        {
+          "name": "username",
+          "dataType": "STRING",
+          "fieldSize": 32,
+          "options": [
+            "UNIQUE_INDEX",
+            "NOT_NULL"
+          ]
+        },
+        {
+          "name": "money",
+          "dataType": "LONG",
+          "default": 8
+        }
+      ],
+      "foreignKeys": [
+        {
+          "field": "id",
+          "reference": "test1.user.id",
+          "deleteOption": "CASCADE"
+        }
+      ]
+    }
+  ]
+}

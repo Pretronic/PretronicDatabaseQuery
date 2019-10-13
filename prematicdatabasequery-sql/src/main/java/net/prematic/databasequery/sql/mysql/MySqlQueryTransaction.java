@@ -38,7 +38,7 @@ public class MySqlQueryTransaction implements QueryTransaction {
     public MySqlQueryTransaction(MySqlDatabase database) {
         this.database = database;
         try {
-            this.connection = database.getDriver().getConnection();
+            this.connection = database.getConnectionHolder().getConnection();
         } catch (SQLException exception) {
             throw new DatabaseQueryCreateTransactionException(exception.getMessage(), exception);
         }

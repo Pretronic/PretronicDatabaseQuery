@@ -21,22 +21,25 @@ package net.prematic.databasequery.sql.h2;
 
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
 import net.prematic.libraries.logging.PrematicLogger;
 
+import java.util.concurrent.ExecutorService;
+
 public class H2PortableDatabaseDriver extends MySqlDatabaseDriver {
 
     static {
-        DatabaseDriver.registerCreator(H2PortableDatabaseDriver.class, (name, config, logger, properties) ->
-                new H2PortableDatabaseDriver(name, new H2PortableDatabaseDriverConfig(config.getOriginal()), logger));
+        DatabaseDriver.registerCreator(H2PortableDatabaseDriver.class, (name, config, logger, executorService, properties) ->
+                new H2PortableDatabaseDriver(name, new SqlDatabaseDriverConfig(config.getOriginal()), logger, executorService));
     }
 
     private static final String TYPE = "H2-Portable";
     private static final String JDBC_URL_EXTRA = ";MODE=Mysql;";
 
-    public H2PortableDatabaseDriver(String name, H2PortableDatabaseDriverConfig config, PrematicLogger logger) {
-        super(name, config, logger);
+    public H2PortableDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
+        super(name, config, logger, executorService);
         if(this.connectionHolder != null && config.isMultipleDatabaseConnectionsAble()) this.connectionHolder.addJdbcUrlExtra(JDBC_URL_EXTRA);
     }
 

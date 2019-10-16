@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 public interface DatabaseDriver {
 
@@ -98,6 +99,8 @@ public interface DatabaseDriver {
 
     PrematicLogger getLogger();
 
+    ExecutorService getExecutorService();
+
     static Creator getCreator(Class<?> databaseDriverClass) {
         return CREATORS.get(databaseDriverClass);
     }
@@ -108,6 +111,6 @@ public interface DatabaseDriver {
 
     interface Creator {
 
-        DatabaseDriver create(String name, DatabaseDriverConfig config, PrematicLogger logger, Object... properties);
+        DatabaseDriver create(String name, DatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService, Object... properties);
     }
 }

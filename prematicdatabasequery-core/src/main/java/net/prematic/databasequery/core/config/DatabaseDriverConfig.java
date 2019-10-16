@@ -20,6 +20,7 @@
 package net.prematic.databasequery.core.config;
 
 import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryException;
 import net.prematic.libraries.document.Document;
 import net.prematic.libraries.document.WrappedDocument;
 import net.prematic.libraries.logging.PrematicLogger;
@@ -29,15 +30,12 @@ import net.prematic.libraries.utility.map.caseintensive.CaseIntensiveMap;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class DatabaseDriverConfig<T extends DatabaseDriverConfig> extends WrappedDocument {
 
-    static CaseIntensiveMap<String> REGISTRY = new CaseIntensiveHashMap<>();
-
-    static {
-        REGISTRY.put("net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver", "net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver");
-        REGISTRY.put("net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver", "net.prematic.databasequery.sql.mysql.MySqlDatabaseDriverConfig");
-    }
+    static CaseIntensiveMap<Class<? extends DatabaseDriverConfig>> REGISTRY = new CaseIntensiveHashMap<>();
 
     public DatabaseDriverConfig(Class<? extends DatabaseDriver> driverClass) {
         super(Document.newDocument().add("driverName", driverClass.getName()));
@@ -45,6 +43,14 @@ public abstract class DatabaseDriverConfig<T extends DatabaseDriverConfig> exten
 
     public DatabaseDriverConfig(Document original) {
         super(original);
+    }
+
+    public Class<?> getDriverClass() {
+        try {
+            return Class.forName(getDriverName());
+        } catch (ClassNotFoundException e) {
+            throw new DatabaseQueryException(String.format("Can't get driver class %s.", getDriverClass()));
+        }
     }
 
     public String getDriverName() {
@@ -90,9 +96,20 @@ public abstract class DatabaseDriverConfig<T extends DatabaseDriverConfig> exten
         return createDatabaseDriver(name, PrematicLoggerFactory.getLogger(name));
     }
 
-    public abstract DatabaseDriver createDatabaseDriver(String name, PrematicLogger logger);
+    public DatabaseDriver createDatabaseDriver(String name, PrematicLogger logger) {
+        return createDatabaseDriver(name, logger, Executors.newCachedThreadPool());
+    }
 
-    public static String getDriverConfigNameByDriverName(String driverName) {
+    public DatabaseDriver createDatabaseDriver(String name, PrematicLogger logger, ExecutorService executorService) {
+        DatabaseDriver.Creator creator = DatabaseDriver.getCreator(getDriverClass());
+        return creator.create(name, this, logger, executorService);
+    }
+
+    public static Class<? extends DatabaseDriverConfig> getDriverConfigNameByDriverName(String driverName) {
         return REGISTRY.get(driverName);
+    }
+
+    public static void registerDriverConfig(String driverName, Class<? extends DatabaseDriverConfig> driverConfigClass) {
+        REGISTRY.put(driverName, driverConfigClass);
     }
 }

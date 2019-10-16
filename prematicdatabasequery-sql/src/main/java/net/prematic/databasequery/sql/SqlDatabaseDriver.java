@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 
 public abstract class SqlDatabaseDriver implements DatabaseDriver {
@@ -98,14 +99,21 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
     }
 
     private final String name;
-    private final Set<DataTypeInformation> dataTypeInformation;
-    private final PrematicLogger logger;
     private final SqlDatabaseDriverConfig config;
+    private final PrematicLogger logger;
+    private final ExecutorService executorService;
+    private final Set<DataTypeInformation> dataTypeInformation;
 
-    public SqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger) {
+    @Override
+    public ExecutorService getExecutorService() {
+        return this.executorService;
+    }
+
+    public SqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
         this.name = name == null ? getType() : name;
-        this.logger = logger;
         this.config = config;
+        this.logger = logger;
+        this.executorService = executorService;
         this.dataTypeInformation = new HashSet<>();
         registerDataTypeInformation();
     }

@@ -52,9 +52,8 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
 
     public CompletableFuture<QueryResult> executeAndGetGeneratedKeys(boolean commit, String[] keyColumns, Object... values) {
         CompletableFuture<QueryResult> completableFuture = new CompletableFuture<>();
-
         String query = buildExecuteString(values);
-        Number[] generatedKeys = this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
+        this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
             try {
                 int index = 1;
                 int valueGet = 0;
@@ -76,15 +75,16 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
             } catch (SQLException exception) {
                 this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
             }
-        }, keyColumns);
-        List<QueryResultEntry> resultEntries = new ArrayList<>();
-        for (int i = 0; i < generatedKeys.length; i++) {
-            Map<String, Object> results = new HashMap<>();
-            results.put(keyColumns[i], generatedKeys[i]);
-            resultEntries.add(new SimpleQueryResultEntry(results));
-        }
-        QueryResult result = new SimpleQueryResult(resultEntries);
-        completableFuture.complete(result);
+        }, keyColumns).thenAccept(generatedKeys -> {
+            List<QueryResultEntry> resultEntries = new ArrayList<>();
+            for (int i = 0; i < generatedKeys.length; i++) {
+                Map<String, Object> results = new HashMap<>();
+                results.put(keyColumns[i], generatedKeys[i]);
+                resultEntries.add(new SimpleQueryResultEntry(results));
+            }
+            QueryResult result = new SimpleQueryResult(resultEntries);
+            completableFuture.complete(result);
+        });
         return completableFuture;
     }
 

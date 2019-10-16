@@ -31,20 +31,22 @@ import net.prematic.libraries.utility.Validate;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
 
 public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
     static {
-        DatabaseDriver.registerCreator(MySqlDatabaseDriver.class, (name, config, logger, properties) ->
-                new MySqlDatabaseDriver(name, new MySqlDatabaseDriverConfig(config), logger));
+        DatabaseDriver.registerCreator(MySqlDatabaseDriver.class, (name, config, logger, executorService, properties) ->
+                new MySqlDatabaseDriver(name, new SqlDatabaseDriverConfig(config), logger, executorService));
     }
 
     private static final String TYPE = "MySql";
+
     private final Collection<DataTypeAdapter> dataTypeAdapters;
     protected SqlDatabaseConnectionHolder connectionHolder;
 
-    public MySqlDatabaseDriver(String name, MySqlDatabaseDriverConfig config, PrematicLogger logger) {
-        super(name, config, logger);
+    public MySqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
+        super(name, config, logger, executorService);
         this.dataTypeAdapters = new HashSet<>();
         if(getConfig().isMultipleDatabaseConnectionsAble()) {
             this.connectionHolder = createConnectionHolder(this, logger, null);

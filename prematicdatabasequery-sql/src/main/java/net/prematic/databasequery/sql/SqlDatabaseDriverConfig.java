@@ -24,7 +24,12 @@ import net.prematic.databasequery.core.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
 import net.prematic.libraries.document.DocumentEntry;
 
-public abstract class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDriverConfig> {
+public class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDriverConfig> {
+
+    static {
+        registerDriverConfig("net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver", SqlDatabaseDriverConfig.class);
+        registerDriverConfig("net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver", SqlDatabaseDriverConfig.class);
+    }
 
     private DataSourceConfig dataSourceConfig;
 

@@ -19,15 +19,21 @@
 
 package net.prematic.databasequery.sql;
 
-import net.prematic.databasequery.core.config.DocumentDatabaseDriverConfig;
+import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.core.config.DatabaseDriverConfig;
+import net.prematic.libraries.document.Document;
 import net.prematic.libraries.document.DocumentEntry;
 
-public class SqlDatabaseDriverConfig extends DocumentDatabaseDriverConfig<SqlDatabaseDriverConfig> {
+public abstract class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDriverConfig> {
 
     private DataSourceConfig dataSourceConfig;
 
-    public SqlDatabaseDriverConfig(Class<? extends SqlDatabaseDriver> driverClass) {
+    public SqlDatabaseDriverConfig(Class<? extends DatabaseDriver> driverClass) {
         super(driverClass);
+    }
+
+    public SqlDatabaseDriverConfig(Document original) {
+        super(original);
     }
 
     public String getJdbcUrl() {
@@ -55,15 +61,15 @@ public class SqlDatabaseDriverConfig extends DocumentDatabaseDriverConfig<SqlDat
     }
 
     public boolean isAutoCommit() {
-        return getBoolean("autoCommit");
+        return !contains("autoCommit") || getBoolean("autoCommit");
     }
 
     public boolean isConnectionReadOnly() {
-        return getBoolean("connectionReadOnly");
+        return contains("connectionReadOnly") && getBoolean("connectionReadOnly");
     }
 
     public boolean isMultipleDatabaseConnectionsAble() {
-        return getBoolean("multipleDatabaseConnectionsAble");
+        return !contains("multipleDatabaseConnectionsAble") || getBoolean("multipleDatabaseConnectionsAble");
     }
 
     public int getConnectionIsolationLevel() {
@@ -190,6 +196,10 @@ public class SqlDatabaseDriverConfig extends DocumentDatabaseDriverConfig<SqlDat
         public DataSourceConfig setMinimumIdleConnectionPoolSize(int minimumIdleConnectionPoolSize) {
             set("datasource.minimumIdleConnectionPoolSize", minimumIdleConnectionPoolSize);
             return this;
+        }
+
+        public SqlDatabaseDriverConfig out() {
+            return SqlDatabaseDriverConfig.this;
         }
     }
 }

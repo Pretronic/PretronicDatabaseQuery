@@ -79,8 +79,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
                 hikariConfig.setJdbcUrl(driver.createBaseJdbcUrl());
                 if(config.getUsername() != null) hikariConfig.setUsername(config.getUsername());
                 if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());
-                hikariConfig.setLeakDetectionThreshold(60 * 1000);
-                /*if(config.getDriverClassName() != null) hikariConfig.setDriverClassName(config.getDriverClassName());
+                if(config.getDriverClassName() != null) hikariConfig.setDriverClassName(config.getDriverClassName());
                 if(config.getConnectionCatalog() != null) hikariConfig.setCatalog(config.getConnectionCatalog());
                 if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
                 hikariConfig.setAutoCommit(config.isAutoCommit());
@@ -92,7 +91,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
                     if(config.getDataSourceConfig().getMaximumPoolSize() != 0) hikariConfig.setMaximumPoolSize(config.getDataSourceConfig().getMaximumPoolSize());
                     if(config.getDataSourceConfig().getMinimumIdleConnectionPoolSize() != 0) hikariConfig.setMinimumIdle(config.getDataSourceConfig().getMinimumIdleConnectionPoolSize());
                 }
-                if(config.getConnectionIsolationLevel() != 0) hikariConfig.setTransactionIsolation(convertToHikariIsolationLevel(config.getConnectionIsolationLevel()));*/
+                if(config.getConnectionIsolationLevel() != 0) hikariConfig.setTransactionIsolation(convertToHikariIsolationLevel(config.getConnectionIsolationLevel()));
                 return new HikariDataSource(hikariConfig);
             });
         } catch (ClassNotFoundException ignored) {}

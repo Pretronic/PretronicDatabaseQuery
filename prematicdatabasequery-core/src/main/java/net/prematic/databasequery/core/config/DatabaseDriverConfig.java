@@ -20,24 +20,79 @@
 package net.prematic.databasequery.core.config;
 
 import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.libraries.document.Document;
+import net.prematic.libraries.document.WrappedDocument;
+import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.logging.PrematicLoggerFactory;
+import net.prematic.libraries.utility.map.caseintensive.CaseIntensiveHashMap;
+import net.prematic.libraries.utility.map.caseintensive.CaseIntensiveMap;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
-public interface DatabaseDriverConfig<T extends DatabaseDriverConfig> {
+public abstract class DatabaseDriverConfig<T extends DatabaseDriverConfig> extends WrappedDocument {
 
-    Class<? extends DatabaseDriver> getDriverClass();
+    static CaseIntensiveMap<String> REGISTRY = new CaseIntensiveHashMap<>();
 
-    Map<String, Object> getProperties();
+    static {
+        REGISTRY.put("net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver", "net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver");
+        REGISTRY.put("net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver", "net.prematic.databasequery.sql.mysql.MySqlDatabaseDriverConfig");
+    }
 
-    Object getProperty(String key);
+    public DatabaseDriverConfig(Class<? extends DatabaseDriver> driverClass) {
+        super(Document.newDocument().add("driverName", driverClass.getName()));
+    }
 
-    T addProperty(String key, Object value);
+    public DatabaseDriverConfig(Document original) {
+        super(original);
+    }
 
-    String getHost();
+    public String getDriverName() {
+        return getString("driverName");
+    }
 
-    T setHost(String host);
+    public Map<String, Object> getProperties() {
+        return getAsMap(String.class, Object.class);
+    }
 
-    int getPort();
+    public Object getProperty(String key) {
+        return getDocument(key).toPrimitive().getAsObject();
+    }
 
-    T setPort(int port);
+    public T addProperty(String key, Object value) {
+        add(key, value);
+        return (T) this;
+    }
+
+    public String getHost() {
+        return getString("host");
+    }
+
+    public T setHost(String host) {
+        set("host", host);
+        return (T) this;
+    }
+
+    public int getPort() {
+        return getInt("port");
+    }
+
+    public T setPort(int port) {
+        set("port", port);
+        return (T) this;
+    }
+
+    public InetSocketAddress getAddress() {
+        return new InetSocketAddress(getHost(), getPort());
+    }
+
+    public DatabaseDriver createDatabaseDriver(String name) {
+        return createDatabaseDriver(name, PrematicLoggerFactory.getLogger(name));
+    }
+
+    public abstract DatabaseDriver createDatabaseDriver(String name, PrematicLogger logger);
+
+    public static String getDriverConfigNameByDriverName(String driverName) {
+        return REGISTRY.get(driverName);
+    }
 }

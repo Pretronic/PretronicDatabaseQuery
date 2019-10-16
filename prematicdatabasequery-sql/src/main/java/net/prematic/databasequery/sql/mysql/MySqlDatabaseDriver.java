@@ -20,6 +20,7 @@
 package net.prematic.databasequery.sql.mysql;
 
 import net.prematic.databasequery.core.Database;
+import net.prematic.databasequery.core.DatabaseDriver;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.sql.SqlDatabaseConnectionHolder;
 import net.prematic.databasequery.sql.SqlDatabaseDriver;
@@ -33,11 +34,16 @@ import java.util.HashSet;
 
 public class MySqlDatabaseDriver extends SqlDatabaseDriver {
 
+    static {
+        DatabaseDriver.registerCreator(MySqlDatabaseDriver.class, (name, config, logger, properties) ->
+                new MySqlDatabaseDriver(name, new MySqlDatabaseDriverConfig(config), logger));
+    }
+
     private static final String TYPE = "MySql";
     private final Collection<DataTypeAdapter> dataTypeAdapters;
     protected SqlDatabaseConnectionHolder connectionHolder;
 
-    public MySqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger) {
+    public MySqlDatabaseDriver(String name, MySqlDatabaseDriverConfig config, PrematicLogger logger) {
         super(name, config, logger);
         this.dataTypeAdapters = new HashSet<>();
         if(getConfig().isMultipleDatabaseConnectionsAble()) {

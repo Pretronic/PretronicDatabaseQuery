@@ -20,17 +20,22 @@
 package net.prematic.databasequery.sql.h2;
 
 import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
+import net.prematic.databasequery.core.DatabaseDriver;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
 import net.prematic.libraries.logging.PrematicLogger;
 
 public class H2PortableDatabaseDriver extends MySqlDatabaseDriver {
 
+    static {
+        DatabaseDriver.registerCreator(H2PortableDatabaseDriver.class, (name, config, logger, properties) ->
+                new H2PortableDatabaseDriver(name, new H2PortableDatabaseDriverConfig(config.getOriginal()), logger));
+    }
+
     private static final String TYPE = "H2-Portable";
     private static final String JDBC_URL_EXTRA = ";MODE=Mysql;";
 
-    public H2PortableDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger) {
+    public H2PortableDatabaseDriver(String name, H2PortableDatabaseDriverConfig config, PrematicLogger logger) {
         super(name, config, logger);
         if(this.connectionHolder != null && config.isMultipleDatabaseConnectionsAble()) this.connectionHolder.addJdbcUrlExtra(JDBC_URL_EXTRA);
     }

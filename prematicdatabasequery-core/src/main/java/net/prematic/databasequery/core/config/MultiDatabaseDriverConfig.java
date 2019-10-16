@@ -33,7 +33,7 @@ public class MultiDatabaseDriverConfig {
     }
 
     public DatabaseDriverConfig getConfig(Class<? extends DatabaseDriver> databaseDriverClass) {
-        return Iterators.findOne(this.configs, config -> config.getDriverClass().equals(databaseDriverClass));
+        return Iterators.findOne(this.configs, config -> config.getDriverName().equals(databaseDriverClass.getName()));
     }
 
     public <T extends DatabaseDriver> DatabaseDriverConfig getConfig(T databaseDriver) {

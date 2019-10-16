@@ -25,9 +25,9 @@ import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.query.option.CreateOption;
 import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.core.query.result.QueryResultEntry;
-import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
 import net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
+import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriverConfig;
 import net.prematic.libraries.logging.LoggingUncaughtExceptionHandler;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.logging.SimplePrematicLogger;
@@ -47,9 +47,10 @@ public class MySqlDatabaseConnection {
         logger.setLevel(LogLevel.DEBUG);
         SLF4JStaticBridge.setLogger(logger);
 
-        SqlDatabaseDriverConfig config = new SqlDatabaseDriverConfig(H2PortableDatabaseDriver.class);
-        config.setHost("127.0.0.1").setPort(3306).setUsername("root");
-        config.useDataSource().setClassName("com.zaxxer.hikari.HikariDataSource");
+        MySqlDatabaseDriverConfig config = (MySqlDatabaseDriverConfig) new MySqlDatabaseDriverConfig(H2PortableDatabaseDriver.class).setHost("127.0.0.1")
+                .setPort(3306).setUsername("root")
+                .useDataSource().setClassName("com.zaxxer.hikari.HikariDataSource")
+                .out();
         config.setMultipleDatabaseConnectionsAble(true);
 
         DatabaseDriver driver = new MySqlDatabaseDriver("Production", config, logger);

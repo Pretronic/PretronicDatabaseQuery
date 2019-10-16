@@ -32,6 +32,8 @@ public interface QueryResult extends Iterable<QueryResultEntry> {
 
     QueryResultEntry get(int index);
 
+    boolean isEmpty();
+
     List<QueryResultEntry> asList();
 
     <T> void loadIn(Collection<T> collection, Function<QueryResultEntry,T> loader);

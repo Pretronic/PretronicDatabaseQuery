@@ -59,4 +59,16 @@ public class ForeignKey {
         SET_NULL
 
     }
+
+    public static ForeignKey of(DatabaseCollection collection, String field, Option deleteOption, Option updateOption){
+        return new ForeignKey(collection.getDatabase().getName(),collection.getName(),field,deleteOption,updateOption);
+    }
+
+    public static ForeignKey of(DatabaseCollection collection, String field, Option option){
+        return new ForeignKey(collection.getDatabase().getName(),collection.getName(),field,option,option);
+    }
+
+    public static ForeignKey of(DatabaseCollection collection, String field){
+        return of(collection,field,Option.DEFAULT,Option.DEFAULT);
+    }
 }

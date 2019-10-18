@@ -26,6 +26,8 @@ import java.util.Collection;
 
 public interface DatabaseCollection {
 
+    Database getDatabase();
+
     String getName();
 
     Type getType();

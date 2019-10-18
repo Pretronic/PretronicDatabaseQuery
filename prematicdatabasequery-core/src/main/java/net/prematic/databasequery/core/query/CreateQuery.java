@@ -50,6 +50,19 @@ public interface CreateQuery extends Query {
 
     CreateQuery foreignKey(String field, ForeignKey foreignKey);
 
+    default CreateQuery foreignKey(String field,DatabaseCollection collection, String otherField, ForeignKey.Option deleteOption, ForeignKey.Option updateOption){
+        return foreignKey(field,ForeignKey.of(collection,otherField,deleteOption,updateOption));
+    }
+
+    default CreateQuery foreignKey(String field,DatabaseCollection collection, String otherField, ForeignKey.Option option){
+        return foreignKey(field,ForeignKey.of(collection,otherField,option));
+    }
+
+
+    default CreateQuery foreignKey(String field, DatabaseCollection collection, String otherField){
+        return foreignKey(field,ForeignKey.of(collection,otherField));
+    }
+
     CreateQuery collectionName(String name);
 
     default DatabaseCollection create(Object... values) {

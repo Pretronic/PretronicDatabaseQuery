@@ -21,14 +21,15 @@ package net.prematic.databasequery.core.query;
 
 import net.prematic.databasequery.core.query.result.QueryResult;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface Query {
 
     Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
-    default QueryResult execute() {
+    default CompletableFuture<QueryResult> execute() {
         return execute(EMPTY_OBJECT_ARRAY);
     }
 
-    QueryResult execute(Object... values);
-
+    CompletableFuture<QueryResult> execute(Object... values);
 }

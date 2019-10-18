@@ -22,12 +22,9 @@ package net.prematic.databasequery.sql.mysql;
 import net.prematic.databasequery.core.DatabaseCollectionField;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryException;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,28 +42,33 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
         this.databaseCollection = databaseCollection;
         this.name = name;
         this.createOptions = new HashSet<>();
-        try(Connection connection = databaseCollection.getDatabase().getDriver().getConnection()) {
-            String sql = "DESCRIBE `" + databaseCollection.getDatabase().getName() + "`.`" + databaseCollection.getName() + "`";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                String dataTypeName = resultSet.getString("Type");
-                this.dataType = databaseCollection.getDatabase().getDriver()
-                        .getDataTypeInformationByName(dataTypeName.contains("(") ? dataTypeName.split("\\(")[0] : dataTypeName)
-                        .getDataType();
-                if(dataTypeName.contains("(")) {
-                    this.fieldSize = Integer.valueOf(dataTypeName.substring(dataTypeName.indexOf("("), dataTypeName.length()-1));
-                } else {
-                    this.fieldSize = -1;
-                }
-                this.defaultValue = resultSet.getObject("Default");
-            } else {
-
-            }
-            connection.commit();
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+        String query = "DESCRIBE `";
+        if(databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=databaseCollection.getDatabase().getName() + "`.`";
         }
+        query+=databaseCollection.getName() + "`";
+        String finalQuery = query;
+        this.databaseCollection.getDatabase().executeResultQuery(query, true, preparedStatement -> {}
+        , resultSet -> {
+            try {
+                if (resultSet.next()) {
+                    String dataTypeName = resultSet.getString("Type");
+                    this.dataType = databaseCollection.getDatabase().getDriver()
+                            .getDataTypeInformationByName(dataTypeName.contains("(") ? dataTypeName.split("\\(")[0] : dataTypeName)
+                            .getDataType();
+                    if(dataTypeName.contains("(")) {
+                        this.fieldSize = Integer.parseInt(dataTypeName.substring(dataTypeName.indexOf("("), dataTypeName.length()-1));
+                    } else {
+                        this.fieldSize = -1;
+                    }
+                    this.defaultValue = resultSet.getObject("Default");
+                } else {
+                    throw new DatabaseQueryException(String.format("Collection field %s was not found", name));
+                }
+            } catch (SQLException exception) {
+                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, finalQuery);
+            }
+        });
     }
 
     @Override
@@ -96,30 +98,43 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
 
     @Override
     public void setName(String name) {
-        String sql  = "ALTER TABLE `" + this.databaseCollection.getDatabase().getName() + "`.`" + this.databaseCollection.getName()
+        String query  = "ALTER TABLE `";
+        if(this.databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=this.databaseCollection.getDatabase().getName() + "`.`";
+        }
+        query+=this.databaseCollection.getName()
                 + "` CHANGE COLUMN `" + this.name + "` `" + name + "` " +
                 this.databaseCollection.getDatabase().getDriver().getDataTypeInformationByDataType(this.dataType).getName();
-        if(this.fieldSize != -1) sql+= "(" + this.fieldSize + ");";
-        this.databaseCollection.getDatabase().getDriver().executeSimpleUpdateQuery(sql);
+        if(this.fieldSize != -1) query+= "(" + this.fieldSize + ");";
+        this.databaseCollection.getDatabase().executeSimpleUpdateQuery(query, true);
     }
 
     @Override
     public void setFieldSize(int size) {
-        String sql  = "ALTER TABLE `" + this.databaseCollection.getDatabase().getName() + "`.`" + this.databaseCollection.getName() +
+        String query  = "ALTER TABLE `";
+        if(this.databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=this.databaseCollection.getDatabase().getName() + "`.`";
+        }
+        query+=this.databaseCollection.getName() +
                 "` MODIFY `" +  this.name + "` " + this.databaseCollection.getDatabase().getDriver().getDataTypeInformationByDataType(dataType).getName()
                 + "(" + size + ");";
-        this.databaseCollection.getDatabase().getDriver().executeSimpleUpdateQuery(sql);
+        this.databaseCollection.getDatabase().executeSimpleUpdateQuery(query, true);
     }
 
     @Override
     public void setDefaultValue(Object defaultValue) {
-        String sql ="ALTER TABLE `" + this.databaseCollection.getDatabase().getName() + "`.`" + this.databaseCollection.getName() +
+        String query ="ALTER TABLE `";
+        if(this.databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=this.databaseCollection.getDatabase().getName() + "`.`";
+        }
+        query+= this.databaseCollection.getName() +
                 "` ALTER COLUMN `" + this.name + "` SET DEFAULT ?";
-        this.databaseCollection.getDatabase().getDriver().executeUpdateQuery(sql, preparedStatement -> {
+        String finalQuery = query;
+        this.databaseCollection.getDatabase().executeUpdateQuery(query, true, preparedStatement -> {
             try {
                 preparedStatement.setObject(1, defaultValue);
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } catch (SQLException exception) {
+                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, finalQuery);
             }
         });
     }
@@ -136,11 +151,12 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
 
     @Override
     public void addForeignKey(ForeignKey foreignKey) {
-        StringBuilder sql = new StringBuilder()
-                .append("ALTER TABLE `")
-                .append(this.databaseCollection.getDatabase().getName())
-                .append("`.`")
-                .append(this.databaseCollection.getName())
+        StringBuilder query = new StringBuilder().append("ALTER TABLE `");
+        if(this.databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query.append(this.databaseCollection.getDatabase().getName())
+                    .append("`.`");
+        }
+        query.append(this.databaseCollection.getName())
                 .append(" ADD CONSTRAINT `")
                 .append(this.databaseCollection.getDatabase().getName())
                 .append(this.databaseCollection.getName())
@@ -155,13 +171,13 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
                 .append(foreignKey.getField()).append("`)");
 
         if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
-            sql.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
+            query.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
 
         if(foreignKey.getUpdateOption() != null && foreignKey.getUpdateOption() != ForeignKey.Option.DEFAULT) {
-            sql.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
+            query.append(" ON UPDATE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
-        this.databaseCollection.getDatabase().getDriver().executeSimpleUpdateQuery(sql.append(";").toString());
+        this.databaseCollection.getDatabase().executeSimpleUpdateQuery(query.append(";").toString(), true);
     }
 
     @Override
@@ -173,6 +189,6 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
                 this.databaseCollection.getDatabase().getName()
                 +this.databaseCollection.getName()
                 +this.name + "`;";
-        this.databaseCollection.getDatabase().getDriver().executeSimpleUpdateQuery(sql);
+        this.databaseCollection.getDatabase().executeSimpleUpdateQuery(sql, true);
     }
 }

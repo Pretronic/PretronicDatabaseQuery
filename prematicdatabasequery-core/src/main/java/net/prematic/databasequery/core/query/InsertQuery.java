@@ -19,6 +19,10 @@
 
 package net.prematic.databasequery.core.query;
 
+import net.prematic.databasequery.core.query.result.QueryResult;
+
+import java.util.concurrent.CompletableFuture;
+
 /**
  * No query order
  */
@@ -34,4 +38,9 @@ public interface InsertQuery extends Query {
 
     InsertQuery value(Object... values);
 
+    CompletableFuture<QueryResult> executeAndGetGeneratedKeys(String[] keyColumns, Object... values);
+
+    default CompletableFuture<QueryResult> executeAndGetGeneratedKeys(String... keyColumns) {
+        return executeAndGetGeneratedKeys(keyColumns, Query.EMPTY_OBJECT_ARRAY);
+    }
 }

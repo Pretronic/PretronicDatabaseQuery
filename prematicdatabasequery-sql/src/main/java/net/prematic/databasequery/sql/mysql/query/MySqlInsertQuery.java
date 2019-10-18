@@ -20,16 +20,21 @@
 package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
+import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.core.query.result.QueryResultEntry;
 import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class MySqlInsertQuery extends AbstractInsertQuery implements QueryStringBuildAble, CommitOnExecute {
 
@@ -45,39 +50,56 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
         return valuesPerField;
     }
 
-    @Override
-    public QueryResult execute(boolean commit, Object... values) {
-        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            int index = 1;
-            int valueGet = 0;
-            String query = buildExecuteString(values);
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            for (int i = 0; i < this.valuesPerField; i++) {
-                for (Entry entry : getEntries()) {
-                    Object value;
-                    if(entry.getValues().size() > i) {
-                        value = entry.getValues().get(i);
-                    } else {
-                        value = values[valueGet];
-                        valueGet++;
+    public CompletableFuture<QueryResult> executeAndGetGeneratedKeys(boolean commit, String[] keyColumns, Object... values) {
+        CompletableFuture<QueryResult> completableFuture = new CompletableFuture<>();
+        String query = buildExecuteString(values);
+        this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
+            try {
+                int index = 1;
+                int valueGet = 0;
+                for (int i = 0; i < this.valuesPerField; i++) {
+                    for (Entry entry : getEntries()) {
+                        Object value;
+                        if(entry.getValues().size() > i) {
+                            value = entry.getValues().get(i);
+                        } else {
+                            value = values[valueGet];
+                            valueGet++;
+                        }
+                        DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                        if(adapter != null) value = adapter.write(value);
+                        preparedStatement.setObject(index, value);
+                        index++;
                     }
-                    DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                    if(adapter != null) value = adapter.write(value);
-                    preparedStatement.setObject(index, value);
-                    index++;
                 }
+            } catch (SQLException exception) {
+                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
             }
-            preparedStatement.executeUpdate();
-            if(commit) connection.commit();
-            if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
-        return null;
+        }, keyColumns).thenAccept(generatedKeys -> {
+            List<QueryResultEntry> resultEntries = new ArrayList<>();
+            for (int i = 0; i < generatedKeys.length; i++) {
+                Map<String, Object> results = new HashMap<>();
+                results.put(keyColumns[i], generatedKeys[i]);
+                resultEntries.add(new SimpleQueryResultEntry(results));
+            }
+            QueryResult result = new SimpleQueryResult(resultEntries);
+            completableFuture.complete(result);
+        });
+        return completableFuture;
     }
 
     @Override
-    public QueryResult execute(Object... values) {
+    public CompletableFuture<QueryResult> executeAndGetGeneratedKeys(String[] keyColumns, Object... values) {
+        return executeAndGetGeneratedKeys(true, keyColumns, values);
+    }
+
+    @Override
+    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+        return executeAndGetGeneratedKeys(commit, new String[0], values);
+    }
+
+    @Override
+    public CompletableFuture<QueryResult> execute(Object... values) {
         return execute(true, values);
     }
 
@@ -107,15 +129,11 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
             }
             valueQueryBuilder.append(")");
         }
-
-        return "INSERT INTO `" +
-                this.databaseCollection.getDatabase().getName() +
-                "`.`" +
-                this.databaseCollection.getName() +
-                "` " +
-                fieldQueryBuilder +
-                ")" +
-                valueQueryBuilder +
-                ";";
+        String query = "INSERT INTO `";
+        if(databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=this.databaseCollection.getDatabase().getName() + "`.`";
+        }
+        query+=this.databaseCollection.getName() + "` " + fieldQueryBuilder + ")" + valueQueryBuilder + ";";
+        return query;
     }
 }

@@ -77,7 +77,7 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public Object getObject(String key) {
-        return this.results.get(key);
+        return this.results.get(key.toLowerCase());
     }
 
     @Override

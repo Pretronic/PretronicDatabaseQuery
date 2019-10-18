@@ -21,7 +21,6 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.query.SearchQuery;
 import net.prematic.databasequery.core.query.option.OrderOption;
@@ -30,11 +29,10 @@ import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T>, QueryStringBuildAble, CommitOnExecute {
 
@@ -62,7 +60,6 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
             if(this.where) {
                 this.queryBuilder.append(" WHERE ");
                 this.where = false;
-                System.out.println("where: " + this.where);
             }
             else this.queryBuilder.append(" AND ");
         }
@@ -160,7 +157,6 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
         if(this.operator) {
             if(this.where) {
-                System.out.println(this.where);
                 this.queryBuilder.append(" WHERE ");
                 this.where = false;
             }
@@ -316,33 +312,31 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     }
 
     @Override
-    public QueryResult execute(boolean commit, Object... values) {
-        try(Connection connection = this.databaseCollection.getDatabase().getDriver().getConnection()) {
-            int index = 1;
-            int valueGet = 0;
-            String query = buildExecuteString(values);
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            for (Object value : this.values) {
-                if(value == null) {
-                    value = values[valueGet];
-                    valueGet++;
+    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+        String query = buildExecuteString(values);
+        this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
+            try {
+                int index = 1;
+                int valueGet = 0;
+                for (Object value : this.values) {
+                    if(value == null) {
+                        value = values[valueGet];
+                        valueGet++;
+                    }
+                    DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                    if(adapter != null) value = adapter.write(value);
+                    preparedStatement.setObject(index, value);
+                    index++;
                 }
-                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                if(adapter != null) value = adapter.write(value);
-                preparedStatement.setObject(index, value);
-                index++;
+            } catch (SQLException exception) {
+                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
             }
-            preparedStatement.executeUpdate();
-            if(commit) connection.commit();
-            if(this.databaseCollection.getLogger().isDebugging()) this.databaseCollection.getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
+        });
         return null;
     }
 
     @Override
-    public QueryResult execute(Object... values) {
+    public CompletableFuture<QueryResult> execute(Object... values) {
         return execute(true, values);
     }
 }

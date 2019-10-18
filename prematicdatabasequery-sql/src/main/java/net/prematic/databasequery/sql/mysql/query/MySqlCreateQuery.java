@@ -23,7 +23,6 @@ import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.impl.DataTypeInformation;
 import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
 import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
@@ -34,30 +33,30 @@ import net.prematic.databasequery.core.query.result.QueryResult;
 import net.prematic.databasequery.sql.CommitOnExecute;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, CommitOnExecute {
 
     private String name;
     private final MySqlDatabase database;
     private final StringBuilder queryBuilder;
-    private boolean first;
+    private boolean first, engine;
     private final List<Object> values;
 
     public MySqlCreateQuery(String name, MySqlDatabase database) {
         this.name = name;
         this.database = database;
         this.queryBuilder = new StringBuilder()
-                .append("CREATE TABLE IF NOT EXISTS `")
-                .append(database.getName())
-                .append("`.`")
-                .append(name)
-                .append("`(");
+                .append("CREATE TABLE IF NOT EXISTS `");
+        if(this.database.getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            this.queryBuilder.append(database.getName()).append("`.`");
+        }
+        this.queryBuilder.append(name).append("`(");
         this.values = new ArrayList<>();
         this.first = true;
+        this.engine = false;
     }
 
     @Override
@@ -67,8 +66,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         boolean uniqueIndex = false;
         boolean index = false;
         DataTypeInformation dataTypeInformation = this.database.getDriver().getDataTypeInformationByDataType(dataType);
-        queryBuilder.append("`").append(field).append("` ")
-                .append(dataTypeInformation.getName());
+        queryBuilder.append("`").append(field).append("` ").append(dataTypeInformation.getName());
         if(dataTypeInformation.isSizeAble()) {
             if(fieldSize != -1) queryBuilder.append("(").append(fieldSize).append(")");
             else if(dataTypeInformation.getDefaultSize() != -1) queryBuilder.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
@@ -115,6 +113,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
     @Override
     public CreateQuery engine(String engine) {
         this.queryBuilder.append(") ENGINE=").append(engine).append(";");
+        this.engine = true;
         return this;
     }
 
@@ -135,39 +134,37 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
     }
 
     @Override
-    public QueryResult execute(boolean commit, Object... values) {
+    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+
         String query = buildExecuteString(values);
-        try(Connection connection = this.database.getDriver().getConnection()) {
-            int index = 1;
-            int valueGet = 0;
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            for (Object value : this.values) {
-                if(value == null) {
-                    value = values[valueGet];
-                    valueGet++;
+        this.database.executeUpdateQuery(query, commit, preparedStatement -> {
+            try {
+                int index = 1;
+                int valueGet = 0;
+                for (Object value : this.values) {
+                    if(value == null) {
+                        value = values[valueGet];
+                        valueGet++;
+                    }
+                    DataTypeAdapter adapter = this.database.getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                    if(adapter != null) value = adapter.write(value);
+                    preparedStatement.setObject(index, value);
+                    index++;
                 }
-                DataTypeAdapter adapter = this.database.getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                if(adapter != null) value = adapter.write(value);
-                preparedStatement.setObject(index, value);
-                index++;
+            } catch (SQLException exception) {
+                this.database.getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
             }
-            preparedStatement.executeUpdate();
-            if(commit) connection.commit();
-            if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            if(this.database.getLogger().isDebugging()) {
-                this.database.getLogger().debug("Error executing sql query: {}", query);
-                throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-            }else throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
+        });
         Map<String, Object> results = new HashMap<>();
-        results.put("databaseCollection", this.database.getCollection(this.name));
+        results.put("databasecollection", this.database.getCollection(this.name));
         SimpleQueryResultEntry queryResultEntry = new SimpleQueryResultEntry(results);
-        return new SimpleQueryResult(Collections.singletonList(queryResultEntry));
+        CompletableFuture<QueryResult> result = new CompletableFuture<>();
+        result.complete(new SimpleQueryResult(Collections.singletonList(queryResultEntry)));
+        return result;
     }
 
     @Override
-    public QueryResult execute(Object... values) {
+    public CompletableFuture<QueryResult> execute(Object... values) {
         return execute(true, values);
     }
 
@@ -180,12 +177,11 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
                 .append(field)
                 .append("` FOREIGN KEY(`")
                 .append(field)
-                .append("`) REFERENCES `")
-                .append(foreignKey.getDatabase())
-                .append("`.`")
-                .append(foreignKey.getCollection())
-                .append("`(`")
-                .append(foreignKey.getField()).append("`)");
+                .append("`) REFERENCES `");
+        if(this.database.getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            this.queryBuilder.append(foreignKey.getDatabase()).append("`.`");
+        }
+        this.queryBuilder.append(foreignKey.getCollection()).append("`(`").append(foreignKey.getField()).append("`)");
         if(foreignKey.getDeleteOption() != null && foreignKey.getDeleteOption() != ForeignKey.Option.DEFAULT) {
             this.queryBuilder.append(" ON DELETE ").append(foreignKey.getDeleteOption().toString().replace("_", " "));
         }
@@ -197,6 +193,6 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
 
     @Override
     public String buildExecuteString(Object... values) {
-        return this.queryBuilder.append(");").toString();
+        return this.queryBuilder.append(!engine ? ");" : "").toString();
     }
 }

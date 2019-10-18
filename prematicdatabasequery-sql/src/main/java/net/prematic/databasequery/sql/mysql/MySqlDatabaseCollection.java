@@ -23,16 +23,15 @@ import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.DatabaseCollectionField;
 import net.prematic.databasequery.core.aggregation.Aggregation;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
+import net.prematic.databasequery.core.exceptions.DatabaseQueryException;
 import net.prematic.databasequery.core.query.*;
 import net.prematic.databasequery.sql.mysql.query.*;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.Iterators;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 
 public class MySqlDatabaseCollection implements DatabaseCollection {
 
@@ -64,7 +63,11 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
 
     @Override
     public long getSize() {
-        return find().get(aggregationBuilder -> aggregationBuilder.aggregation(Aggregation.COUNT, "*")).execute().first().getLong(0);
+        try {
+            return find().get(aggregationBuilder -> aggregationBuilder.aggregation(Aggregation.COUNT, "*")).execute().get().first().getLong(0);
+        } catch (InterruptedException | ExecutionException exception) {
+            throw new DatabaseQueryException(String.format("Failed to count size of %s collection", this.name), exception);
+        }
     }
 
     @Override
@@ -94,24 +97,22 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
 
     @Override
     public void drop() {
-        try(Connection connection = getDatabase().getDriver().getConnection()) {
-            String query = "DROP TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`";
-            connection.prepareStatement(query);
-            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+        String query = "DROP TABLE IF EXISTS `";
+        if(getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=getDatabase().getName() + "`.`";
         }
+        query+=getName() + "`";
+        this.database.executeSimpleUpdateQuery(query, true);
     }
 
     @Override
     public void truncate() {
-        try(Connection connection = getDatabase().getDriver().getConnection()) {
-            String query = "TRUNCATE TABLE IF EXISTS `" + getDatabase().getName() + "`.`" + getName() + "`";
-            connection.prepareStatement(query);
-            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+        String query = "TRUNCATE TABLE IF EXISTS `";
+        if(getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            query+=getDatabase().getName() + "`.`";
         }
+        query+=getName() + "`";
+        this.database.executeSimpleUpdateQuery(query, true);
     }
 
     @Override

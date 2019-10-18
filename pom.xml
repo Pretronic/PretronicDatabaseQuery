@@ -13,6 +13,8 @@
         <module>prematicdatabasequery-core</module>
         <module>prematicdatabasequery-core-impl</module>
         <module>prematicdatabasequery-sql</module>
+        <module>prematicdatabasequery-example</module>
+        <module>prematicdatabasequery-entity</module>
     </modules>
 
 </project>

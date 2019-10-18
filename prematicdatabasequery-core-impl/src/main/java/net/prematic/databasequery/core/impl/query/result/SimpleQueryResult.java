@@ -50,6 +50,11 @@ public class SimpleQueryResult implements QueryResult {
     }
 
     @Override
+    public boolean isEmpty() {
+        return this.entries.isEmpty();
+    }
+
+    @Override
     public List<QueryResultEntry> asList() {
         return this.entries;
     }

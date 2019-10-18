@@ -22,23 +22,28 @@ package net.prematic.databasequery.sql.mysql;
 import net.prematic.databasequery.core.Database;
 import net.prematic.databasequery.core.DatabaseCollection;
 import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.core.query.CreateQuery;
 import net.prematic.databasequery.core.query.Query;
 import net.prematic.databasequery.core.query.QueryTransaction;
 import net.prematic.databasequery.core.query.result.QueryResult;
+import net.prematic.databasequery.sql.SqlDatabaseConnectionHolder;
 import net.prematic.databasequery.sql.mysql.query.MySqlCreateQuery;
 import net.prematic.libraries.logging.PrematicLogger;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.exceptions.NotImplementedException;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
-public class MySqlDatabase implements Database {
+public abstract class MySqlDatabase implements Database {
 
     private final String name;
-    private final MySqlDatabaseDriver driver;
+    protected final MySqlDatabaseDriver driver;
 
     public MySqlDatabase(String name, MySqlDatabaseDriver driver) {
         this.name = name;
@@ -76,24 +81,14 @@ public class MySqlDatabase implements Database {
 
     @Override
     public void dropCollection(String name) {
-        try(Connection connection = getDriver().getConnection()) {
-            String query = "DROP TABLE IF EXISTS `" + this.name + "`.`" + name + "`";
-            connection.prepareStatement(query);
-            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: ", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
+        String query = "DROP TABLE IF EXISTS `" + this.name + "`.`" + name + "`";
+        executeSimpleUpdateQuery(query, true);
     }
 
     @Override
     public void drop() {
-        try(Connection connection = getDriver().getConnection()) {
-            String query = "DROP DATABASE IF EXISTS `" + getName() + "`";
-            connection.prepareStatement(query);
-            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
-        } catch (SQLException exception) {
-            throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
-        }
+        String query = "DROP DATABASE IF EXISTS `" + getName() + "`";
+        executeSimpleUpdateQuery(query, true);
     }
 
     @Override
@@ -116,4 +111,96 @@ public class MySqlDatabase implements Database {
     public PrematicLogger getLogger() {
         return getDriver().getLogger();
     }
+
+    @Internal
+    public void executeResultQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, Consumer<ResultSet> resultSetConsumer, Consumer<SQLException> exceptionConsumer) {
+        getDriver().getExecutorService().execute(()-> {
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            ResultSet resultSet = null;
+            try {
+                connection = getConnectionHolder().getConnection();
+                preparedStatement = connection.prepareStatement(query);
+                preparedStatementConsumer.accept(preparedStatement);
+                resultSet = preparedStatement.executeQuery();
+                resultSetConsumer.accept(resultSet);
+                if(commit) connection.commit();
+                if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
+            } catch (SQLException exception) {
+                exceptionConsumer.accept(exception);
+            } finally {
+                try {
+                    if(connection != null && getDriver().useDataSource()) connection.close();
+                    if(preparedStatement != null) preparedStatement.close();
+                    if(resultSet != null) resultSet.close();
+                } catch (SQLException exception) {
+                    exceptionConsumer.accept(exception);
+                }
+            }
+        });
+    }
+
+    @Internal
+    public void executeResultQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, Consumer<ResultSet> resultSetConsumer) {
+        executeResultQuery(query, commit, preparedStatementConsumer, resultSetConsumer, exception -> getDriver().handleDatabaseQueryExecuteFailedException(exception, query));
+    }
+
+    @Internal
+    public CompletableFuture<Number[]> executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, String[] returnIdColumns, Consumer<SQLException> exceptionConsumer) {
+        CompletableFuture<Number[]> future = new CompletableFuture<>();
+        getDriver().getExecutorService().execute(()-> {
+            Connection connection = null;
+            PreparedStatement preparedStatement = null;
+            try {
+                connection = getConnectionHolder().getConnection();
+                if(returnIdColumns != null) preparedStatement = connection.prepareStatement(query, returnIdColumns);
+                else preparedStatement = connection.prepareStatement(query);
+                preparedStatementConsumer.accept(preparedStatement);
+                int affectedRows = preparedStatement.executeUpdate();
+                if(affectedRows != 0) {
+                    if(returnIdColumns != null && returnIdColumns.length > 0) {
+                        Number[] generatedKeys = new Number[returnIdColumns.length];
+                        try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                            if(resultSet.next()) {
+                                for (int i = 1; i <= returnIdColumns.length; i++) {
+                                    generatedKeys[i-1] = (Number) resultSet.getObject(i);
+                                }
+                            }
+                        }
+                        future.complete(generatedKeys);
+                    }
+                }
+                if(commit) connection.commit();
+                if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
+            } catch (SQLException exception) {
+                exceptionConsumer.accept(exception);
+            } finally {
+                try {
+                    if(connection != null && getDriver().useDataSource()) connection.close();
+                    if(preparedStatement != null) preparedStatement.close();
+                } catch (SQLException exception) {
+                    exceptionConsumer.accept(exception);
+                }
+            }
+            future.complete(new Number[0]);
+        });
+        return future;
+    }
+
+    @Internal
+    public CompletableFuture<Number[]> executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, String[] returnIdColumns) {
+        return executeUpdateQuery(query, commit, preparedStatementConsumer, returnIdColumns, exception -> getDriver().handleDatabaseQueryExecuteFailedException(exception, query));
+    }
+
+    @Internal
+    public void executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer) {
+        executeUpdateQuery(query, commit, preparedStatementConsumer, null);
+    }
+
+    @Internal
+    public void executeSimpleUpdateQuery(String sql, boolean commit) {
+        executeUpdateQuery(sql, commit, ignored -> {});
+    }
+
+    public abstract SqlDatabaseConnectionHolder getConnectionHolder();
 }

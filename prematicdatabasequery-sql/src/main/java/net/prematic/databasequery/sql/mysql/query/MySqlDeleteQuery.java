@@ -28,15 +28,20 @@ public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implem
 
     public MySqlDeleteQuery(MySqlDatabaseCollection databaseCollection) {
         super(databaseCollection);
-        this.mainQuery = "DELETE FROM `"
-                + databaseCollection.getDatabase().getName()
-                + "`.`"
-                + databaseCollection.getName()
-                + "` ";
+        String mainQuery = "DELETE FROM `";
+
+        if(databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
+            mainQuery+= databaseCollection.getDatabase().getName()
+                    + "`.`";
+        }
+
+
+        mainQuery+= databaseCollection.getName() + "` ";
+        this.mainQuery = mainQuery;
     }
 
     @Override
     public String buildExecuteString(Object... values) {
-        return this.mainQuery + this.queryBuilder.toString();
+        return this.mainQuery + this.queryBuilder.toString() + ";";
     }
 }

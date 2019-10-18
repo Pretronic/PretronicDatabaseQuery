@@ -20,6 +20,7 @@
 
 package net.prematic.databasequery.core;
 
+import net.prematic.databasequery.core.config.DatabaseDriverConfig;
 import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.core.datatype.adapter.defaults.UUIDDataTypeAdapter;
 import net.prematic.libraries.logging.PrematicLogger;
@@ -29,9 +30,14 @@ import net.prematic.libraries.utility.reflect.TypeReference;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 public interface DatabaseDriver {
+
+    Map<Class<?>, Creator> CREATORS = new HashMap<>();
 
     String getName();
 
@@ -92,4 +98,19 @@ public interface DatabaseDriver {
     }
 
     PrematicLogger getLogger();
+
+    ExecutorService getExecutorService();
+
+    static Creator getCreator(Class<?> databaseDriverClass) {
+        return CREATORS.get(databaseDriverClass);
+    }
+
+    static void registerCreator(Class<?> databaseDriverClass, Creator creator) {
+        CREATORS.put(databaseDriverClass, creator);
+    }
+
+    interface Creator {
+
+        DatabaseDriver create(String name, DatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService, Object... properties);
+    }
 }

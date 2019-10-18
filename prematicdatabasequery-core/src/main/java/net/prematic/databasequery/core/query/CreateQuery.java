@@ -24,6 +24,8 @@ import net.prematic.databasequery.core.ForeignKey;
 import net.prematic.databasequery.core.datatype.DataType;
 import net.prematic.databasequery.core.query.option.CreateOption;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Query order:
  * - method {@link #engine(String)} at the end
@@ -65,7 +67,9 @@ public interface CreateQuery extends Query {
 
     CreateQuery collectionName(String name);
 
-    default DatabaseCollection create(Object... values) {
-        return (DatabaseCollection) execute(values).first().getObject("databaseCollection");
+    default CompletableFuture<DatabaseCollection> create(Object... values) {
+        CompletableFuture<DatabaseCollection> future = new CompletableFuture<>();
+        execute(values).thenAccept(result -> future.complete((DatabaseCollection) result.first().getObject("databaseCollection")));
+        return future;
     }
 }

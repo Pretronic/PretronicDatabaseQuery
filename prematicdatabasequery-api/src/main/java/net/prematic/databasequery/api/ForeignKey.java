@@ -60,6 +60,14 @@ public class ForeignKey {
 
     }
 
+    public static ForeignKey of(String database, String collection, String field, Option option){
+        return new ForeignKey(database,collection,field,option,option);
+    }
+
+    public static ForeignKey of(String database, String collection, String field, Option deleteOption, Option updateOption){
+        return new ForeignKey(database,collection,field,deleteOption,updateOption);
+    }
+
     public static ForeignKey of(DatabaseCollection collection, String field, Option deleteOption, Option updateOption){
         return new ForeignKey(collection.getDatabase().getName(),collection.getName(),field,deleteOption,updateOption);
     }

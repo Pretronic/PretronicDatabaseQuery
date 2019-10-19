@@ -38,6 +38,10 @@ public interface CreateQuery extends Query {
         return attribute(field, dataType, -1, null, null, createOptions);
     }
 
+    default CreateQuery attribute(String field, DataType dataType,ForeignKey foreignKey, CreateOption... createOptions) {
+        return attribute(field, dataType, -1, null, foreignKey, createOptions);
+    }
+
     default CreateQuery attribute(String field, DataType dataType, int fieldSize, CreateOption... createOptions) {
         return attribute(field, dataType, fieldSize, null, null, createOptions);
     }

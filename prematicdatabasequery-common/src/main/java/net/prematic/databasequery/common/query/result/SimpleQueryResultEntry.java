@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class SimpleQueryResultEntry implements QueryResultEntry {
 
@@ -188,5 +189,10 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
         } catch (Exception exception) {
             return false;
         }
+    }
+
+    @Override
+    public <T> T to(Function<QueryResultEntry, T> function) {
+        return function.apply(this);
     }
 }

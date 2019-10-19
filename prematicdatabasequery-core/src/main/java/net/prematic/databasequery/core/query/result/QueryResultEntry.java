@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 public interface QueryResultEntry extends Iterable<Map.Entry<String, Object>> {
 
@@ -77,6 +78,8 @@ public interface QueryResultEntry extends Iterable<Map.Entry<String, Object>> {
     boolean contains(String key);
 
     boolean contains(int index);
+
+    <T> T to(Function<QueryResultEntry,T> function);
 
     @Override
     default Iterator<Map.Entry<String, Object>> iterator() {

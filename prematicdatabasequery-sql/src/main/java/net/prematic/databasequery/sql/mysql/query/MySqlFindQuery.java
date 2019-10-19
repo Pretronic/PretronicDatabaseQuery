@@ -19,24 +19,25 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
-import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
-import net.prematic.databasequery.core.query.FindQuery;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.core.query.result.QueryResultEntry;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.query.FindQuery;
+import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.api.query.result.QueryResultEntry;
+import net.prematic.databasequery.common.query.result.SimpleQueryResult;
+import net.prematic.databasequery.common.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 import net.prematic.libraries.utility.io.FileUtil;
 
 import java.sql.Clob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements FindQuery {
 
@@ -83,53 +84,11 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
     }
 
     @Override
-    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+    public QueryResult execute(boolean commit, Object... values) {
         String query = buildExecuteString(values);
-        CompletableFuture<QueryResult> completableFuture = new CompletableFuture<>();
-        this.databaseCollection.getDatabase().executeResultQuery(query, commit, preparedStatement -> {
-            try {
-                int index = 1;
-                int valueGet = 0;
-                for (Object value : this.values) {
-                    if(value == null) {
-                        value = values[valueGet];
-                        valueGet++;
-                    }
-                    preparedStatement.setObject(index, value);
-                    index++;
-                }
-            } catch (SQLException exception) {
-                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
-            }
-        }, resultSet -> {
-            List<QueryResultEntry> resultEntries = new ArrayList<>();
-            try {
-                while (resultSet.next()) {
-                    Map<String, Object> results = new LinkedHashMap<>();
-                    if(!this.fields.isEmpty()) {
-                        for (String field : this.fields) {
-                            Object value = resultSet.getObject(field);
-                            DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
-                            results.put(field.toLowerCase(), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
-                        }
-                    } else {
-                        for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                            Object value = resultSet.getObject(i);
-                            if(value instanceof Clob) {
-                                value = FileUtil.readContent(((Clob)value).getAsciiStream());
-                            }
-                            DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
-                            results.put(resultSet.getMetaData().getColumnName(i).toLowerCase(), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
-                        }
-                    }
-                    resultEntries.add(new SimpleQueryResultEntry(results));
-                }
-                completableFuture.complete(new SimpleQueryResult(resultEntries));
-            } catch (SQLException exception) {
-                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
-            }
-        });
-        return completableFuture;
+        return this.databaseCollection.getDatabase().executeResultQuery(query, commit
+                , preparedStatement -> handlePreparedStatement(preparedStatement, values)
+                , this::handleResultSet);
     }
 
     @Override
@@ -144,5 +103,43 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
         }
         queryString.append(this.databaseCollection.getName()).append("` ").append(this.queryBuilder).append(";");
         return queryString.toString();
+    }
+
+    private void handlePreparedStatement(PreparedStatement preparedStatement, Object... values) throws SQLException {
+        int index = 1;
+        int valueGet = 0;
+        for (Object value : this.values) {
+            if(value == null) {
+                value = values[valueGet];
+                valueGet++;
+            }
+            preparedStatement.setObject(index, value);
+            index++;
+        }
+    }
+
+    private QueryResult handleResultSet(ResultSet resultSet) throws SQLException {
+        List<QueryResultEntry> resultEntries = new ArrayList<>();
+        while (resultSet.next()) {
+            Map<String, Object> results = new LinkedHashMap<>();
+            if(!this.fields.isEmpty()) {
+                for (String field : this.fields) {
+                    Object value = resultSet.getObject(field);
+                    DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                    results.put(field.toLowerCase(), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
+                }
+            } else {
+                for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                    Object value = resultSet.getObject(i);
+                    if(value instanceof Clob) {
+                        value = FileUtil.readContent(((Clob)value).getAsciiStream());
+                    }
+                    DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                    results.put(resultSet.getMetaData().getColumnName(i).toLowerCase(), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
+                }
+            }
+            resultEntries.add(new SimpleQueryResultEntry(results));
+        }
+        return new SimpleQueryResult(resultEntries);
     }
 }

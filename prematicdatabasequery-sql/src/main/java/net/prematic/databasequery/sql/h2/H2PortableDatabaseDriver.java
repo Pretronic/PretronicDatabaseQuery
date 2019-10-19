@@ -19,10 +19,8 @@
 
 package net.prematic.databasequery.sql.h2;
 
-import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.core.DatabaseDriver;
+import net.prematic.databasequery.api.DatabaseDriver;
 import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
-import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
 import net.prematic.libraries.logging.PrematicLogger;
 
@@ -36,11 +34,9 @@ public class H2PortableDatabaseDriver extends MySqlDatabaseDriver {
     }
 
     private static final String TYPE = "H2-Portable";
-    private static final String JDBC_URL_EXTRA = ";MODE=Mysql;";
 
     public H2PortableDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
-        super(name, config, logger, executorService);
-        if(this.connectionHolder != null && config.isMultipleDatabaseConnectionsAble()) this.connectionHolder.addJdbcUrlExtra(JDBC_URL_EXTRA);
+        super(name, createBaseJdbcUrl(config), config, logger, executorService);
     }
 
     @Override
@@ -48,18 +44,7 @@ public class H2PortableDatabaseDriver extends MySqlDatabaseDriver {
         return TYPE;
     }
 
-    @Override
-    public Database getDatabase(String name) {
-        MySqlDatabase database = ((MySqlDatabase)super.getDatabase(name));
-        //database.getConnectionHolder().addJdbcUrlExtra(name);
-        if(!getConfig().isMultipleDatabaseConnectionsAble()) {
-            database.getConnectionHolder().addJdbcUrlExtra(JDBC_URL_EXTRA);
-        }
-        return database;
-    }
-
-    @Override
-    public String createBaseJdbcUrl() {
-        return String.format("jdbc:h2:file:%s", getConfig().getHost() == null || getConfig().getHost().equals("") ? "./" : getConfig().getHost());
+    public static String createBaseJdbcUrl(SqlDatabaseDriverConfig config) {
+        return String.format("jdbc:h2:file:%s", config.getHost() == null || config.getHost().equals("") ? "./" : config.getHost()) + ";MODE=Mysql;";
     }
 }

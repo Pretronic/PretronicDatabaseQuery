@@ -19,14 +19,14 @@
 
 package net.prematic.databasequery.example;
 
-import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.core.DatabaseDriver;
-import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.query.option.CreateOption;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.core.query.result.QueryResultEntry;
+import net.prematic.databasequery.api.Database;
+import net.prematic.databasequery.api.DatabaseCollection;
+import net.prematic.databasequery.api.DatabaseDriver;
+import net.prematic.databasequery.api.datatype.DataType;
+import net.prematic.databasequery.api.query.option.CreateOption;
+import net.prematic.databasequery.api.query.result.QueryResultEntry;
 import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
-import net.prematic.databasequery.sql.h2.H2PortableDatabaseDriver;
+import net.prematic.databasequery.sql.mysql.MySqlDatabaseDriver;
 import net.prematic.libraries.logging.LoggingUncaughtExceptionHandler;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.logging.SimplePrematicLogger;
@@ -35,56 +35,55 @@ import net.prematic.libraries.logging.level.LogLevel;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class MySqlDatabaseConnection {
 
     @Test
-    public void testConnection() throws InterruptedException {
+    public void test() throws InterruptedException {
         PrematicLogger logger = new SimplePrematicLogger();
         LoggingUncaughtExceptionHandler.hook(logger);
         logger.setLevel(LogLevel.DEBUG);
         SLF4JStaticBridge.setLogger(logger);
 
-        SqlDatabaseDriverConfig config = new SqlDatabaseDriverConfig(H2PortableDatabaseDriver.class).setHost("127.0.0.1")
+        SqlDatabaseDriverConfig config = new SqlDatabaseDriverConfig(MySqlDatabaseDriver.class)
+                .setHost("127.0.0.1")
                 .setPort(3306).setUsername("root")
-                .useDataSource().setClassName("com.zaxxer.hikari.HikariDataSource")
+                .getDataSourceConfig().setClassName("com.zaxxer.hikari.HikariDataSource")
                 .out();
         config.setMultipleDatabaseConnectionsAble(true);
 
         DatabaseDriver driver = config.createDatabaseDriver("production", logger);
         driver.connect();
+        driver.registerDefaultAdapters();
         Database database = driver.getDatabase("production");
 
-        database.createCollection("user")
+        DatabaseCollection user = database.createCollection("user")
                 .attribute("id", DataType.INTEGER, CreateOption.PRIMARY_KEY, CreateOption.AUTO_INCREMENT)
                 .attribute("name", DataType.LONG_TEXT, CreateOption.NOT_NULL)
                 .attribute("number", DataType.INTEGER, CreateOption.NOT_NULL)
-                .create().thenAccept(user -> {
-            for (int i = 0; i < 1; i++) {
-                CompletableFuture<QueryResult> future = user.insert().set("name", "peter").set("number", i).executeAndGetGeneratedKeys("id");
-                future.thenAccept(result -> {
-                    for (QueryResultEntry resultEntry : result) {
-                        logger.info("----------");
-                        logger.info("Generated Keys:");
-                        for (Map.Entry<String, Object> entry : resultEntry) {
-                            logger.info(entry.getKey() + " | " + entry.getValue());
-                        }
-                    }
-                    logger.info("----------");
-                });
-            }
-
-            user.find().execute().thenAccept(result -> {
+                .create();
+        for (int i = 0; i < 1; i++) {
+            user.insert().set("name", "peter").set("number", i).executeAsyncAndGetGeneratedKeys("id").thenAccept(result -> {
                 for (QueryResultEntry resultEntry : result) {
                     logger.info("----------");
-                    logger.info("Entry:");
+                    logger.info("Generated Keys:");
                     for (Map.Entry<String, Object> entry : resultEntry) {
                         logger.info(entry.getKey() + " | " + entry.getValue());
                     }
                 }
                 logger.info("----------");
             });
+        }
+
+        user.find().executeAsync().thenAccept(result -> {
+            for (QueryResultEntry resultEntry : result) {
+                logger.info("----------");
+                logger.info("Entry:");
+                for (Map.Entry<String, Object> entry : resultEntry) {
+                    logger.info(entry.getKey() + " | " + entry.getValue());
+                }
+            }
+            logger.info("----------");
         });
         Thread.sleep(3000);
         driver.disconnect();

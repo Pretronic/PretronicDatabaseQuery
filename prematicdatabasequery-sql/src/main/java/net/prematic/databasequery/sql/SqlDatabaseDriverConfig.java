@@ -19,8 +19,8 @@
 
 package net.prematic.databasequery.sql;
 
-import net.prematic.databasequery.core.DatabaseDriver;
-import net.prematic.databasequery.core.config.DatabaseDriverConfig;
+import net.prematic.databasequery.api.DatabaseDriver;
+import net.prematic.databasequery.api.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
 import net.prematic.libraries.document.DocumentEntry;
 
@@ -35,10 +35,12 @@ public class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDri
 
     public SqlDatabaseDriverConfig(Class<? extends DatabaseDriver> driverClass) {
         super(driverClass);
+        this.dataSourceConfig = new DataSourceConfig();
     }
 
     public SqlDatabaseDriverConfig(Document original) {
         super(original);
+        this.dataSourceConfig = new DataSourceConfig();
     }
 
     public String getJdbcUrl() {
@@ -137,11 +139,6 @@ public class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDri
     public SqlDatabaseDriverConfig setConnectionIsolationLevel(int connectionIsolationLevel) {
         set("connectionIsolationLevel", connectionIsolationLevel);
         return this;
-    }
-
-    public DataSourceConfig useDataSource() {
-        if(this.dataSourceConfig == null) this.dataSourceConfig = new DataSourceConfig();
-        return this.dataSourceConfig;
     }
 
     public class DataSourceConfig {

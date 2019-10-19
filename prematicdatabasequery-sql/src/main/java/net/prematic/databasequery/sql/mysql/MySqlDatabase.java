@@ -19,25 +19,26 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.query.CreateQuery;
-import net.prematic.databasequery.core.query.Query;
-import net.prematic.databasequery.core.query.QueryTransaction;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.SqlDatabaseConnectionHolder;
+import net.prematic.databasequery.api.Database;
+import net.prematic.databasequery.api.DatabaseCollection;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.query.CreateQuery;
+import net.prematic.databasequery.api.query.Query;
+import net.prematic.databasequery.api.query.QueryTransaction;
+import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.sql.PreparedStatementConsumer;
+import net.prematic.databasequery.sql.ResultSetFunction;
 import net.prematic.databasequery.sql.mysql.query.MySqlCreateQuery;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.exceptions.NotImplementedException;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public abstract class MySqlDatabase implements Database {
@@ -55,6 +56,7 @@ public abstract class MySqlDatabase implements Database {
         return this.name;
     }
 
+    @Override
     public MySqlDatabaseDriver getDriver() {
         return this.driver;
     }
@@ -113,87 +115,63 @@ public abstract class MySqlDatabase implements Database {
     }
 
     @Internal
-    public void executeResultQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, Consumer<ResultSet> resultSetConsumer, Consumer<SQLException> exceptionConsumer) {
-        getDriver().getExecutorService().execute(()-> {
-            Connection connection = null;
-            PreparedStatement preparedStatement = null;
-            ResultSet resultSet = null;
-            try {
-                connection = getConnectionHolder().getConnection();
-                preparedStatement = connection.prepareStatement(query);
-                preparedStatementConsumer.accept(preparedStatement);
-                resultSet = preparedStatement.executeQuery();
-                resultSetConsumer.accept(resultSet);
-                if(commit) connection.commit();
-                if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
-            } catch (SQLException exception) {
-                exceptionConsumer.accept(exception);
-            } finally {
-                try {
-                    if(connection != null && getDriver().useDataSource()) connection.close();
-                    if(preparedStatement != null) preparedStatement.close();
-                    if(resultSet != null) resultSet.close();
-                } catch (SQLException exception) {
-                    exceptionConsumer.accept(exception);
-                }
-            }
-        });
+    public <R> R executeResultQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, ResultSetFunction<R> resultSetFunction, Consumer<SQLException> exceptionConsumer) {
+        try(Connection connection = getDataSource().getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatementConsumer.accept(preparedStatement);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            R result = resultSetFunction.apply(resultSet);
+            if(commit) connection.commit();
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
+            return result;
+        } catch (SQLException exception) {
+            exceptionConsumer.accept(exception);
+        }
+        return null;
     }
 
     @Internal
-    public void executeResultQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, Consumer<ResultSet> resultSetConsumer) {
-        executeResultQuery(query, commit, preparedStatementConsumer, resultSetConsumer, exception -> getDriver().handleDatabaseQueryExecuteFailedException(exception, query));
+    public <R> R executeResultQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, ResultSetFunction<R> resultSetFunction) {
+        return executeResultQuery(query, commit, preparedStatementConsumer, resultSetFunction,
+                exception -> getDriver().handleDatabaseQueryExecuteFailedException(exception, query));
     }
 
     @Internal
-    public CompletableFuture<Number[]> executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, String[] returnIdColumns, Consumer<SQLException> exceptionConsumer) {
-        CompletableFuture<Number[]> future = new CompletableFuture<>();
-        getDriver().getExecutorService().execute(()-> {
-            Connection connection = null;
-            PreparedStatement preparedStatement = null;
-            try {
-                connection = getConnectionHolder().getConnection();
-                if(returnIdColumns != null) preparedStatement = connection.prepareStatement(query, returnIdColumns);
-                else preparedStatement = connection.prepareStatement(query);
-                preparedStatementConsumer.accept(preparedStatement);
-                int affectedRows = preparedStatement.executeUpdate();
-                if(affectedRows != 0) {
-                    if(returnIdColumns != null && returnIdColumns.length > 0) {
-                        Number[] generatedKeys = new Number[returnIdColumns.length];
-                        try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
-                            if(resultSet.next()) {
-                                for (int i = 1; i <= returnIdColumns.length; i++) {
-                                    generatedKeys[i-1] = (Number) resultSet.getObject(i);
-                                }
+    public Number[] executeUpdateQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, String[] returnIdColumns, Consumer<SQLException> exceptionConsumer) {
+        try(Connection connection = getDataSource().getConnection()) {
+            PreparedStatement preparedStatement;
+            if(returnIdColumns != null) preparedStatement = connection.prepareStatement(query, returnIdColumns);
+            else preparedStatement = connection.prepareStatement(query);
+            preparedStatementConsumer.accept(preparedStatement);
+            int affectedRows = preparedStatement.executeUpdate();
+            if(affectedRows != 0) {
+                if(returnIdColumns != null && returnIdColumns.length > 0) {
+                    Number[] generatedKeys = new Number[returnIdColumns.length];
+                    try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                        if(resultSet.next()) {
+                            for (int i = 1; i <= returnIdColumns.length; i++) {
+                                generatedKeys[i-1] = (Number) resultSet.getObject(i);
                             }
                         }
-                        future.complete(generatedKeys);
                     }
-                }
-                if(commit) connection.commit();
-                if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
-            } catch (SQLException exception) {
-                exceptionConsumer.accept(exception);
-            } finally {
-                try {
-                    if(connection != null && getDriver().useDataSource()) connection.close();
-                    if(preparedStatement != null) preparedStatement.close();
-                } catch (SQLException exception) {
-                    exceptionConsumer.accept(exception);
+                    return generatedKeys;
                 }
             }
-            future.complete(new Number[0]);
-        });
-        return future;
+            if(commit) connection.commit();
+            if(getLogger().isDebugging()) getLogger().debug("Executed sql query: {}", query);
+        } catch (SQLException exception) {
+            exceptionConsumer.accept(exception);
+        }
+        return new Number[0];
     }
 
     @Internal
-    public CompletableFuture<Number[]> executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer, String[] returnIdColumns) {
+    public Number[] executeUpdateQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, String[] returnIdColumns) {
         return executeUpdateQuery(query, commit, preparedStatementConsumer, returnIdColumns, exception -> getDriver().handleDatabaseQueryExecuteFailedException(exception, query));
     }
 
     @Internal
-    public void executeUpdateQuery(String query, boolean commit, Consumer<PreparedStatement> preparedStatementConsumer) {
+    public void executeUpdateQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer) {
         executeUpdateQuery(query, commit, preparedStatementConsumer, null);
     }
 
@@ -202,5 +180,5 @@ public abstract class MySqlDatabase implements Database {
         executeUpdateQuery(sql, commit, ignored -> {});
     }
 
-    public abstract SqlDatabaseConnectionHolder getConnectionHolder();
+    public abstract DataSource getDataSource();
 }

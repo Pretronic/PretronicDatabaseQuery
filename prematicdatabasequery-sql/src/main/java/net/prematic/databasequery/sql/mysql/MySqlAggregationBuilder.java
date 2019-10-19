@@ -19,9 +19,9 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.Database;
-import net.prematic.databasequery.core.aggregation.Aggregation;
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.Database;
+import net.prematic.databasequery.api.aggregation.Aggregation;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

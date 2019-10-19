@@ -19,11 +19,11 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.DatabaseCollectionField;
-import net.prematic.databasequery.core.ForeignKey;
-import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryException;
-import net.prematic.databasequery.core.query.option.CreateOption;
+import net.prematic.databasequery.api.DatabaseCollectionField;
+import net.prematic.databasequery.api.ForeignKey;
+import net.prematic.databasequery.api.datatype.DataType;
+import net.prematic.databasequery.api.exceptions.DatabaseQueryException;
+import net.prematic.databasequery.api.query.option.CreateOption;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -49,26 +49,23 @@ public class MySqlDatabaseCollectionField implements DatabaseCollectionField {
         query+=databaseCollection.getName() + "`";
         String finalQuery = query;
         this.databaseCollection.getDatabase().executeResultQuery(query, true, preparedStatement -> {}
-        , resultSet -> {
-            try {
-                if (resultSet.next()) {
-                    String dataTypeName = resultSet.getString("Type");
-                    this.dataType = databaseCollection.getDatabase().getDriver()
-                            .getDataTypeInformationByName(dataTypeName.contains("(") ? dataTypeName.split("\\(")[0] : dataTypeName)
-                            .getDataType();
-                    if(dataTypeName.contains("(")) {
-                        this.fieldSize = Integer.parseInt(dataTypeName.substring(dataTypeName.indexOf("("), dataTypeName.length()-1));
+                , resultSet -> {
+                    if (resultSet.next()) {
+                        String dataTypeName = resultSet.getString("Type");
+                        this.dataType = databaseCollection.getDatabase().getDriver()
+                                .getDataTypeInformationByName(dataTypeName.contains("(") ? dataTypeName.split("\\(")[0] : dataTypeName)
+                                .getDataType();
+                        if(dataTypeName.contains("(")) {
+                            this.fieldSize = Integer.parseInt(dataTypeName.substring(dataTypeName.indexOf("("), dataTypeName.length()-1));
+                        } else {
+                            this.fieldSize = -1;
+                        }
+                        this.defaultValue = resultSet.getObject("Default");
                     } else {
-                        this.fieldSize = -1;
+                        throw new DatabaseQueryException(String.format("Collection field %s was not found", name));
                     }
-                    this.defaultValue = resultSet.getObject("Default");
-                } else {
-                    throw new DatabaseQueryException(String.format("Collection field %s was not found", name));
-                }
-            } catch (SQLException exception) {
-                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, finalQuery);
-            }
-        });
+                    return null;
+                });
     }
 
     @Override

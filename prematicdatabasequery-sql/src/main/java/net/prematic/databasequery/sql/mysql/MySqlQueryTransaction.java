@@ -19,13 +19,13 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryCommitTransactionException;
-import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryCreateTransactionException;
-import net.prematic.databasequery.core.exceptions.transaction.DatabaseQueryRollbackTransactionException;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
-import net.prematic.databasequery.core.query.Query;
-import net.prematic.databasequery.core.query.QueryTransaction;
-import net.prematic.databasequery.sql.CommitOnExecute;
+import net.prematic.databasequery.api.exceptions.transaction.DatabaseQueryCommitTransactionException;
+import net.prematic.databasequery.api.exceptions.transaction.DatabaseQueryCreateTransactionException;
+import net.prematic.databasequery.api.exceptions.transaction.DatabaseQueryRollbackTransactionException;
+import net.prematic.databasequery.api.query.Query;
+import net.prematic.databasequery.api.query.QueryTransaction;
+import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.sql.SqlQuery;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -38,7 +38,7 @@ public class MySqlQueryTransaction implements QueryTransaction {
     public MySqlQueryTransaction(MySqlDatabase database) {
         this.database = database;
         try {
-            this.connection = database.getConnectionHolder().getConnection();
+            this.connection = database.getDataSource().getConnection();
         } catch (SQLException exception) {
             throw new DatabaseQueryCreateTransactionException(exception.getMessage(), exception);
         }
@@ -67,7 +67,7 @@ public class MySqlQueryTransaction implements QueryTransaction {
     @Override
     public void execute(Query query, Object... values) {
         String queryString = ((QueryStringBuildAble)query).buildExecuteString(values);
-        if(query instanceof CommitOnExecute) ((CommitOnExecute)query).execute(false, values);
+        if(query instanceof SqlQuery) ((SqlQuery)query).execute(false, values);
         else query.execute(values);
         if(this.database.getLogger().isDebugging()) this.database.getLogger().debug("Executed sql query ({}) in transaction {}", queryString, this);
     }

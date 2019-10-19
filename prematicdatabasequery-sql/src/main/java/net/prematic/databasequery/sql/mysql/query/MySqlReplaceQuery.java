@@ -19,20 +19,21 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.AbstractInsertQuery;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
-import net.prematic.databasequery.core.query.ReplaceQuery;
-import net.prematic.databasequery.core.query.option.OrderOption;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.CommitOnExecute;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.query.ReplaceQuery;
+import net.prematic.databasequery.api.query.option.OrderOption;
+import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.common.query.AbstractInsertQuery;
+import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
-public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, CommitOnExecute {
+public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, SqlQuery {
 
     private final MySqlDatabaseCollection databaseCollection;
     private final MySqlDeleteQuery deleteQuery;
@@ -159,53 +160,51 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Co
     }
 
     @Override
-    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
-        String query = buildExecuteString(values);
-        this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
-            try {
-                int index = 1;
-                int valueGet = 0;
-
-                for (Object value : this.deleteQuery.values) {
-                    if(value == null) {
-                        value = values[valueGet];
-                        valueGet++;
-                    }
-                    DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                    if(adapter != null) value = adapter.write(value);
-                    preparedStatement.setObject(index, value);
-                    index++;
-                }
-                for (int i = 0; i < insertQuery.getValuesPerField(); i++) {
-                    for (AbstractInsertQuery.Entry entry : insertQuery.getEntries()) {
-                        Object value;
-                        if(entry.getValues().size() > i) {
-                            value = entry.getValues().get(i);
-                        } else {
-                            value = values[valueGet];
-                            valueGet++;
-                        }
-                        DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                        if(adapter != null) value = adapter.write(value);
-                        preparedStatement.setObject(index, value);
-                        index++;
-                    }
-                }
-            } catch (SQLException exception) {
-                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
-            }
-        });
-        return null;
+    public ExecutorService getExecutorService() {
+        return this.databaseCollection.getDatabase().getDriver().getExecutorService();
     }
 
     @Override
-    public CompletableFuture<QueryResult> execute(Object... values) {
-        return execute(true, values);
+    public QueryResult execute(boolean commit, Object... values) {
+        String query = buildExecuteString(values);
+        this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> handlePreparedStatement(preparedStatement, values));
+        return null;
     }
 
     @Override
     public String buildExecuteString(Object... values) {
         return this.deleteQuery.buildExecuteString(values) +
                 this.insertQuery.buildExecuteString(values);
+    }
+
+    private void handlePreparedStatement(PreparedStatement preparedStatement, Object... values) throws SQLException {
+        int index = 1;
+        int valueGet = 0;
+
+        for (Object value : this.deleteQuery.values) {
+            if(value == null) {
+                value = values[valueGet];
+                valueGet++;
+            }
+            DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+            if(adapter != null) value = adapter.write(value);
+            preparedStatement.setObject(index, value);
+            index++;
+        }
+        for (int i = 0; i < insertQuery.getValuesPerField(); i++) {
+            for (AbstractInsertQuery.Entry entry : insertQuery.getEntries()) {
+                Object value;
+                if(entry.getValues().size() > i) {
+                    value = entry.getValues().get(i);
+                } else {
+                    value = values[valueGet];
+                    valueGet++;
+                }
+                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                if(adapter != null) value = adapter.write(value);
+                preparedStatement.setObject(index, value);
+                index++;
+            }
+        }
     }
 }

@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.query.UpdateQuery;
+import net.prematic.databasequery.api.query.UpdateQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implements UpdateQuery {

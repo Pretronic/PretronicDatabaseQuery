@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.query.DeleteQuery;
+import net.prematic.databasequery.api.query.DeleteQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implements DeleteQuery {
@@ -31,10 +31,8 @@ public class MySqlDeleteQuery extends MySqlSearchQueryHelper<DeleteQuery> implem
         String mainQuery = "DELETE FROM `";
 
         if(databaseCollection.getDatabase().getDriver().getConfig().isMultipleDatabaseConnectionsAble()) {
-            mainQuery+= databaseCollection.getDatabase().getName()
-                    + "`.`";
+            mainQuery+= databaseCollection.getDatabase().getName() + "`.`";
         }
-
 
         mainQuery+= databaseCollection.getName() + "` ";
         this.mainQuery = mainQuery;

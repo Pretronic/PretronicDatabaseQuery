@@ -19,22 +19,22 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
-import net.prematic.databasequery.core.query.SearchQuery;
-import net.prematic.databasequery.core.query.option.OrderOption;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.CommitOnExecute;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.query.SearchQuery;
+import net.prematic.databasequery.api.query.option.OrderOption;
+import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
-public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T>, QueryStringBuildAble, CommitOnExecute {
+public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements SearchQuery<T>, QueryStringBuildAble, SqlQuery {
 
     protected final MySqlDatabaseCollection databaseCollection;
     protected final StringBuilder queryBuilder;
@@ -51,6 +51,11 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         this.whereAggregation = true;
         this.orderBy = true;
         this.groupBy = true;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return this.databaseCollection.getDatabase().getDriver().getExecutorService();
     }
 
     @Override
@@ -312,7 +317,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     }
 
     @Override
-    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+    public QueryResult execute(boolean commit, Object... values) {
         String query = buildExecuteString(values);
         this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
             try {
@@ -333,10 +338,5 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
             }
         });
         return null;
-    }
-
-    @Override
-    public CompletableFuture<QueryResult> execute(Object... values) {
-        return execute(true, values);
     }
 }

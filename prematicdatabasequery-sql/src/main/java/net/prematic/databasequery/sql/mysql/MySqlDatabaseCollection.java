@@ -19,19 +19,17 @@
 
 package net.prematic.databasequery.sql.mysql;
 
-import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.DatabaseCollectionField;
-import net.prematic.databasequery.core.aggregation.Aggregation;
-import net.prematic.databasequery.core.aggregation.AggregationBuilder;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryException;
-import net.prematic.databasequery.core.query.*;
+import net.prematic.databasequery.api.DatabaseCollection;
+import net.prematic.databasequery.api.DatabaseCollectionField;
+import net.prematic.databasequery.api.aggregation.Aggregation;
+import net.prematic.databasequery.api.aggregation.AggregationBuilder;
+import net.prematic.databasequery.api.query.*;
 import net.prematic.databasequery.sql.mysql.query.*;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.Iterators;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 
 public class MySqlDatabaseCollection implements DatabaseCollection {
 
@@ -57,17 +55,14 @@ public class MySqlDatabaseCollection implements DatabaseCollection {
         return this.type;
     }
 
+    @Override
     public MySqlDatabase getDatabase() {
         return this.database;
     }
 
     @Override
     public long getSize() {
-        try {
-            return find().get(aggregationBuilder -> aggregationBuilder.aggregation(Aggregation.COUNT, "*")).execute().get().first().getLong(0);
-        } catch (InterruptedException | ExecutionException exception) {
-            throw new DatabaseQueryException(String.format("Failed to count size of %s collection", this.name), exception);
-        }
+        return find().get(aggregationBuilder -> aggregationBuilder.aggregation(Aggregation.COUNT, "*")).execute().first().getLong(0);
     }
 
     @Override

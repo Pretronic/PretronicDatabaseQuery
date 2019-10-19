@@ -19,25 +19,26 @@
 
 package net.prematic.databasequery.sql.mysql.query;
 
-import net.prematic.databasequery.core.DatabaseCollection;
-import net.prematic.databasequery.core.ForeignKey;
-import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.datatype.adapter.DataTypeAdapter;
-import net.prematic.databasequery.core.impl.DataTypeInformation;
-import net.prematic.databasequery.core.impl.query.QueryStringBuildAble;
-import net.prematic.databasequery.core.impl.query.result.SimpleQueryResult;
-import net.prematic.databasequery.core.impl.query.result.SimpleQueryResultEntry;
-import net.prematic.databasequery.core.query.CreateQuery;
-import net.prematic.databasequery.core.query.option.CreateOption;
-import net.prematic.databasequery.core.query.result.QueryResult;
-import net.prematic.databasequery.sql.CommitOnExecute;
+import net.prematic.databasequery.api.DatabaseCollection;
+import net.prematic.databasequery.api.ForeignKey;
+import net.prematic.databasequery.api.datatype.DataType;
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.query.CreateQuery;
+import net.prematic.databasequery.api.query.option.CreateOption;
+import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.common.DataTypeInformation;
+import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.common.query.result.SimpleQueryResult;
+import net.prematic.databasequery.common.query.result.SimpleQueryResultEntry;
+import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
 
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
-public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, CommitOnExecute {
+public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, SqlQuery {
 
     private String name;
     private final MySqlDatabase database;
@@ -134,8 +135,19 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
     }
 
     @Override
-    public CompletableFuture<QueryResult> execute(boolean commit, Object... values) {
+    public CompletableFuture<DatabaseCollection> createAsync(Object... values) {
+        CompletableFuture<DatabaseCollection> future = new CompletableFuture<>();
+        getExecutorService().execute(()-> future.complete(create(values)));
+        return future;
+    }
 
+    @Override
+    public ExecutorService getExecutorService() {
+        return this.database.getDriver().getExecutorService();
+    }
+
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
         String query = buildExecuteString(values);
         this.database.executeUpdateQuery(query, commit, preparedStatement -> {
             try {
@@ -158,14 +170,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, Comm
         Map<String, Object> results = new HashMap<>();
         results.put("databasecollection", this.database.getCollection(this.name));
         SimpleQueryResultEntry queryResultEntry = new SimpleQueryResultEntry(results);
-        CompletableFuture<QueryResult> result = new CompletableFuture<>();
-        result.complete(new SimpleQueryResult(Collections.singletonList(queryResultEntry)));
-        return result;
-    }
-
-    @Override
-    public CompletableFuture<QueryResult> execute(Object... values) {
-        return execute(true, values);
+        return new SimpleQueryResult(Collections.singletonList(queryResultEntry));
     }
 
     private CreateQuery buildForeignKey(String field, ForeignKey foreignKey) {

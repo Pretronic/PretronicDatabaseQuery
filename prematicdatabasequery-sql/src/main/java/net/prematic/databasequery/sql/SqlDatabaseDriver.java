@@ -22,20 +22,20 @@ package net.prematic.databasequery.sql;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.IsolationLevel;
-import net.prematic.databasequery.core.DatabaseDriver;
-import net.prematic.databasequery.core.datatype.DataType;
-import net.prematic.databasequery.core.exceptions.DatabaseQueryExecuteFailedException;
-import net.prematic.databasequery.core.impl.DataTypeInformation;
+import net.prematic.databasequery.api.DatabaseDriver;
+import net.prematic.databasequery.api.datatype.DataType;
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.exceptions.DatabaseQueryConnectException;
+import net.prematic.databasequery.api.exceptions.DatabaseQueryExecuteFailedException;
+import net.prematic.databasequery.common.DataTypeInformation;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.sqlconnectionpool.PrematicDataSourceBuilder;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 
@@ -51,7 +51,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
                 PrematicDataSourceBuilder builder = new PrematicDataSourceBuilder();
                 SqlDatabaseDriverConfig config = driver.getConfig();
                 //Todo executor service
-                return builder.jdbcUrl(jdbcUrl == null ? driver.createBaseJdbcUrl() : jdbcUrl)
+                return builder.jdbcUrl(jdbcUrl == null ? driver.getBaseJdbcUrl() : jdbcUrl)
                         .username(config.getUsername())
                         .password(config.getPassword())
                         .driverClassName(config.getDriverClassName())
@@ -77,7 +77,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
             registerDataSourceCreator(dataSourceClass, (driver, jdbcUrl) -> {
                 SqlDatabaseDriverConfig config = driver.getConfig();
                 HikariConfig hikariConfig = new HikariConfig();
-                hikariConfig.setJdbcUrl(driver.createBaseJdbcUrl());
+                hikariConfig.setJdbcUrl(driver.getBaseJdbcUrl());
                 if(config.getUsername() != null) hikariConfig.setUsername(config.getUsername());
                 if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());
                 if(config.getDriverClassName() != null) hikariConfig.setDriverClassName(config.getDriverClassName());
@@ -98,34 +98,33 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         } catch (ClassNotFoundException ignored) {}
     }
 
-    private final String name;
+    private final String name, baseJdbcUrl;
     private final SqlDatabaseDriverConfig config;
     private final PrematicLogger logger;
     private final ExecutorService executorService;
     private final Set<DataTypeInformation> dataTypeInformation;
+    private DataSource dataSource;
+    private final Collection<DataTypeAdapter> dataTypeAdapters;
 
     @Override
     public ExecutorService getExecutorService() {
         return this.executorService;
     }
 
-    public SqlDatabaseDriver(String name, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
+    public SqlDatabaseDriver(String name, String baseJdbcUrl, SqlDatabaseDriverConfig config, PrematicLogger logger, ExecutorService executorService) {
         this.name = name == null ? getType() : name;
+        this.baseJdbcUrl = baseJdbcUrl;
         this.config = config;
         this.logger = logger;
         this.executorService = executorService;
         this.dataTypeInformation = new HashSet<>();
+        this.dataTypeAdapters = new HashSet<>();
         registerDataTypeInformation();
     }
 
     @Override
     public String getName() {
         return this.name;
-    }
-
-    @Internal
-    public boolean useDataSource() {
-        return this.config.getDataSourceConfig() != null;
     }
 
     @Internal
@@ -152,13 +151,36 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
     }
 
     @Override
-    public abstract boolean isConnected();
+    public boolean isConnected() {
+        try(Connection ignored = this.dataSource.getConnection()) {
+            return true;
+        } catch (SQLException exception) {
+            return false;
+        }
+    }
 
     @Override
-    public abstract void connect();
+    public void connect() {
+        if(this.dataSource != null) {
+            try {
+                this.dataSource = getDataSourceCreator(this).apply(this, null);
+                Connection connection = this.dataSource.getConnection();
+                this.logger.info("Connected to sql database at {}", this.getBaseJdbcUrl());
+                connection.close();
+            } catch (SQLException exception) {
+                this.logger.info("Failed to connect to sql database at {}", getBaseJdbcUrl());
+                throw new DatabaseQueryConnectException(exception.getMessage(), exception);
+            }
+        }
+    }
 
     @Override
-    public abstract void disconnect();
+    public void disconnect() {
+        this.logger.info("Disconnected from sql database at {}", getBaseJdbcUrl());
+        if(this.dataSource != null && this.dataSource instanceof AutoCloseable) {
+            try(AutoCloseable ignored1 = (AutoCloseable) this.dataSource) {} catch (Exception ignored) {}
+        }
+    }
 
     @Override
     public PrematicLogger getLogger() {
@@ -169,7 +191,9 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         return config;
     }
 
-    public abstract String createBaseJdbcUrl();
+    public String getBaseJdbcUrl() {
+        return this.baseJdbcUrl;
+    }
 
     private void registerDataTypeInformation() {
         //@Todo specify default sizes
@@ -195,8 +219,30 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
     }
 
+    @Override
+    public Collection<DataTypeAdapter> getDataTypeAdapters() {
+        return this.dataTypeAdapters;
+    }
+
     public static void registerDataSourceCreator(Class<?> dataSourceClassName, BiFunction<SqlDatabaseDriver, String, DataSource> creator) {
         DATA_SOURCE_CREATORS.put(dataSourceClassName, creator);
+    }
+
+    public static BiFunction<SqlDatabaseDriver, String, DataSource> getDataSourceCreator(Class<?> dataSourceClassName) {
+        return DATA_SOURCE_CREATORS.get(dataSourceClassName);
+    }
+
+    public static BiFunction<SqlDatabaseDriver, String, DataSource> getDataSourceCreator(SqlDatabaseDriver driver) {
+        try {
+            System.out.println(driver);
+            System.out.println(driver.getConfig());
+            System.out.println(driver.getConfig().getDataSourceConfig());
+            System.out.println(driver.getConfig().getDataSourceConfig().getClassName());
+            return getDataSourceCreator(Class.forName(driver.getConfig().getDataSourceConfig().getClassName()));
+        } catch (ClassNotFoundException exception) {
+            driver.getLogger().info("Failed to connect to sql database at {}", driver.getBaseJdbcUrl());
+            throw new DatabaseQueryConnectException(exception.getMessage(), exception);
+        }
     }
 
     private static String convertToHikariIsolationLevel(int level) {

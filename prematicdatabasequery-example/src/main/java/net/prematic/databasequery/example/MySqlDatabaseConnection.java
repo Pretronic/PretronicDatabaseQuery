@@ -23,6 +23,7 @@ import net.prematic.databasequery.api.Database;
 import net.prematic.databasequery.api.DatabaseCollection;
 import net.prematic.databasequery.api.DatabaseDriver;
 import net.prematic.databasequery.api.datatype.DataType;
+import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.option.CreateOption;
 import net.prematic.databasequery.api.query.result.QueryResultEntry;
 import net.prematic.databasequery.sql.SqlDatabaseDriverConfig;
@@ -55,36 +56,54 @@ public class MySqlDatabaseConnection {
         DatabaseDriver driver = config.createDatabaseDriver("production", logger);
         driver.connect();
         driver.registerDefaultAdapters();
+
         Database database = driver.getDatabase("production");
 
         DatabaseCollection user = database.createCollection("user")
                 .attribute("id", DataType.INTEGER, CreateOption.PRIMARY_KEY, CreateOption.AUTO_INCREMENT)
                 .attribute("name", DataType.LONG_TEXT, CreateOption.NOT_NULL)
-                .attribute("number", DataType.INTEGER, CreateOption.NOT_NULL)
+                .attribute("number", DataType.INTEGER)
                 .create();
         for (int i = 0; i < 1; i++) {
-            user.insert().set("name", "peter").set("number", i).executeAsyncAndGetGeneratedKeys("id").thenAccept(result -> {
-                for (QueryResultEntry resultEntry : result) {
-                    logger.info("----------");
-                    logger.info("Generated Keys:");
-                    for (Map.Entry<String, Object> entry : resultEntry) {
-                        logger.info(entry.getKey() + " | " + entry.getValue());
-                    }
-                }
+            for (QueryResultEntry resultEntry : user.insert().set("name", "peter").set("number", i).executeAndGetGeneratedKeys("id")) {
                 logger.info("----------");
-            });
-        }
-
-        user.find().executeAsync().thenAccept(result -> {
-            for (QueryResultEntry resultEntry : result) {
-                logger.info("----------");
-                logger.info("Entry:");
+                logger.info("Generated Keys:");
                 for (Map.Entry<String, Object> entry : resultEntry) {
                     logger.info(entry.getKey() + " | " + entry.getValue());
                 }
             }
+        }
+
+        for (QueryResultEntry resultEntry : user.find().execute()) {
             logger.info("----------");
-        });
+            logger.info("Entry:");
+            for (Map.Entry<String, Object> entry : resultEntry) {
+                logger.info(entry.getKey() + " | " + entry.getValue());
+            }
+        }
+        logger.info("----------");
+        logger.info("Set column number to null and select all null entries");
+        logger.info("----------");
+        user.update().set("number", Query.NULL).execute();
+        for (QueryResultEntry resultEntry : user.find().whereNull("number").execute()) {
+            logger.info("----------");
+            logger.info("Entry:");
+            for (Map.Entry<String, Object> entry : resultEntry) {
+                logger.info(entry.getKey() + " | " + entry.getValue());
+            }
+        }
+        logger.info("----------");
+        logger.info("Set column number where id = 1 to 110 and select all not null entries");
+        logger.info("----------");
+        user.update().set("number", "110").where("id", 1).execute();
+        for (QueryResultEntry resultEntry : user.find().not(query -> query.whereNull("number")).execute()) {
+            logger.info("----------");
+            logger.info("Entry:");
+            for (Map.Entry<String, Object> entry : resultEntry) {
+                logger.info(entry.getKey() + " | " + entry.getValue());
+            }
+        }
+
         Thread.sleep(3000);
         driver.disconnect();
     }

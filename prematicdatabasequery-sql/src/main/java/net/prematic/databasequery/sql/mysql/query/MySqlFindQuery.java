@@ -28,6 +28,7 @@ import net.prematic.databasequery.common.query.result.SimpleQueryResult;
 import net.prematic.databasequery.common.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
+import net.prematic.libraries.utility.Validate;
 import net.prematic.libraries.utility.io.FileUtil;
 
 import java.sql.Clob;
@@ -54,6 +55,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
 
     @Override
     public FindQuery get(String... fields) {
+        Validate.notNull(fields, "Fields can't be null.");
         for (String field : fields) {
             if(!this.first) this.getQueryBuilder.append(",");
             this.getQueryBuilder.append("`").append(field).append("`");
@@ -64,6 +66,7 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
 
     @Override
     public FindQuery get(AggregationBuilder... aggregationBuilders) {
+        Validate.notNull(aggregationBuilders, "AggregationBuilders can't be null.");
         for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
             if(!this.first) this.getQueryBuilder.append(",");
             this.getQueryBuilder.append(((MySqlAggregationBuilder) aggregationBuilder).getAggregationBuilder());
@@ -133,9 +136,11 @@ public class MySqlFindQuery extends MySqlSearchQueryHelper<FindQuery> implements
                     Object value = resultSet.getObject(i);
                     if(value instanceof Clob) {
                         value = FileUtil.readContent(((Clob)value).getAsciiStream());
+                    } else if(value != null) {
+                        DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
+                        if(dataTypeAdapter != null) value = dataTypeAdapter.read(value);
                     }
-                    DataTypeAdapter dataTypeAdapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByReadClass(value.getClass());
-                    results.put(resultSet.getMetaData().getColumnName(i).toLowerCase(), dataTypeAdapter != null ? dataTypeAdapter.read(value) : value);
+                    results.put(resultSet.getMetaData().getColumnName(i).toLowerCase(), value);
                 }
             }
             resultEntries.add(new SimpleQueryResultEntry(results));

@@ -21,6 +21,7 @@ package net.prematic.databasequery.sql.mysql.query;
 
 import net.prematic.databasequery.api.query.UpdateQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
+import net.prematic.libraries.utility.Validate;
 
 public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implements UpdateQuery {
 
@@ -42,6 +43,7 @@ public class MySqlUpdateQuery extends MySqlSearchQueryHelper<UpdateQuery> implem
 
     @Override
     public UpdateQuery set(String field, Object value) {
+        Validate.notNull(field, "Field can't be null.");
         if(this.first) {
             this.queryBuilder.append("SET ");
         } else {

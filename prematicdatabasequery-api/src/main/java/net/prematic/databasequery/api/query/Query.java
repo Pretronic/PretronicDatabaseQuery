@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public interface Query {
 
     Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    Option NULL = Option.NULL;
 
     QueryResult execute(Object... values);
 
@@ -37,5 +38,9 @@ public interface Query {
 
     default CompletableFuture<QueryResult> executeAsync() {
         return executeAsync(EMPTY_OBJECT_ARRAY);
+    }
+
+    enum Option {
+        NULL
     }
 }

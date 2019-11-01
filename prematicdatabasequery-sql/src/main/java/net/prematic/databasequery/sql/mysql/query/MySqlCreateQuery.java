@@ -32,6 +32,7 @@ import net.prematic.databasequery.common.query.result.SimpleQueryResult;
 import net.prematic.databasequery.common.query.result.SimpleQueryResultEntry;
 import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabase;
+import net.prematic.libraries.utility.Validate;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -62,6 +63,8 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, SqlQ
 
     @Override
     public CreateQuery attribute(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, CreateOption... createOptions) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(dataType, "DataType can't be null.");
         if(!first) queryBuilder.append(",");
         else first = false;
         boolean uniqueIndex = false;
@@ -113,6 +116,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, SqlQ
 
     @Override
     public CreateQuery engine(String engine) {
+        Validate.notNull(engine, "Engine can't be null.");
         this.queryBuilder.append(") ENGINE=").append(engine).append(";");
         this.engine = true;
         return this;
@@ -130,6 +134,7 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, SqlQ
 
     @Override
     public CreateQuery collectionName(String name) {
+        Validate.notNull(name, "Name can't be null.");
         this.name = name;
         return this;
     }
@@ -174,6 +179,8 @@ public class MySqlCreateQuery implements CreateQuery, QueryStringBuildAble, SqlQ
     }
 
     private CreateQuery buildForeignKey(String field, ForeignKey foreignKey) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(foreignKey, "ForeignKey can't be null.");
         if(!first) queryBuilder.append(",");
         else first = false;
         this.queryBuilder.append("CONSTRAINT `")

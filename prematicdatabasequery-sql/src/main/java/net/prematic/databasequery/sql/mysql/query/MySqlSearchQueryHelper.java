@@ -25,11 +25,12 @@ import net.prematic.databasequery.api.query.SearchQuery;
 import net.prematic.databasequery.api.query.option.OrderOption;
 import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.common.query.result.SimpleQueryResult;
 import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlAggregationBuilder;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
+import net.prematic.libraries.utility.Validate;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +61,8 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T where(String field, Object value) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(value, "Value can't be null.");
         this.values.add(value);
         if(this.operator) {
             if(this.where) {
@@ -75,6 +78,8 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T whereLike(String field, String pattern) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(pattern, "Pattern can't be null.");
         this.values.add(pattern);
         if(this.operator) {
             if(where) {
@@ -90,6 +95,9 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T where(String field, String operator, Object value) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(operator, "Operator can't be null.");
+        Validate.notNull(value, "Value can't be null.");
         this.values.add(value);
         if(this.operator) {
             if(where) {
@@ -105,6 +113,9 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T where(Object first, String operator, Object second) {
+        Validate.notNull(first, "First can't be null.");
+        Validate.notNull(operator, "Operator can't be null.");
+        Validate.notNull(second, "Second can't be null.");
         if(this.whereAggregation) {
             this.queryBuilder.append(" HAVING ");
             this.whereAggregation = false;
@@ -113,6 +124,22 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         buildWhereAggregation(first);
         this.queryBuilder.append(" ").append(operator).append(" ");
         buildWhereAggregation(second);
+        return (T) this;
+    }
+
+    @Override
+    public T whereNull(String field) {
+        Validate.notNull(field, "Field can't be null.");
+        if(this.operator) {
+            if(this.where) {
+                this.queryBuilder.append(" WHERE ");
+                this.where = false;
+            }
+            else this.queryBuilder.append(" AND ");
+        }
+        this.queryBuilder.append("`").append(field).append("` IS ");
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("NULL");
         return (T) this;
     }
 
@@ -128,6 +155,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T not(Consumer searchQuery) {
+        Validate.notNull(searchQuery, "SearchQuery can't be null.");
         SearchQuery resultQuery = this.databaseCollection.find();
         ((MySqlSearchQueryHelper)resultQuery).negate = true;
         ((MySqlSearchQueryHelper)resultQuery).where = where;
@@ -149,6 +177,8 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     }
 
     private T andOr(String operator, Consumer... searchQueries) {
+        Validate.notNull(operator, "Operator can't be null.");
+        Validate.notNull(searchQueries, "SearchQueries can't be null.");
         SearchQuery[] resultQueries = new SearchQuery[searchQueries.length];
         boolean withOperator = false;
         for (int i = 0; i < searchQueries.length; i++) {
@@ -180,6 +210,9 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T between(String field, Object value1, Object value2) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(value1, "Value1 can't be null.");
+        Validate.notNull(value2, "Value2 can't be null.");
         if(this.operator) {
             if(where) this.queryBuilder.append(" WHERE ");
             else this.queryBuilder.append(" AND ");
@@ -215,6 +248,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T orderBy(String field, OrderOption orderOption) {
+        Validate.notNull(field, "Field can't be null.");
         if(this.orderBy) {
             this.queryBuilder.append(" ORDER BY ");
             this.orderBy = false;
@@ -227,6 +261,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T orderBy(AggregationBuilder aggregationBuilder, OrderOption orderOption) {
+        Validate.notNull(aggregationBuilder, "AggregationBuilder can't be null.");
         if(this.orderBy) {
             this.queryBuilder.append(" ORDER BY ");
             this.orderBy = false;
@@ -240,6 +275,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T groupBy(String... fields) {
+        Validate.notNull(fields, "Fields can't be null.");
         if(this.groupBy) {
             this.queryBuilder.append(" GROUP BY ");
             this.groupBy = false;
@@ -256,6 +292,7 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
 
     @Override
     public T groupBy(AggregationBuilder... aggregationBuilders) {
+        Validate.notNull(aggregationBuilders, "AggregationBuilders can't be null.");
         if(this.groupBy) {
             this.queryBuilder.append(" GROUP BY ");
             this.groupBy = false;
@@ -297,9 +334,13 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     }
 
     protected T aggregation(String aggregation, Object first, String operator, Object second) {
+        Validate.notNull(aggregation, "Aggregation can't be null.");
+        Validate.notNull(first, "First can't be null.");
+        Validate.notNull(operator, "Operator can't be null.");
+        Validate.notNull(second, "Second can't be null.");
         this.queryBuilder.append(aggregation).append("(");
         buildAggregationPart(first);
-        if(operator != null) this.queryBuilder.append(" ").append(operator).append(" ");
+        this.queryBuilder.append(" ").append(operator).append(" ");
         buildAggregationPart(second);
         return (T) this;
     }
@@ -320,23 +361,22 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
     public QueryResult execute(boolean commit, Object... values) {
         String query = buildExecuteString(values);
         this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> {
-            try {
-                int index = 1;
-                int valueGet = 0;
-                for (Object value : this.values) {
-                    if(value == null) {
-                        value = values[valueGet];
-                        valueGet++;
-                    }
+            int index = 1;
+            int valueGet = 0;
+            for (Object value : this.values) {
+                if(value == null) {
+                    value = values[valueGet];
+                    valueGet++;
+                } else if(value == Option.NULL) {
+                    value = null;
+                } else {
                     DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
                     if(adapter != null) value = adapter.write(value);
-                    preparedStatement.setObject(index, value);
-                    index++;
                 }
-            } catch (SQLException exception) {
-                this.databaseCollection.getDatabase().getDriver().handleDatabaseQueryExecuteFailedException(exception, query);
+                preparedStatement.setObject(index, value);
+                index++;
             }
         });
-        return null;
+        return new SimpleQueryResult(new ArrayList<>());
     }
 }

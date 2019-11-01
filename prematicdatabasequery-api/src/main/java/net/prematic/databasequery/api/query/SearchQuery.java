@@ -73,6 +73,8 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
         return where((Object) first, operator, (Object) second);
     }
 
+    T whereNull(String field);
+
     T not(Consumer searchQuery);
 
     T and(Consumer... searchQueries);

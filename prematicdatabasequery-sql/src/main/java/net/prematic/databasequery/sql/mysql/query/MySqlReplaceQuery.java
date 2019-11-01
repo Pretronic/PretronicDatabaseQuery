@@ -76,6 +76,12 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Sq
     }
 
     @Override
+    public ReplaceQuery whereNull(String field) {
+        this.deleteQuery.whereNull(field);
+        return this;
+    }
+
+    @Override
     public ReplaceQuery not(Consumer searchQuery) {
         this.deleteQuery.not(searchQuery);
         return this;

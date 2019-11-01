@@ -152,6 +152,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
 
     @Override
     public boolean isConnected() {
+        System.out.println(this.dataSource);
         try(Connection ignored = this.dataSource.getConnection()) {
             return true;
         } catch (SQLException exception) {

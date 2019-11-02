@@ -20,6 +20,7 @@
 package net.prematic.databasequery.common.query.result;
 
 import net.prematic.databasequery.api.query.result.QueryResultEntry;
+import net.prematic.libraries.utility.Convert;
 import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
 
 import java.lang.reflect.Field;
@@ -83,94 +84,92 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public String getString(int index) {
-        return (String) getObject(index);
+        return Convert.toString(getObject(index));
     }
 
     @Override
     public String getString(String key) {
-        return (String) getObject(key);
+        return Convert.toString(getObject(key));
     }
 
     @Override
     public int getInt(int index) {
-        return (int) getObject(index);
+        return Convert.toInteger(getObject(index));
     }
 
     @Override
     public int getInt(String key) {
-        return (int) getObject(key);
+        return Convert.toInteger(getObject(key));
     }
 
     @Override
     public long getLong(int index) {
-        return (long) getObject(index);
+        return Convert.toLong(getObject(index));
     }
 
     @Override
     public long getLong(String key) {
-        Object value = getObject(key);
-        if(value instanceof Integer) return (long) (int) value;
-        return (long) value;
+        return Convert.toLong(getObject(key));
     }
 
     @Override
     public double getDouble(int index) {
-        return (double) getObject(index);
+        return Convert.toDouble(getObject(index));
     }
 
     @Override
     public double getDouble(String key) {
-        return (double) getObject(key);
+        return Convert.toDouble(getObject(key));
     }
 
     @Override
     public float getFloat(int index) {
-        return (float) getObject(index);
+        return Convert.toFloat(getObject(index));
     }
 
     @Override
     public float getFloat(String key) {
-        return (float) getObject(key);
+        return Convert.toFloat(getObject(key));
     }
 
     @Override
     public byte getByte(int index) {
-        return (byte) getObject(index);
+        return Convert.toByte(getObject(index));
     }
 
     @Override
     public byte getByte(String key) {
-        return (byte) getObject(key);
+        return Convert.toByte(getObject(key));
     }
 
     @Override
     public boolean getBoolean(int index) {
-        return (boolean) getObject(index);
+        return Convert.toBoolean(getObject(index));
     }
 
     @Override
     public boolean getBoolean(String key) {
-        return (boolean) getObject(key);
+        return Convert.toBoolean(getObject(key));
     }
 
     @Override
     public Date getDate(int index) {
-        return (Date) getObject(index);
+        return Convert.toDate(getObject(index));
     }
 
     @Override
     public Date getDate(String key) {
-        return (Date) getObject(key);
+        return Convert.toDate(getObject(key));
     }
 
     @Override
     public UUID getUniqueId(int index) {
-        return (UUID) getObject(index);
+        return Convert.toUUID(getObject(index));
     }
 
     @Override
     public UUID getUniqueId(String key) {
-        return (UUID) getObject(key);
+        return Convert.toUUID(getObject(key));
     }
 
     @Override

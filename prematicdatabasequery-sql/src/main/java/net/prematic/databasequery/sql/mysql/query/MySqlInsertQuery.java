@@ -53,11 +53,11 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
         return this.databaseCollection.getDatabase().getDriver().getExecutorService();
     }
 
-    public int getValuesPerField() {
+    protected int getValuesPerField() {
         return valuesPerField;
     }
 
-    public QueryResult executeAndGetGeneratedKeys(boolean commit, String[] keyColumns, Object... values) {
+    private QueryResult executeAndGetGeneratedKeys(boolean commit, String[] keyColumns, Object... values) {
         String query = buildExecuteString(values);
         Number[] generatedKeys = this.databaseCollection.getDatabase().executeUpdateQuery(query, commit
                 , preparedStatement -> handlePreparedStatement(preparedStatement, values), keyColumns);
@@ -133,8 +133,12 @@ public class MySqlInsertQuery extends AbstractInsertQuery implements QueryString
                     value = values[valueGet];
                     valueGet++;
                 }
-                DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
-                if(adapter != null) value = adapter.write(value);
+                if(value == Option.NULL) {
+                    value = null;
+                } else {
+                    DataTypeAdapter adapter = this.databaseCollection.getDatabase().getDriver().getDataTypeAdapterByWriteClass(value.getClass());
+                    if(adapter != null) value = adapter.write(value);
+                }
                 preparedStatement.setObject(index, value);
                 index++;
             }

@@ -65,7 +65,7 @@ public class MySqlDatabaseConnection {
                 .attribute("number", DataType.INTEGER)
                 .create();
         for (int i = 0; i < 1; i++) {
-            for (QueryResultEntry resultEntry : user.insert().set("name", "peter").set("number", i).executeAndGetGeneratedKeys("id")) {
+            for (QueryResultEntry resultEntry : user.insert().set("name", "peter").set("number", Query.NULL).executeAndGetGeneratedKeys("id")) {
                 logger.info("----------");
                 logger.info("Generated Keys:");
                 for (Map.Entry<String, Object> entry : resultEntry) {

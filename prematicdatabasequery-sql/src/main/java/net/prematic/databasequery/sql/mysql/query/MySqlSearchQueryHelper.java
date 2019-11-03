@@ -377,6 +377,6 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
                 index++;
             }
         });
-        return new SimpleQueryResult(new ArrayList<>());
+        return SimpleQueryResult.EMPTY;
     }
 }

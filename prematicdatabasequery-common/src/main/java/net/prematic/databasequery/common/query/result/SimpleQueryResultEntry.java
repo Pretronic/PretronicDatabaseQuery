@@ -57,11 +57,13 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getObject(int index, Class<T> clazz) {
         return ((T) getObject(index));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getObject(String key, Class<T> clazz) {
         return (T) getObject(key);

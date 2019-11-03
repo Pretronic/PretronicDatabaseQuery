@@ -22,11 +22,14 @@ package net.prematic.databasequery.common.query.result;
 import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.api.query.result.QueryResultEntry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
 public class SimpleQueryResult implements QueryResult {
+
+    public static final QueryResult EMPTY = new SimpleQueryResult(new ArrayList<>());
 
     private final List<QueryResultEntry> entries;
 

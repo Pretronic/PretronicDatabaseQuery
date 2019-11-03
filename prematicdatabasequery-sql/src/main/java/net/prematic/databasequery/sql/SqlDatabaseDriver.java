@@ -77,6 +77,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
             registerDataSourceCreator(dataSourceClass, (driver, jdbcUrl) -> {
                 SqlDatabaseDriverConfig config = driver.getConfig();
                 HikariConfig hikariConfig = new HikariConfig();
+                hikariConfig.setPoolName(driver.getName());
                 hikariConfig.setJdbcUrl(driver.getBaseJdbcUrl());
                 if(config.getUsername() != null) hikariConfig.setUsername(config.getUsername());
                 if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());

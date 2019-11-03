@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface InsertQuery extends Query {
 
-    default InsertQuery set(String field){
+    default InsertQuery set(String field) {
         return set(field, EMPTY_OBJECT_ARRAY);
     }
 
@@ -44,9 +44,33 @@ public interface InsertQuery extends Query {
         return executeAndGetGeneratedKeys(keyColumns, EMPTY_OBJECT_ARRAY);
     }
 
+    default int executeAndGetGeneratedKeyAsInt(String keyColumn, Object... values) {
+        return executeAndGetGeneratedKeys(new String[]{keyColumn}, values).first().getInt(keyColumn);
+    }
+
+    default long executeAndGetGeneratedKeyAsLong(String keyColumn, Object... values) {
+        return executeAndGetGeneratedKeys(new String[]{keyColumn}, values).first().getLong(keyColumn);
+    }
+
     CompletableFuture<QueryResult> executeAsyncAndGetGeneratedKeys(String[] keyColumns, Object... values);
 
     default CompletableFuture<QueryResult> executeAsyncAndGetGeneratedKeys(String... keyColumns) {
         return executeAsyncAndGetGeneratedKeys(keyColumns, EMPTY_OBJECT_ARRAY);
+    }
+
+    default CompletableFuture<Integer> executeAsyncAndGetGeneratedKeyAsInt(String keyColumn, Object... values) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+        executeAsyncAndGetGeneratedKeys(new String[]{keyColumn}, values).thenAccept(result -> {
+            future.complete(result.first().getInt(keyColumn));
+        });
+        return future;
+    }
+
+    default CompletableFuture<Long> executeAsyncAndGetGeneratedKeyAsLong(String keyColumn, Object... values) {
+        CompletableFuture<Long> future = new CompletableFuture<>();
+        executeAsyncAndGetGeneratedKeys(new String[]{keyColumn}, values).thenAccept(result -> {
+            future.complete(result.first().getLong(keyColumn));
+        });
+        return future;
     }
 }

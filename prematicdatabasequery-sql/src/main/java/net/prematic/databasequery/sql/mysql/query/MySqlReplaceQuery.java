@@ -26,6 +26,7 @@ import net.prematic.databasequery.api.query.option.OrderOption;
 import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.common.query.AbstractInsertQuery;
 import net.prematic.databasequery.common.query.QueryStringBuildAble;
+import net.prematic.databasequery.common.query.result.SimpleQueryResult;
 import net.prematic.databasequery.sql.SqlQuery;
 import net.prematic.databasequery.sql.mysql.MySqlDatabaseCollection;
 
@@ -174,7 +175,7 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Sq
     public QueryResult execute(boolean commit, Object... values) {
         String query = buildExecuteString(values);
         this.databaseCollection.getDatabase().executeUpdateQuery(query, commit, preparedStatement -> handlePreparedStatement(preparedStatement, values));
-        return null;
+        return SimpleQueryResult.EMPTY;
     }
 
     @Override

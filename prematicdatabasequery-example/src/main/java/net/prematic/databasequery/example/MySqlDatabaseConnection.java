@@ -64,16 +64,13 @@ public class MySqlDatabaseConnection {
                 .attribute("name", DataType.LONG_TEXT, CreateOption.NOT_NULL)
                 .attribute("number", DataType.INTEGER)
                 .create();
-        for (int i = 0; i < 1; i++) {
-            for (QueryResultEntry resultEntry : user.insert().set("name", "peter").set("number", Query.NULL).executeAndGetGeneratedKeys("id")) {
-                logger.info("----------");
-                logger.info("Generated Keys:");
-                for (Map.Entry<String, Object> entry : resultEntry) {
-                    logger.info(entry.getKey() + " | " + entry.getValue());
-                }
-            }
+        for (int i = 0; i < 10; i++) {
+            logger.info("----------");
+            logger.info("Generated Key:");
+            int id = user.insert().set("name", "peter").set("number", Query.NULL).executeAndGetGeneratedKeyAsInt("id");
+            logger.info("id" + " | " + id);
         }
-
+        logger.info("...");
         for (QueryResultEntry resultEntry : user.find().execute()) {
             logger.info("----------");
             logger.info("Entry:");
@@ -95,7 +92,7 @@ public class MySqlDatabaseConnection {
         logger.info("----------");
         logger.info("Set column number where id = 1 to 110 and select all not null entries");
         logger.info("----------");
-        user.update().set("number", "110").where("id", 1).execute();
+        user.update().set("number", "110").whereIn("id", 5, 6, 7).execute();
         for (QueryResultEntry resultEntry : user.find().not(query -> query.whereNull("number")).execute()) {
             logger.info("----------");
             logger.info("Entry:");
@@ -103,7 +100,6 @@ public class MySqlDatabaseConnection {
                 logger.info(entry.getKey() + " | " + entry.getValue());
             }
         }
-
         Thread.sleep(3000);
         driver.disconnect();
     }

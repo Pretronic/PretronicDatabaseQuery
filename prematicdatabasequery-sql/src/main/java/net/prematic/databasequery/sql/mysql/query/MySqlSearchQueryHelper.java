@@ -143,6 +143,28 @@ public abstract class MySqlSearchQueryHelper<T extends SearchQuery> implements S
         return (T) this;
     }
 
+    @Override
+    public T whereIn(String field, Object... values) {
+        Validate.notNull(field, "Field can't be null.");
+        Validate.notNull(values, "Values can't be null.");
+        if(this.operator) {
+            if(this.where) {
+                this.queryBuilder.append(" WHERE ");
+                this.where = false;
+            }
+            else this.queryBuilder.append(" AND ");
+        }
+        if(negate) this.queryBuilder.append("NOT ");
+        this.queryBuilder.append("`").append(field).append("` IN (");
+        for (int i = 0; i < values.length; i++) {
+            this.values.add(values[i]);
+            if(i > 0) this.queryBuilder.append(",");
+            this.queryBuilder.append("?");
+        }
+        this.queryBuilder.append(")");
+        return (T) this;
+    }
+
     private void buildWhereAggregation(Object value) {
         if(value instanceof AggregationBuilder) {
             this.queryBuilder.append(((MySqlAggregationBuilder)value).getAggregationBuilder());

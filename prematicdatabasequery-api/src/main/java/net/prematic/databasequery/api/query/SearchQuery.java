@@ -19,6 +19,7 @@
 
 package net.prematic.databasequery.api.query;
 
+import net.prematic.databasequery.api.NotPrepareAble;
 import net.prematic.databasequery.api.Pattern;
 import net.prematic.databasequery.api.aggregation.AggregationBuilder;
 import net.prematic.databasequery.api.query.option.OrderOption;
@@ -74,6 +75,9 @@ public interface SearchQuery<T extends SearchQuery> extends Query {
     }
 
     T whereNull(String field);
+
+    @NotPrepareAble
+    T whereIn(String field, Object... values);
 
     T not(Consumer searchQuery);
 

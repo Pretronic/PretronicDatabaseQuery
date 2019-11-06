@@ -83,6 +83,12 @@ public class MySqlReplaceQuery implements ReplaceQuery, QueryStringBuildAble, Sq
     }
 
     @Override
+    public ReplaceQuery whereIn(String field, Object... values) {
+        this.deleteQuery.whereIn(field, values);
+        return this;
+    }
+
+    @Override
     public ReplaceQuery not(Consumer searchQuery) {
         this.deleteQuery.not(searchQuery);
         return this;

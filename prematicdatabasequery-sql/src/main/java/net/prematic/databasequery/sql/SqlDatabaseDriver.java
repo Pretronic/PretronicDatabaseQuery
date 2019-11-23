@@ -213,6 +213,7 @@ public abstract class SqlDatabaseDriver implements DatabaseDriver {
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.BINARY).names("BINARY"));
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.BLOB).names("BLOB").sizeAble(false));
         this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.UUID).names("BINARY").defaultSize(16));
+        this.dataTypeInformation.add(DataTypeInformation.from().dataType(DataType.BOOLEAN).names("BIT").defaultSize(1));
     }
 
     @Internal

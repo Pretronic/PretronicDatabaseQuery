@@ -45,7 +45,9 @@ public enum DataType {
     TIMESTAMP,
     BINARY(byte.class, byte[].class),
     BLOB,
-    UUID(java.util.UUID.class);
+    UUID(java.util.UUID.class),
+    BOOLEAN(boolean.class)
+    ;
 
     public static final Map<Class<?>, DataType> DATA_TYPES = new HashMap<>();
 

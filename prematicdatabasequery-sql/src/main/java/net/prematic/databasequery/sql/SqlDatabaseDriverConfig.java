@@ -38,6 +38,11 @@ public class SqlDatabaseDriverConfig extends DatabaseDriverConfig<SqlDatabaseDri
         this.dataSourceConfig = new DataSourceConfig();
     }
 
+    public SqlDatabaseDriverConfig(String driverClassName) {
+        super(driverClassName);
+        this.dataSourceConfig = new DataSourceConfig();
+    }
+
     public SqlDatabaseDriverConfig(Document original) {
         super(original);
         this.dataSourceConfig = new DataSourceConfig();

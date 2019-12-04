@@ -38,7 +38,11 @@ public abstract class DatabaseDriverConfig<T extends DatabaseDriverConfig> exten
     static CaseIntensiveMap<Class<? extends DatabaseDriverConfig>> REGISTRY = new CaseIntensiveHashMap<>();
 
     public DatabaseDriverConfig(Class<? extends DatabaseDriver> driverClass) {
-        super(Document.newDocument().add("driverName", driverClass.getName()));
+        this(driverClass.getName());
+    }
+
+    public DatabaseDriverConfig(String driverClassName) {
+        super(Document.newDocument().add("driverName", driverClassName));
     }
 
     public DatabaseDriverConfig(Document original) {

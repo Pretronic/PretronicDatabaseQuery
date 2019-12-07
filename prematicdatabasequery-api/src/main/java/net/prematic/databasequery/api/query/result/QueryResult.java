@@ -28,6 +28,8 @@ public interface QueryResult extends Iterable<QueryResultEntry> {
 
     QueryResultEntry first();
 
+    QueryResultEntry firstOrNull();
+
     QueryResultEntry last();
 
     QueryResultEntry get(int index);

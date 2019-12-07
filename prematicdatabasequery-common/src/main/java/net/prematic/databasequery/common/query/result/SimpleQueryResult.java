@@ -43,6 +43,11 @@ public class SimpleQueryResult implements QueryResult {
     }
 
     @Override
+    public QueryResultEntry firstOrNull() {
+        return isEmpty() ? null : first();
+    }
+
+    @Override
     public QueryResultEntry last() {
         return entries.get(entries.size()-1);
     }

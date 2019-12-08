@@ -34,22 +34,20 @@ public interface FieldBuilder {
 
     FieldBuilder defaultValue(Object value);
 
-    FieldBuilder foreignKey(String field,ForeignKey key);
+    FieldBuilder foreignKey(ForeignKey foreignKey);
 
     FieldBuilder options(FieldOption... options);
 
 
-    default FieldBuilder foreignKey(String field, DatabaseCollection collection, String otherField, ForeignKey.Option deleteOption, ForeignKey.Option updateOption){
-        return foreignKey(field,ForeignKey.of(collection,otherField,deleteOption,updateOption));
+    default FieldBuilder foreignKey(DatabaseCollection collection, String otherField, ForeignKey.Option deleteOption, ForeignKey.Option updateOption){
+        return foreignKey(ForeignKey.of(collection,otherField,deleteOption,updateOption));
     }
 
-    default FieldBuilder foreignKey(String field,DatabaseCollection collection, String otherField, ForeignKey.Option option){
-        return foreignKey(field,ForeignKey.of(collection,otherField,option));
+    default FieldBuilder foreignKey(DatabaseCollection collection, String otherField, ForeignKey.Option option){
+        return foreignKey(ForeignKey.of(collection,otherField,option));
     }
 
-    default FieldBuilder foreignKey(String field, DatabaseCollection collection, String otherField){
-        return foreignKey(field,ForeignKey.of(collection,otherField));
+    default FieldBuilder foreignKey(DatabaseCollection collection, String otherField){
+        return foreignKey(ForeignKey.of(collection,otherField));
     }
-
-
 }

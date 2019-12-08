@@ -35,7 +35,7 @@ public interface DatabaseCollection {
 
     Database getDatabase();
 
-    Type getType();
+    DatabaseCollectionType getType();
 
     long getSize();
 
@@ -83,12 +83,4 @@ public interface DatabaseCollection {
 
 
     AliasDatabaseCollection as(String alias);
-
-
-    enum Type {
-
-        NORMAL,
-        EDGE,
-        VIEW
-    }
 }

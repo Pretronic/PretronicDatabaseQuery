@@ -21,6 +21,7 @@
 package net.prematic.databasequery.api.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.databasequery.api.collection.DatabaseCollectionType;
 import net.prematic.databasequery.api.collection.field.FieldBuilder;
 import net.prematic.databasequery.api.collection.field.FieldOption;
 import net.prematic.databasequery.api.datatype.DataType;
@@ -32,15 +33,15 @@ import java.util.function.Consumer;
 
 public interface CreateQuery extends Query {
 
-    CreateQuery field(String field, DataType dataType, int fieldSize, Object defaultValue, ForeignKey foreignKey, FieldOption... fieldOptions);
+    CreateQuery field(String field, DataType type, int size, Object defaultValue, ForeignKey foreignKey, FieldOption... options);
 
-    CreateQuery field(String field, DataType dataType, int fieldSize, Object defaultValue, FieldOption... fieldOptions);
+    CreateQuery field(String field, DataType type, int size, Object defaultValue, FieldOption... options);
 
-    CreateQuery field(String field, DataType dataType, int fieldSize, FieldOption... fieldOptions);
+    CreateQuery field(String field, DataType type, int size, FieldOption... options);
 
-    CreateQuery field(String field, DataType dataType,ForeignKey foreignKey, FieldOption... fieldOptions);
+    CreateQuery field(String field, DataType type,ForeignKey foreignKey, FieldOption... options);
 
-    CreateQuery field(String field, DataType dataType, FieldOption... fieldOptions);
+    CreateQuery field(String field, DataType type, FieldOption... options);
 
     CreateQuery field(Consumer<FieldBuilder> builder);
 
@@ -48,7 +49,7 @@ public interface CreateQuery extends Query {
 
     CreateQuery engine(String engine);
 
-    CreateQuery type(DatabaseCollection.Type collectionType);
+    CreateQuery type(DatabaseCollectionType type);
 
 
     CreateQuery foreignKey(String field, ForeignKey foreignKey);
@@ -68,8 +69,6 @@ public interface CreateQuery extends Query {
 
 
     CreateQuery include(FindQuery query);
-
-    CreateQuery include(Consumer<FindQuery> query);
 
 
     DatabaseCollection create();

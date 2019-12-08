@@ -52,7 +52,7 @@ public interface DatabaseDriver {
 
     Collection<DataTypeAdapter<?>> getDataTypeAdapters();
 
-    <T extends DataTypeAdapter<T>> T getDataTypeAdapter(Class<T> clazz);
+    <T> DataTypeAdapter<T> getDataTypeAdapter(Class<T> clazz);
 
     <T> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<T> adapter);
 

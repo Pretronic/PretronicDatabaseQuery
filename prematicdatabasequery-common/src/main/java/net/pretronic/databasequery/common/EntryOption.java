@@ -1,9 +1,8 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 08.12.19, 19:21
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 08.12.19, 21:52
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,5 +17,10 @@
  * under the License.
  */
 
-public class Placeholder {
+package net.pretronic.databasequery.common;
+
+public enum EntryOption {
+
+    NOT_DEFINED,
+    PREPARED
 }

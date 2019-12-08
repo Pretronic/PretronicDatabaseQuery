@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:45
+ * @since 08.12.19, 20:44
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,38 @@
  * under the License.
  */
 
-package net.prematic.databasequery.common.query.result;
+package net.pretronic.databasequery.common.query.result;
 
+import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.query.result.QueryResultEntry;
 import net.prematic.libraries.utility.Convert;
+import net.prematic.libraries.utility.annonations.Internal;
+import net.prematic.libraries.utility.map.IndexCaseIntensiveLinkedHashMap;
+import net.prematic.libraries.utility.map.IndexCaseIntensiveMap;
+import net.prematic.libraries.utility.map.index.IndexMap;
 import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
 
 import java.lang.reflect.Field;
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class SimpleQueryResultEntry implements QueryResultEntry {
+public class DefaultQueryResultEntry implements QueryResultEntry {
 
-    private final Map<String, Object> results;
+    private final DatabaseDriver driver;
+    private final IndexCaseIntensiveMap<Object> results;
 
-    public SimpleQueryResultEntry(Map<String, Object> results) {
+    public DefaultQueryResultEntry(DatabaseDriver driver, IndexCaseIntensiveMap<Object> results) {
+        this.driver = driver;
         this.results = results;
     }
 
+    public DefaultQueryResultEntry(DatabaseDriver driver) {
+        this(driver, new IndexCaseIntensiveLinkedHashMap<>());
+    }
+
     @Override
-    public Map<String, Object> asMap() {
+    public IndexMap<String, Object> asMap() {
         return this.results;
     }
 
@@ -57,26 +67,19 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getObject(int index, Class<T> clazz) {
-        return ((T) getObject(index));
+        return this.driver.getDataTypeAdapter(clazz).read(getObject(index));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getObject(String key, Class<T> clazz) {
-        return (T) getObject(key);
+        return this.driver.getDataTypeAdapter(clazz).read(getObject(key));
     }
 
     @Override
     public Object getObject(int index) {
-        int i = 0;
-        for (Map.Entry<String, Object> entry : this.results.entrySet()) {
-            if(i == index) return entry.getValue();
-            i++;
-        }
-        return null;
+        return this.results.getIndex(index);
     }
 
     @Override
@@ -176,24 +179,22 @@ public class SimpleQueryResultEntry implements QueryResultEntry {
 
     @Override
     public boolean contains(String key) {
-        try {
-            return getObject(key) != null;
-        } catch (Exception exception) {
-            return false;
-        }
+        return this.results.containsKey(key);
     }
 
     @Override
     public boolean contains(int index) {
-        try {
-            return getObject(index) != null;
-        } catch (Exception exception) {
-            return false;
-        }
+        return this.results.containsIndex(index);
     }
 
     @Override
     public <T> T to(Function<QueryResultEntry, T> function) {
         return function.apply(this);
+    }
+
+    @Internal
+    public DefaultQueryResultEntry addEntry(String key, Object value) {
+        this.results.put(key, value);
+        return this;
     }
 }

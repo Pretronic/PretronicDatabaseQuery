@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:45
+ * @since 08.12.19, 20:44
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package net.prematic.databasequery.common.query.result;
+package net.pretronic.databasequery.common.query.result;
 
 import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.api.query.result.QueryResultEntry;
@@ -27,34 +27,44 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-public class SimpleQueryResult implements QueryResult {
+public class DefaultQueryResult implements QueryResult {
 
-    public static final QueryResult EMPTY = new SimpleQueryResult(new ArrayList<>());
+    public static final QueryResult EMPTY = new DefaultQueryResult(new ArrayList<>());
 
     private final List<QueryResultEntry> entries;
 
-    public SimpleQueryResult(List<QueryResultEntry> entries) {
+    public DefaultQueryResult(List<QueryResultEntry> entries) {
         this.entries = entries;
     }
 
     @Override
     public QueryResultEntry first() {
-        return entries.get(0);
+        return get(0);
     }
 
     @Override
     public QueryResultEntry firstOrNull() {
-        return isEmpty() ? null : first();
+        return getOrNull(0);
     }
 
     @Override
     public QueryResultEntry last() {
-        return entries.get(entries.size()-1);
+        return get(this.entries.size()-1);
+    }
+
+    @Override
+    public QueryResultEntry lastOrNull() {
+        return getOrNull(this.entries.size()-1);
     }
 
     @Override
     public QueryResultEntry get(int index) {
-        return entries.get(index);
+        return this.entries.get(index);
+    }
+
+    @Override
+    public QueryResultEntry getOrNull(int index) {
+        return this.entries.size() > index ? get(index) : null;
     }
 
     @Override

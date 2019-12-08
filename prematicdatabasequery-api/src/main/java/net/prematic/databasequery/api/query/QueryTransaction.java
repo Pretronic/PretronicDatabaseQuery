@@ -19,12 +19,14 @@
 
 package net.prematic.databasequery.api.query;
 
-public interface QueryTransaction {
+import net.prematic.databasequery.api.query.result.QueryResult;
+
+public interface QueryTransaction extends QueryGroup{
 
     void commit();
 
     void rollback();
 
-    void execute(Query query, Object... values);
+    QueryResult execute(Query query, Object... values);
 
 }

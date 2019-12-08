@@ -19,38 +19,35 @@
 
 package net.prematic.databasequery.api;
 
-import net.prematic.databasequery.api.aggregation.AggregationBuilder;
-import net.prematic.databasequery.api.query.CreateQuery;
+import net.prematic.databasequery.api.collection.CollectionCreator;
+import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.query.Query;
+import net.prematic.databasequery.api.query.QueryGroup;
 import net.prematic.databasequery.api.query.QueryTransaction;
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.api.query.type.CreateQuery;
+import net.prematic.libraries.document.Document;
 
-import java.util.List;
+import java.io.File;
 
 public interface Database {
 
+    String getName();
+
     DatabaseDriver getDriver();
 
-    String getName();
 
     DatabaseCollection getCollection(String name);
 
     CreateQuery createCollection(String name);
 
-    DatabaseCollection createCollection(Class<?> clazz);
-
-    default DatabaseCollection createCollection(Object object) {
-        return createCollection(object.getClass());
+    default void createCollection(Document document) {
+        CollectionCreator.create(this,document);
     }
 
-    default void createCollectionsByFile(CollectionCreator collectionCreator) {
-        collectionCreator.createDatabaseCollections(this);
-    }
-
-    DatabaseCollection updateCollectionStructure(String collection, Class<?> clazz);
-
-    default DatabaseCollection updateCollectionStructure(DatabaseCollection collection, Class<?> clazz) {
-        return updateCollectionStructure(collection.getName(), clazz);
+    default void createCollection(File location) {
+        CollectionCreator.create(this,location);
     }
 
     void dropCollection(String name);
@@ -59,11 +56,13 @@ public interface Database {
         dropCollection(collection.getName());
     }
 
-    void drop();
 
-    List<QueryResult> execute(Query... queries);
+    void drop();
 
     QueryTransaction transact();
 
-    AggregationBuilder newAggregationBuilder(boolean aliasAble);
+    QueryGroup group();
+
+    QueryResult execute(Query... queries);
+
 }

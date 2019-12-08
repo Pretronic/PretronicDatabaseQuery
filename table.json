@@ -7,15 +7,15 @@
       "fields": [
         {
           "name": "id",
-          "dataType": "INTEGER",
+          "type": "INTEGER",
           "options": [
             "INDEX"
           ]
         },
         {
           "name": "username",
-          "dataType": "STRING",
-          "fieldSize": 32,
+          "type": "STRING",
+          "size": 32,
           "options": [
             "UNIQUE_INDEX",
             "NOT_NULL"
@@ -23,7 +23,7 @@
         },
         {
           "name": "money",
-          "dataType": "LONG",
+          "type": "LONG",
           "default": 8
         }
       ],

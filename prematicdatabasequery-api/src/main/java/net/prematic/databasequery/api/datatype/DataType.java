@@ -19,49 +19,36 @@
 
 package net.prematic.databasequery.api.datatype;
 
-import net.prematic.databasequery.api.DatabaseCollection;
-import net.prematic.databasequery.api.query.CreateQuery;
+import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.databasequery.api.query.type.CreateQuery;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class holds all possible data types to create a {@link DatabaseCollection}
  * with the {@link CreateQuery}
+ *
  */
 public enum DataType {
 
     DOUBLE(double.class),
-    DECIMAL,
+    DECIMAL(double.class),
     FLOAT(float.class),
     INTEGER(int.class),
     LONG(long.class),
     CHAR(char.class),
     STRING(String.class),
-    LONG_TEXT,
+    LONG_TEXT(String.class),
     DATE(Date.class),
     DATETIME,
-    TIMESTAMP,
+    TIMESTAMP(long.class),
     BINARY(byte.class, byte[].class),
-    BLOB,
     UUID(java.util.UUID.class),
-    BOOLEAN(boolean.class)
-    ;
-
-    public static final Map<Class<?>, DataType> DATA_TYPES = new HashMap<>();
-
-    static {
-        for (DataType value : DataType.values()) {
-            for (Class javaClass : value.getJavaClasses()) {
-                DATA_TYPES.put(javaClass, value);
-            }
-        }
-    }
+    BOOLEAN(boolean.class);
 
     private final Class<?>[] javaClasses;
 
-    DataType(Class... javaClasses) {
+    DataType(Class<?>... javaClasses) {
         this.javaClasses = javaClasses;
     }
 
@@ -69,13 +56,13 @@ public enum DataType {
      * Returns all equivalent java classes for the given data type.
      * @return array with classes
      */
-    public Class[] getJavaClasses() {
+    public Class<?>[] getJavaClasses() {
         return javaClasses;
     }
 
     public static DataType getDataTypeByClass(Class<?> clazz) {
         for (DataType dataType : DataType.values()) {
-            for (Class javaClass : dataType.getJavaClasses()) {
+            for (Class<?> javaClass : dataType.getJavaClasses()) {
                 if(clazz == javaClass) return dataType;
             }
         }

@@ -2,8 +2,9 @@
 <!--
   ~ (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
   ~
-  ~ @author Philipp Elvin Friedhoff
-  ~ @since 23.05.19, 19:42
+  ~ @author Davide Wietlisbach
+  ~ @since 08.12.19, 19:13
+  ~ @website %web%
   ~
   ~ The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -26,15 +27,16 @@
         <groupId>net.prematic.databasequery</groupId>
         <version>1.0.0</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <artifactId>prematicdatabasequery-common</artifactId>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${plugin.maven.compiler}</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -42,11 +44,13 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>net.prematic.databasequery</groupId>
             <artifactId>prematicdatabasequery-api</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
+
 </project>

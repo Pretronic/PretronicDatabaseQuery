@@ -1,8 +1,9 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @author Davide Wietlisbach
+ * @since 08.12.19, 16:41
+ * @website %web%
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,29 +22,15 @@ package net.prematic.databasequery.api.query;
 
 import net.prematic.databasequery.api.query.result.QueryResult;
 
-import java.util.concurrent.CompletableFuture;
+public interface QueryGroup {
 
-public interface Query {
+    int size();
 
-    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    boolean isEmpty();
 
-    Option NULL = Option.NULL;
+    QueryGroup add(Query query, Object... values);
 
+    QueryResult execute();
 
-    QueryResult execute(Object... values);
-
-    default QueryResult execute() {
-        return execute(EMPTY_OBJECT_ARRAY);
-    }
-
-    CompletableFuture<QueryResult> executeAsync(Object... values);
-
-    default CompletableFuture<QueryResult> executeAsync() {
-        return executeAsync(EMPTY_OBJECT_ARRAY);
-    }
-
-
-    enum Option {
-        NULL
-    }
+    void clear();
 }

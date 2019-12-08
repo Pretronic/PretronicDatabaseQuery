@@ -9,12 +9,31 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
+    <properties>
+        <!-- Project settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Dependency version -->
+        <dependency.pretronic.libraries>1.0.0</dependency.pretronic.libraries>
+        <dependency.pretronic.connectionpool>1.0.0</dependency.pretronic.connectionpool>
+
+        <dependency.hikaricp>3.4.1</dependency.hikaricp>
+
+        <!-- Test dependencies -->
+        <test.junit.jupiter>5.5.2</test.junit.jupiter>
+
+        <!-- Plugin -->
+        <plugin.maven.compiler>3.8.1</plugin.maven.compiler>
+    </properties>
+
     <modules>
         <module>prematicdatabasequery-api</module>
         <module>prematicdatabasequery-common</module>
         <module>prematicdatabasequery-sql</module>
-        <module>prematicdatabasequery-example</module>
-        <module>prematicdatabasequery-entity</module>
+
+        <!-- @Todo - remove after recode -->
+        <module>prematicdatabasequery-sql-deprecated</module>
+        <module>prematicdatabasequery-common-deprecated</module>
     </modules>
 
 </project>

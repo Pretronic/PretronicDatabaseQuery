@@ -30,11 +30,16 @@ public interface QueryResult extends Iterable<QueryResultEntry> {
 
     QueryResultEntry firstOrNull();
 
+
     QueryResultEntry last();
+
+    QueryResultEntry lastOrNull();
+
 
     QueryResultEntry get(int index);
 
     boolean isEmpty();
+
 
     List<QueryResultEntry> asList();
 

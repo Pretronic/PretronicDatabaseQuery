@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @since 19.10.19, 20:45
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,15 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.query;
+package net.prematic.databasequery.common.query;
 
-import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.databasequery.api.query.type.DeleteQuery;
+import net.prematic.databasequery.common.query.helper.SearchQueryHelper;
 
-import java.util.concurrent.CompletableFuture;
+public abstract class AbstractDeleteQuery extends SearchQueryHelper<DeleteQuery> implements DeleteQuery {
 
-public interface Query {
-
-    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-
-    Option NULL = Option.NULL;
-
-
-    QueryResult execute(Object... values);
-
-    default QueryResult execute() {
-        return execute(EMPTY_OBJECT_ARRAY);
-    }
-
-    CompletableFuture<QueryResult> executeAsync(Object... values);
-
-    default CompletableFuture<QueryResult> executeAsync() {
-        return executeAsync(EMPTY_OBJECT_ARRAY);
-    }
-
-
-    enum Option {
-        NULL
+    public AbstractDeleteQuery(DatabaseCollection collection) {
+        super(collection);
     }
 }

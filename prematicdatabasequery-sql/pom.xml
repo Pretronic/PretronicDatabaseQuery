@@ -2,8 +2,9 @@
 <!--
   ~ (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
   ~
-  ~ @author Philipp Elvin Friedhoff
-  ~ @since 12.05.19, 18:26
+  ~ @author Davide Wietlisbach
+  ~ @since 08.12.19, 19:14
+  ~ @website %web%
   ~
   ~ The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -35,7 +36,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${plugin.maven.compiler}</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
@@ -48,26 +49,27 @@
         <dependency>
             <groupId>net.prematic.databasequery</groupId>
             <artifactId>prematicdatabasequery-common</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.prematic.libraries</groupId>
             <artifactId>prematiclibraries-document</artifactId>
-            <version>1.0.0</version>
+            <version>${dependency.pretronic.libraries}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.prematic.prematicsqlconnectionpool</groupId>
             <artifactId>PrematicSqlConnectionPool</artifactId>
-            <version>1.0.0</version>
+            <version>${dependency.pretronic.connectionpool}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>3.4.1</version>
+            <version>${dependency.hikaricp}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
 </project>

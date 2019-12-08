@@ -1,8 +1,9 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @author Davide Wietlisbach
+ * @since 08.12.19, 17:01
+ * @website %web%
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +18,14 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.query;
+package net.prematic.databasequery.api.query.type;
 
-import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.api.query.Aggregation;
 
-import java.util.concurrent.CompletableFuture;
+public interface FindQuery extends SearchQuery<FindQuery> {
 
-public interface Query {
+    FindQuery get(String... fields);
 
-    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    FindQuery get(Aggregation aggregation,String field);
 
-    Option NULL = Option.NULL;
-
-
-    QueryResult execute(Object... values);
-
-    default QueryResult execute() {
-        return execute(EMPTY_OBJECT_ARRAY);
-    }
-
-    CompletableFuture<QueryResult> executeAsync(Object... values);
-
-    default CompletableFuture<QueryResult> executeAsync() {
-        return executeAsync(EMPTY_OBJECT_ARRAY);
-    }
-
-
-    enum Option {
-        NULL
-    }
 }

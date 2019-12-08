@@ -1,8 +1,9 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @author Davide Wietlisbach
+ * @since 08.12.19, 17:42
+ * @website %web%
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +20,26 @@
 
 package net.prematic.databasequery.api.datatype.adapter;
 
-public interface DataTypeAdapter<T> {
+import net.prematic.libraries.utility.Convert;
 
-    Object write(T value);
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.UUID;
 
-    T read(Object value);
+public class UUIDDataTypeAdapter implements DataTypeAdapter<UUID> {
+
+    @Override
+    public Object write(UUID value) {
+        byte[] uuidBytes = new byte[16];
+        ByteBuffer.wrap(uuidBytes)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putLong(value.getMostSignificantBits())
+                .putLong(value.getLeastSignificantBits());
+        return uuidBytes;
+    }
+
+    @Override
+    public UUID read(Object value) {
+        return Convert.toUUID(value);
+    }
 }

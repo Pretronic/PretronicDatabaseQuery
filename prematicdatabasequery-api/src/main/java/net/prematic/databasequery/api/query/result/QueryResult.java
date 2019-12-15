@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public interface QueryResult extends Iterable<QueryResultEntry> {
 
@@ -43,6 +44,7 @@ public interface QueryResult extends Iterable<QueryResultEntry> {
 
     boolean isEmpty();
 
+    Stream<QueryResultEntry> stream();
 
     List<QueryResultEntry> asList();
 

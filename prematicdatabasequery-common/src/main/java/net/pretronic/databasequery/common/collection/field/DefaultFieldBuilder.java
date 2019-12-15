@@ -24,7 +24,7 @@ import net.prematic.databasequery.api.collection.field.FieldOption;
 import net.prematic.databasequery.api.datatype.DataType;
 import net.prematic.databasequery.api.query.ForeignKey;
 import net.prematic.libraries.utility.annonations.Internal;
-import net.pretronic.databasequery.common.EntryOption;
+import net.pretronic.databasequery.common.query.EntryOption;
 
 public class DefaultFieldBuilder implements FieldBuilder {
 

@@ -19,6 +19,7 @@
 
 package net.pretronic.databasequery.common.query.type;
 
+import net.prematic.databasequery.api.Database;
 import net.prematic.databasequery.api.collection.DatabaseCollectionType;
 import net.prematic.databasequery.api.collection.field.FieldBuilder;
 import net.prematic.databasequery.api.collection.field.FieldOption;
@@ -27,26 +28,27 @@ import net.prematic.databasequery.api.query.ForeignKey;
 import net.prematic.databasequery.api.query.type.CreateQuery;
 import net.prematic.databasequery.api.query.type.FindQuery;
 import net.prematic.libraries.utility.Validate;
-import net.prematic.libraries.utility.annonations.Internal;
-import net.pretronic.databasequery.common.EntryOption;
 import net.pretronic.databasequery.common.collection.field.DefaultFieldBuilder;
+import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public abstract class AbstractCreateQuery implements CreateQuery {
+public abstract class AbstractCreateQuery extends AbstractQuery implements CreateQuery {
 
-    private final List<Entry> entries;
-    private final List<ForeignKeyEntry> foreignKeyEntries;
-    private String engine;
-    private DatabaseCollectionType type;
-    private final List<FindQuery> includingQueries;
+    protected final Database database;
+    protected final List<Entry> entries;
+    protected final List<ForeignKeyEntry> foreignKeyEntries;
+    protected String engine;
+    protected DatabaseCollectionType type;
+    protected FindQuery includingQuery;
 
-    public AbstractCreateQuery() {
+    public AbstractCreateQuery(Database database) {
+        super(database.getDriver());
+        this.database = database;
         this.entries = new ArrayList<>();
         this.foreignKeyEntries = new ArrayList<>();
-        this.includingQueries = new ArrayList<>();
     }
 
     @Override
@@ -114,36 +116,12 @@ public abstract class AbstractCreateQuery implements CreateQuery {
 
     @Override
     public CreateQuery include(FindQuery query) {
-        this.includingQueries.add(query);
+        if(this.includingQuery != null) throw new IllegalArgumentException("Including query already set");
+        this.includingQuery = query;
         return this;
     }
 
-    @Internal
-    public List<Entry> getEntries() {
-        return entries;
-    }
-
-    @Internal
-    public List<ForeignKeyEntry> getForeignKeyEntries() {
-        return foreignKeyEntries;
-    }
-
-    @Internal
-    public String getEngine() {
-        return engine;
-    }
-
-    @Internal
-    public DatabaseCollectionType getType() {
-        return type;
-    }
-
-    @Internal
-    public List<FindQuery> getIncludingQueries() {
-        return includingQueries;
-    }
-
-    public static class Entry {
+    protected static class Entry {
 
         private final String field;
         private final DataType type;
@@ -180,12 +158,12 @@ public abstract class AbstractCreateQuery implements CreateQuery {
         }
     }
 
-    public static class ForeignKeyEntry {
+    protected static class ForeignKeyEntry {
 
         private final String field;
         private final ForeignKey foreignKey;
 
-        public ForeignKeyEntry(String field, ForeignKey foreignKey) {
+        ForeignKeyEntry(String field, ForeignKey foreignKey) {
             this.field = field;
             this.foreignKey = foreignKey;
         }

@@ -25,7 +25,6 @@ import net.prematic.libraries.utility.Convert;
 import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.map.IndexCaseIntensiveLinkedHashMap;
 import net.prematic.libraries.utility.map.IndexCaseIntensiveMap;
-import net.prematic.libraries.utility.map.index.IndexMap;
 import net.prematic.libraries.utility.reflect.UnsafeInstanceCreator;
 
 import java.lang.reflect.Field;
@@ -48,7 +47,7 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
     }
 
     @Override
-    public IndexMap<String, Object> asMap() {
+    public IndexCaseIntensiveMap<Object> asMap() {
         return this.results;
     }
 
@@ -61,10 +60,9 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
                 if(contains(field.getName())) field.set(object, getObject(field.getName()));
             }
             return object;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
+            throw new IllegalArgumentException("Can't create object for class " + clazz);
         }
-        return null;
     }
 
     @Override

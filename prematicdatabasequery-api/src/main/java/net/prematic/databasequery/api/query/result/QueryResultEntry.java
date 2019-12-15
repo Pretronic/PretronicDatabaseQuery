@@ -19,7 +19,7 @@
 
 package net.prematic.databasequery.api.query.result;
 
-import net.prematic.libraries.utility.map.index.IndexMap;
+import net.prematic.libraries.utility.map.IndexCaseIntensiveMap;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 
 public interface QueryResultEntry extends Iterable<Map.Entry<String, Object>> {
 
-    IndexMap<String, Object> asMap();
+    IndexCaseIntensiveMap<Object> asMap();
 
     <T> T getAsObject(Class<T> clazz);
 

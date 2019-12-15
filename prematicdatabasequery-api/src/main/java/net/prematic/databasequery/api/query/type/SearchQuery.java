@@ -25,8 +25,6 @@ import net.prematic.databasequery.api.query.Pattern;
 import net.prematic.databasequery.api.query.SearchOrder;
 import net.prematic.databasequery.api.query.type.join.JoinQuery;
 
-import java.util.function.Consumer;
-
 public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQuery<T>> {
 
     T where(String field, Object value);
@@ -89,8 +87,6 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQ
 
     T whereIn(String field, FindQuery query);
 
-    T whereIn(String field, Consumer<FindQuery> query);
-
 
     T whereBetween(String field, Object value1, Object value2);
 
@@ -121,7 +117,7 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQ
 
     T orderBy(String field, SearchOrder order);
 
-    T orderBy(Aggregation aggregation, SearchOrder order);
+    T orderBy(Aggregation aggregation, String field, SearchOrder order);
 
 
     T groupBy(String... fields);

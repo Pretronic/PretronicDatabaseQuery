@@ -24,7 +24,6 @@ import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.result.QueryResult;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 public interface InsertQuery extends Query {
 
@@ -39,10 +38,7 @@ public interface InsertQuery extends Query {
 
     InsertQuery values(Object... values);
 
-    InsertQuery values(FindQuery query);
-
-    InsertQuery values(Consumer<FindQuery> query);
-
+    InsertQuery query(FindQuery query);
 
 
     QueryResult executeAndGetGeneratedKeys(String[] keyColumns, Object... values);

@@ -23,9 +23,9 @@ import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.Aggregation;
 import net.prematic.databasequery.api.query.type.FindQuery;
 
-public abstract class AbstractFindQuery extends AbstractSearchQuery<FindQuery> implements FindQuery {
+public abstract class AbstractFindQuery<C extends DatabaseCollection> extends AbstractSearchQuery<FindQuery, C> implements FindQuery {
 
-    public AbstractFindQuery(DatabaseCollection collection) {
+    public AbstractFindQuery(C collection) {
         super(collection);
     }
 
@@ -42,7 +42,7 @@ public abstract class AbstractFindQuery extends AbstractSearchQuery<FindQuery> i
         return addEntry(new GetEntry(field, aggregation));
     }
 
-    protected static class GetEntry extends Entry {
+    public static class GetEntry extends Entry {
 
         final String field;
         final Aggregation aggregation;

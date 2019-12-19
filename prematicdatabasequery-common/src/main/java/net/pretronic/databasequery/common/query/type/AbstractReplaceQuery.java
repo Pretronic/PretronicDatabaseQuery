@@ -23,9 +23,9 @@ import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.type.ReplaceQuery;
 import net.pretronic.databasequery.common.query.EntryOption;
 
-public abstract class AbstractReplaceQuery extends AbstractSearchQuery<ReplaceQuery> implements ReplaceQuery {
+public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
 
-    public AbstractReplaceQuery(DatabaseCollection collection) {
+    public AbstractReplaceQuery(C collection) {
         super(collection);
     }
 
@@ -37,16 +37,5 @@ public abstract class AbstractReplaceQuery extends AbstractSearchQuery<ReplaceQu
     @Override
     public ReplaceQuery set(String field) {
         return addEntry(new AbstractUpdateQuery.SetEntry(field, EntryOption.PREPARED));
-    }
-
-    protected static class SetEntry extends Entry {
-
-        final String field;
-        final Object value;
-
-        public SetEntry(String field, Object value) {
-            this.field = field;
-            this.value = value;
-        }
     }
 }

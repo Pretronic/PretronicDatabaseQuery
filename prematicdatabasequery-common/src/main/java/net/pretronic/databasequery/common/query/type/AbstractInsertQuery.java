@@ -21,9 +21,11 @@ package net.pretronic.databasequery.common.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.databasequery.api.query.result.QueryResultEntry;
 import net.prematic.databasequery.api.query.type.FindQuery;
 import net.prematic.databasequery.api.query.type.InsertQuery;
 import net.prematic.libraries.utility.Iterators;
+import net.prematic.libraries.utility.Validate;
 import net.prematic.libraries.utility.annonations.Internal;
 
 import java.util.ArrayList;
@@ -31,13 +33,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class AbstractInsertQuery extends AbstractQuery implements InsertQuery {
+public abstract class AbstractInsertQuery<C extends DatabaseCollection> extends AbstractQuery implements InsertQuery {
 
-    private final DatabaseCollection collection;
-    private final List<Entry> entries;
-    private final List<FindQuery> queries;
+    protected final C collection;
+    protected final List<Entry> entries;
+    protected final List<FindQuery> queries;
 
-    protected AbstractInsertQuery(DatabaseCollection collection) {
+    public AbstractInsertQuery(C collection) {
         super(collection.getDatabase().getDriver());
         this.collection = collection;
         this.entries = new ArrayList<>();
@@ -76,6 +78,25 @@ public abstract class AbstractInsertQuery extends AbstractQuery implements Inser
     }
 
     @Override
+    public QueryResult executeAndGetGeneratedKeys(String... keyColumns) {
+        return executeAndGetGeneratedKeys(keyColumns, EMPTY_OBJECT_ARRAY);
+    }
+
+    @Override
+    public int executeAndGetGeneratedKeyAsInt(String keyColumn, Object... values) {
+        QueryResultEntry resultEntry = executeAndGetGeneratedKeys(keyColumn).firstOrNull();
+        Validate.notNull(resultEntry);
+        return resultEntry.getInt(keyColumn);
+    }
+
+    @Override
+    public long executeAndGetGeneratedKeyAsLong(String keyColumn, Object... values) {
+        QueryResultEntry resultEntry = executeAndGetGeneratedKeys(keyColumn).firstOrNull();
+        Validate.notNull(resultEntry);
+        return resultEntry.getLong(keyColumn);
+    }
+
+    @Override
     public CompletableFuture<QueryResult> executeAsyncAndGetGeneratedKeys(String[] keyColumns, Object... values) {
         CompletableFuture<QueryResult> future = new CompletableFuture<>();
         this.collection.getDatabase().getDriver().getExecutorService().execute(()->
@@ -107,15 +128,12 @@ public abstract class AbstractInsertQuery extends AbstractQuery implements Inser
         return future;
     }
 
-    @Internal
-    public List<Entry> getEntries() {
-        return this.entries;
+    @Override
+    public QueryResult execute(Object... values) {
+        return executeAndGetGeneratedKeys(EMPTY_STRING_ARRAY, values);
     }
 
-    @Internal
-    public List<FindQuery> getQueries() {
-        return this.queries;
-    }
+
 
     @Internal
     public Entry getEntry(String name){
@@ -123,7 +141,8 @@ public abstract class AbstractInsertQuery extends AbstractQuery implements Inser
     }
 
     @Internal
-    protected static class Entry {
+    public static class Entry {
+
         private final String field;
         private final List<Object> values;
 

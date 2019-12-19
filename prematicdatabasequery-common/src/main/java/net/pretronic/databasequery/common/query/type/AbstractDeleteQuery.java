@@ -22,9 +22,9 @@ package net.pretronic.databasequery.common.query.type;
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.type.DeleteQuery;
 
-public abstract class AbstractDeleteQuery extends AbstractSearchQuery<DeleteQuery> implements DeleteQuery {
+public abstract class AbstractDeleteQuery<C extends DatabaseCollection> extends AbstractSearchQuery<DeleteQuery, C> implements DeleteQuery {
 
-    public AbstractDeleteQuery(DatabaseCollection collection) {
+    public AbstractDeleteQuery(C collection) {
         super(collection);
     }
 }

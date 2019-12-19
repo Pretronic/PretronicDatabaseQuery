@@ -25,7 +25,7 @@ import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.logging.PrematicLogger;
 
-import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 public interface DatabaseDriver {
@@ -50,7 +50,7 @@ public interface DatabaseDriver {
     void disconnect();
 
 
-    Collection<DataTypeAdapter<?>> getDataTypeAdapters();
+    Map<Class<?>, DataTypeAdapter<?>> getDataTypeAdapters();
 
     <T> DataTypeAdapter<T> getDataTypeAdapter(Class<T> clazz);
 

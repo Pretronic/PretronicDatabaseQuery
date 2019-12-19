@@ -23,9 +23,9 @@ import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.type.UpdateQuery;
 import net.pretronic.databasequery.common.query.EntryOption;
 
-public abstract class AbstractUpdateQuery extends AbstractSearchQuery<UpdateQuery> implements UpdateQuery {
+public abstract class AbstractUpdateQuery<C extends DatabaseCollection> extends AbstractSearchQuery<UpdateQuery, C> implements UpdateQuery {
 
-    public AbstractUpdateQuery(DatabaseCollection collection) {
+    public AbstractUpdateQuery(C collection) {
         super(collection);
     }
 
@@ -39,7 +39,7 @@ public abstract class AbstractUpdateQuery extends AbstractSearchQuery<UpdateQuer
         return addEntry(new SetEntry(field, EntryOption.PREPARED));
     }
 
-    protected static class SetEntry extends Entry {
+    public static class SetEntry extends Entry {
 
         final String field;
         final Object value;

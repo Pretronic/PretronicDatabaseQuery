@@ -1,9 +1,8 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 08.12.19, 16:15
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 18.12.19, 15:55
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +17,33 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.driver.config;
+package net.pretronic.databasequery.common;
 
+import net.prematic.databasequery.api.Database;
 import net.prematic.databasequery.api.driver.DatabaseDriver;
-import net.prematic.libraries.document.Document;
-import net.prematic.libraries.utility.interfaces.Castable;
+import net.prematic.libraries.logging.PrematicLogger;
 
-public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T> {
+public abstract class AbstractDatabase<T extends DatabaseDriver> implements Database {
 
-    String getName();
+    private final String name;
+    private final T driver;
 
-    Class<? extends DatabaseDriver> getDriverClass();
+    public AbstractDatabase(String name, T driver) {
+        this.name = name;
+        this.driver = driver;
+    }
 
-    String getConnectionString();
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
-    Document toDocument();
+    @Override
+    public T getDriver() {
+        return this.driver;
+    }
 
+    public PrematicLogger getLogger() {
+        return this.driver.getLogger();
+    }
 }

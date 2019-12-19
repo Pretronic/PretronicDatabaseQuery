@@ -35,12 +35,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends AbstractQuery implements SearchQuery<T> {
+public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends DatabaseCollection> extends AbstractQuery implements SearchQuery<T> {
 
-    protected final DatabaseCollection collection;
+    protected final C collection;
     protected final List<Entry> entries;
 
-    public AbstractSearchQuery(DatabaseCollection collection) {
+    public AbstractSearchQuery(C collection) {
         super(collection.getDatabase().getDriver());
         this.collection = collection;
         this.entries = new ArrayList<>();
@@ -353,14 +353,14 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
     protected T addOperatorEntry(OperationEntry.Type type, SearchQuery<?>... queries) {
         List<Entry> entries = new ArrayList<>();
         for (SearchQuery<?> query : queries) {
-            entries.addAll(((AbstractSearchQuery<?>) query).entries);
+            entries.addAll(((AbstractSearchQuery<?, ?>) query).entries);
         }
         return addEntry(new OperationEntry(type, entries));
     }
 
-    protected static class Entry {}
+    public static class Entry {}
 
-    protected static class ConditionEntry extends Entry {
+    public static class ConditionEntry extends Entry {
 
         final Type type;
         final String field;
@@ -386,7 +386,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
         }
     }
 
-    protected static class OperationEntry extends Entry {
+    public static class OperationEntry extends Entry {
 
         final Type type;
         final List<Entry> entries;
@@ -408,7 +408,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
         }
     }
 
-    protected static class JoinEntry extends Entry {
+    public static class JoinEntry extends Entry {
 
         final DatabaseCollection collection;
         final JoinType type;
@@ -436,7 +436,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
         }
     }
 
-    protected static class LimitEntry extends Entry {
+    public static class LimitEntry extends Entry {
 
         final int limit;
         final int offset;
@@ -447,7 +447,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
         }
     }
 
-    protected static class OrderByEntry extends Entry {
+    public static class OrderByEntry extends Entry {
 
         final String field;
         final SearchOrder order;
@@ -460,7 +460,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>> extends Abst
         }
     }
 
-    protected static class GroupByEntry extends Entry {
+    public static class GroupByEntry extends Entry {
 
         final String field;
         final Aggregation aggregation;

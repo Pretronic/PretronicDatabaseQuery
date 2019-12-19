@@ -20,70 +20,75 @@
 package net.pretronic.databasequery.common.query.type;
 
 import net.prematic.databasequery.api.Database;
+import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.collection.DatabaseCollectionType;
 import net.prematic.databasequery.api.collection.field.FieldBuilder;
 import net.prematic.databasequery.api.collection.field.FieldOption;
 import net.prematic.databasequery.api.datatype.DataType;
 import net.prematic.databasequery.api.query.ForeignKey;
+import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.api.query.type.CreateQuery;
 import net.prematic.databasequery.api.query.type.FindQuery;
 import net.prematic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.collection.field.DefaultFieldBuilder;
 import net.pretronic.databasequery.common.query.EntryOption;
+import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
+import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public abstract class AbstractCreateQuery extends AbstractQuery implements CreateQuery {
+public abstract class AbstractCreateQuery<T extends Database> extends AbstractQuery implements CreateQuery {
 
-    protected final Database database;
+    protected final String name;
+    protected final T database;
     protected final List<Entry> entries;
-    protected final List<ForeignKeyEntry> foreignKeyEntries;
     protected String engine;
     protected DatabaseCollectionType type;
     protected FindQuery includingQuery;
 
-    public AbstractCreateQuery(Database database) {
+    public AbstractCreateQuery(String name, T database) {
         super(database.getDriver());
+        this.name = name;
         this.database = database;
         this.entries = new ArrayList<>();
-        this.foreignKeyEntries = new ArrayList<>();
     }
 
     @Override
     public CreateQuery field(String field, DataType type, int size, Object defaultValue, ForeignKey foreignKey, FieldOption... options) {
         Validate.notNull(field, type, size, defaultValue, foreignKey);
-        this.entries.add(new Entry(field, type, size, defaultValue, options));
-        this.foreignKeyEntries.add(new ForeignKeyEntry(field, foreignKey));
+        this.entries.add(new CreateEntry(field, type, size, defaultValue, options));
+        this.entries.add(new ForeignKeyEntry(field, foreignKey));
         return this;
     }
 
     @Override
     public CreateQuery field(String field, DataType type, int size, Object defaultValue, FieldOption... options) {
         Validate.notNull(field, type, size);
-        this.entries.add(new Entry(field, type, size, defaultValue, options));
+        this.entries.add(new CreateEntry(field, type, size, defaultValue, options));
         return this;
     }
 
     @Override
     public CreateQuery field(String field, DataType type, int size, FieldOption... options) {
         Validate.notNull(field, type, size);
-        this.entries.add(new Entry(field, type, size, EntryOption.NOT_DEFINED, options));
+        this.entries.add(new CreateEntry(field, type, size, EntryOption.NOT_DEFINED, options));
         return this;
     }
 
     @Override
     public CreateQuery field(String field, DataType type, ForeignKey foreignKey, FieldOption... options) {
         Validate.notNull(field, type, foreignKey);
-        this.entries.add(new Entry(field, type, 0, EntryOption.NOT_DEFINED, options));
+        this.entries.add(new CreateEntry(field, type, 0, EntryOption.NOT_DEFINED, options));
         return this;
     }
 
     @Override
     public CreateQuery field(String field, DataType type, FieldOption... options) {
         Validate.notNull(field, type);
-        this.entries.add(new Entry(field, type, 0, EntryOption.NOT_DEFINED, options));
+        this.entries.add(new CreateEntry(field, type, 0, EntryOption.NOT_DEFINED, options));
         return this;
     }
 
@@ -92,7 +97,7 @@ public abstract class AbstractCreateQuery extends AbstractQuery implements Creat
         DefaultFieldBuilder fieldBuilder = new DefaultFieldBuilder();
         builder.accept(fieldBuilder);
         Validate.notNull(fieldBuilder.getName(), fieldBuilder.getType());
-        this.entries.add(new Entry(fieldBuilder.getName(), fieldBuilder.getType(), fieldBuilder.getSize(), fieldBuilder.getDefaultValue(), fieldBuilder.getOptions()));
+        this.entries.add(new CreateEntry(fieldBuilder.getName(), fieldBuilder.getType(), fieldBuilder.getSize(), fieldBuilder.getDefaultValue(), fieldBuilder.getOptions()));
         return this;
     }
 
@@ -110,7 +115,7 @@ public abstract class AbstractCreateQuery extends AbstractQuery implements Creat
 
     @Override
     public CreateQuery foreignKey(String field, ForeignKey foreignKey) {
-        this.foreignKeyEntries.add(new ForeignKeyEntry(field, foreignKey));
+        this.entries.add(new ForeignKeyEntry(field, foreignKey));
         return this;
     }
 
@@ -121,7 +126,21 @@ public abstract class AbstractCreateQuery extends AbstractQuery implements Creat
         return this;
     }
 
-    protected static class Entry {
+    @Override
+    public CompletableFuture<DatabaseCollection> createAsync() {
+        CompletableFuture<DatabaseCollection> future = new CompletableFuture<>();
+        future.complete(create());
+        return future;
+    }
+
+    @Override
+    public QueryResult execute(Object... values) {
+        return new DefaultQueryResult().addEntry(new DefaultQueryResultEntry(this.database.getDriver()).addEntry("collection", create()));
+    }
+
+    public static class Entry {}
+
+    public static class CreateEntry extends Entry {
 
         private final String field;
         private final DataType type;
@@ -129,7 +148,7 @@ public abstract class AbstractCreateQuery extends AbstractQuery implements Creat
         private final Object defaultValue;
         private final FieldOption[] options;
 
-        Entry(String field, DataType type, int size, Object defaultValue, FieldOption[] options) {
+        CreateEntry(String field, DataType type, int size, Object defaultValue, FieldOption[] options) {
             this.field = field;
             this.type = type;
             this.size = size;
@@ -158,7 +177,7 @@ public abstract class AbstractCreateQuery extends AbstractQuery implements Creat
         }
     }
 
-    protected static class ForeignKeyEntry {
+    public static class ForeignKeyEntry extends Entry {
 
         private final String field;
         private final ForeignKey foreignKey;

@@ -1,9 +1,8 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 08.12.19, 16:15
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 09.12.19, 18:57
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +17,26 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.driver.config;
+package net.pretronic.databasequery.common.query.type;
 
 import net.prematic.databasequery.api.driver.DatabaseDriver;
-import net.prematic.libraries.document.Document;
-import net.prematic.libraries.utility.interfaces.Castable;
+import net.prematic.databasequery.api.query.Query;
+import net.prematic.databasequery.api.query.result.QueryResult;
 
-public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T> {
+import java.util.concurrent.CompletableFuture;
 
-    String getName();
+public abstract class AbstractQuery implements Query {
 
-    Class<? extends DatabaseDriver> getDriverClass();
+    private final DatabaseDriver driver;
 
-    String getConnectionString();
+    protected AbstractQuery(DatabaseDriver driver) {
+        this.driver = driver;
+    }
 
-    Document toDocument();
-
+    @Override
+    public CompletableFuture<QueryResult> executeAsync(Object... values) {
+        CompletableFuture<QueryResult> future = new CompletableFuture<>();
+        this.driver.getExecutorService().execute(()-> future.complete(execute(values)));
+        return future;
+    }
 }

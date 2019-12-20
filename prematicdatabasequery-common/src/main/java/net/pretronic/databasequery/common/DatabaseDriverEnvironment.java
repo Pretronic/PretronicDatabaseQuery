@@ -1,9 +1,8 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 08.12.19, 16:15
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 19.12.19, 16:24
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +17,10 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.driver.config;
+package net.pretronic.databasequery.common;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+public enum DatabaseDriverEnvironment {
 
-public interface RemoteDatabaseDriverConfig {
-
-    InetAddress getHost();
-
-    int getPort();
-
-    InetSocketAddress getAddress();
-
+    LOCAL,
+    REMOTE
 }

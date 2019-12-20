@@ -33,6 +33,10 @@ public class DefaultQueryResult implements QueryResult {
 
     private final List<QueryResultEntry> entries;
 
+    public DefaultQueryResult() {
+        this(new ArrayList<>());
+    }
+
     public DefaultQueryResult(List<QueryResultEntry> entries) {
         this.entries = entries;
     }
@@ -82,5 +86,10 @@ public class DefaultQueryResult implements QueryResult {
         for (QueryResultEntry entry : entries) {
             collection.add(loader.apply(entry));
         }
+    }
+
+    public DefaultQueryResult addEntry(QueryResultEntry entry) {
+        this.entries.add(entry);
+        return this;
     }
 }

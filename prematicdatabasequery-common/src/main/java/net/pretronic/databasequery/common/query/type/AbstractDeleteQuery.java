@@ -1,9 +1,8 @@
 /*
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 08.12.19, 16:15
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 15.12.19, 20:07
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +17,14 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.driver.config;
+package net.pretronic.databasequery.common.query.type;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.databasequery.api.query.type.DeleteQuery;
 
-public interface RemoteDatabaseDriverConfig {
+public abstract class AbstractDeleteQuery<C extends DatabaseCollection> extends AbstractSearchQuery<DeleteQuery, C> implements DeleteQuery {
 
-    InetAddress getHost();
-
-    int getPort();
-
-    InetSocketAddress getAddress();
-
+    public AbstractDeleteQuery(C collection) {
+        super(collection);
+    }
 }

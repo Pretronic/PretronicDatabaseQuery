@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public interface Query {
 
     Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    String[] EMPTY_STRING_ARRAY = new String[0];
 
     Option NULL = Option.NULL;
 

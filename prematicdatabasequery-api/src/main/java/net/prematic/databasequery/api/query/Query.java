@@ -30,7 +30,6 @@ public interface Query {
 
     Option NULL = Option.NULL;
 
-
     QueryResult execute(Object... values);
 
     default QueryResult execute() {

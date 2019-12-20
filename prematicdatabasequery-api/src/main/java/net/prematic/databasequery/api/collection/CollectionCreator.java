@@ -27,7 +27,7 @@ import net.prematic.databasequery.api.query.ForeignKey;
 import net.prematic.databasequery.api.query.QueryGroup;
 import net.prematic.databasequery.api.query.type.CreateQuery;
 import net.prematic.libraries.document.Document;
-import net.prematic.libraries.document.DocumentEntry;
+import net.prematic.libraries.document.entry.DocumentEntry;
 
 import java.io.File;
 
@@ -44,7 +44,7 @@ public class CollectionCreator {
             CreateQuery createQuery = database.createCollection(name);
 
             String type = collection.toDocument().getString("type");
-            if(type != null)createQuery.type(DatabaseCollection.Type.valueOf(type.toUpperCase()));
+            if(type != null) createQuery.type(DatabaseCollectionType.valueOf(type.toUpperCase()));
 
             String engine = collection.toDocument().getString("engine");
             if(engine != null) createQuery.engine(engine);

@@ -25,6 +25,30 @@ import net.prematic.databasequery.api.query.result.QueryResult;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The {@link InsertQuery} is used for inserting new data records in a collection.
+ * The insert query is a port of the data manipulation language (DML).
+ *
+ * <p>Before you can insert any kind of data, you have to defined the fields with {@link #fields(String...)},
+ * after that you are able to directly declare the values {@link #values(Object...)}, using an external
+ * select query {@link #query(FindQuery)} or set the values later at the execution{@link #execute()}.</p>
+ *
+ * <p>Examples:</p>
+ *
+ * <pre>
+ *   insert.fields("Name","Age")
+ *         .values("John Doe",54)
+ *         .values("Jane Doe",36)
+ *         .execute();
+ *
+ *   insert.set("Name","John Doe","Jane Doe")
+ *         .set("Age",54,36)
+ *         .execute();
+ *
+ *   insert.fields("Name","Age")
+ *         .execute("John Doe",54,"Jane Doe",36);
+ * </pre>
+ */
 public interface InsertQuery extends Query {
 
     default InsertQuery set(String field) {
@@ -33,7 +57,12 @@ public interface InsertQuery extends Query {
 
     InsertQuery set(String field, Object... values);
 
-
+    /**
+     * Define one or multiple values.
+     *
+     * @param fields The fields to define
+     * @return The current query
+     */
     InsertQuery fields(String... fields);
 
     InsertQuery values(Object... values);

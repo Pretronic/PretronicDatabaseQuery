@@ -20,9 +20,27 @@
 
 package net.prematic.databasequery.api.query;
 
+/**
+ * The {@link SearchOrder} defines the order direction in a {@link net.prematic.databasequery.api.query.type.FindQuery
+ */
 public enum SearchOrder {
 
+    /**
+     * ASK stands for ascending.
+     * <p>Ascending is used for increasing in size, alphabetically or importance.</p>>
+     *
+     * <p>Example: -2, -1, 0, 1, 2, 3</p>>
+     *
+     */
     ASC(),
+
+    /**
+     * ASK stands for descending. This
+     * <p>Ascending is used for decreasing in size, alphabetically or importance.</p>>
+     *
+     * <p>Example: 3, 2, 1, 0, -1, -2</p>>
+     *
+     */
     DESC()
 
 }

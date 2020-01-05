@@ -1,8 +1,8 @@
 /*
- * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
+ * (C) Copyright 2020 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @since 04.01.20, 22:20
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,29 +19,23 @@
 
 package net.prematic.databasequery.api.query;
 
-import net.prematic.databasequery.api.query.result.QueryResult;
+import java.util.Arrays;
+import java.util.List;
 
-import java.util.concurrent.CompletableFuture;
+public final class PreparedValue {
 
-public interface Query {
+    private final List<Object> values;
 
-    Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-    String[] EMPTY_STRING_ARRAY = new String[0];
-
-    QueryResult execute(Object... values);
-
-    default QueryResult execute() {
-        return execute(EMPTY_OBJECT_ARRAY);
+    private PreparedValue(List<Object> values) {
+        this.values = values;
     }
 
-    CompletableFuture<QueryResult> executeAsync(Object... values);
-
-    default CompletableFuture<QueryResult> executeAsync() {
-        return executeAsync(EMPTY_OBJECT_ARRAY);
+    public List<Object> getValues() {
+        return values;
     }
 
 
-    enum Option {
-        NULL
+    public static PreparedValue of(Object... values) {
+        return new PreparedValue(Arrays.asList(values));
     }
 }

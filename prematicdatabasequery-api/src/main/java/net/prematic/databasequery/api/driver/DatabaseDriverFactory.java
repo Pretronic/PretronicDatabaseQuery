@@ -89,13 +89,13 @@ public interface DatabaseDriverFactory {
     }
 
 
-    static void registerFactory(Class<? extends DatabaseDriver> driverClass, DatabaseDriverFactory factory){
+    static void registerFactory(Class<? extends DatabaseDriver> driverClass, DatabaseDriverFactory factory) {
         Objects.requireNonNull(driverClass);
         Objects.requireNonNull(factory);
         FACTORIES.put(driverClass,factory);
     }
 
-    static void unregisterFactory(Class<? extends DatabaseDriver> driverClass){
+    static void unregisterFactory(Class<? extends DatabaseDriver> driverClass) {
         Objects.requireNonNull(driverClass);
         FACTORIES.remove(driverClass);
     }

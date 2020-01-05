@@ -24,6 +24,7 @@ public enum JoinType {
 
     INNER(),
     LEFT(),
-    RIGHT();
+    RIGHT(),
+    FULL()
 
 }

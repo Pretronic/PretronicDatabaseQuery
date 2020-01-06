@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class DefaultQueryResult implements QueryResult {
 
@@ -74,6 +75,16 @@ public class DefaultQueryResult implements QueryResult {
     @Override
     public boolean isEmpty() {
         return this.entries.isEmpty();
+    }
+
+    @Override
+    public int size() {
+        return this.entries.size();
+    }
+
+    @Override
+    public Stream<QueryResultEntry> stream() {
+        return this.entries.stream();
     }
 
     @Override

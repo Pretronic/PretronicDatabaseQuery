@@ -25,7 +25,11 @@ import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.Validate;
+import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
+import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
+import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
+import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
 
 import java.util.concurrent.ExecutorService;
 
@@ -40,6 +44,12 @@ public class SQLDatabaseDriverFactory implements DatabaseDriverFactory {
 
     @Override
     public DatabaseDriverConfig<?> createConfig(Document config) {
-        return null;
+        Dialect dialect = Dialect.byName(config.getString("dialectName"));
+        if(dialect.getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
+            return config.getAsObject(SQLLocalDatabaseDriverConfig.class);
+        } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
+            return config.getAsObject(SQLRemoteDatabaseDriverConfig.class);
+        }
+        throw new IllegalArgumentException("Can't load config from document");
     }
 }

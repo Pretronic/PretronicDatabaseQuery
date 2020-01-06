@@ -19,7 +19,6 @@
 
 package net.pretronic.databasequery.sql.driver.config;
 
-import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.driver.config.LocalDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 
@@ -30,8 +29,8 @@ public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLoc
 
     private final File location;
 
-    protected SQLLocalDatabaseDriverConfig(String name, Class<? extends DatabaseDriver> driverClass, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, Class<? extends DataSource> dataSourceClass, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, File location) {
-        super(name, driverClass, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClass, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
+    protected SQLLocalDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, Class<? extends DataSource> dataSourceClass, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, File location) {
+        super(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClass, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
         this.location = location;
     }
 

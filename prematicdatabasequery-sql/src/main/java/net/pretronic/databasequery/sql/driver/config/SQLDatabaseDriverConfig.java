@@ -22,32 +22,45 @@ package net.pretronic.databasequery.sql.driver.config;
 import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
+import net.prematic.libraries.document.annotationss.DocumentKey;
 import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
-import javax.sql.DataSource;
+public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
 
-public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
-
+    @DocumentKey("name")
     private final String name;
-    private final Class<? extends DatabaseDriver> driverClass;
+    @DocumentKey("dialectName")
     private final Dialect dialect;
+    @DocumentKey("connectionString")
     private final String connectionString;
+    @DocumentKey("connection.options.catalog")
     private final String connectionCatalog;
+    @DocumentKey("connection.options.schema")
     private final String connectionSchema;
+    @DocumentKey("connection.options.autoCommit")
     private final boolean autoCommit;
+    @DocumentKey("connection.options.readOnly")
     private final boolean connectionReadOnly;
+    @DocumentKey("connection.options.isolationLevel")
     private final int connectionIsolationLevel;
+    @DocumentKey("connection.options.networkTimeout")
     private final int connectionNetworkTimeout;
-    private final Class<? extends DataSource> dataSourceClass;
+    @DocumentKey("datasource.className")
+    private final String dataSourceClassName;
+    @DocumentKey("datasource.connectionExpireAfterAccess")
     private final long dataSourceConnectionExpireAfterAccess;
+    @DocumentKey("datasource.connectionExpire")
     private final long dataSourceConnectionExpire;
+    @DocumentKey("datasource.connectionLoginTimeout")
     private final long dataSourceConnectionLoginTimeout;
+    @DocumentKey("datasource.maximumPoolSize")
     private final int dataSourceMaximumPoolSize;
+    @DocumentKey("datasource.minimumIdleConnectionPoolSize")
     private final int dataSourceMinimumIdleConnectionPoolSize;
 
-    protected SQLDatabaseDriverConfig(String name, Class<? extends DatabaseDriver> driverClass, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, Class<? extends DataSource> dataSourceClass, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
+    protected SQLDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
         this.name = name;
-        this.driverClass = driverClass;
         this.dialect = dialect;
         this.connectionString = connectionString;
         this.connectionCatalog = connectionCatalog;
@@ -56,7 +69,7 @@ public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<
         this.connectionReadOnly = connectionReadOnly;
         this.connectionIsolationLevel = connectionIsolationLevel;
         this.connectionNetworkTimeout = connectionNetworkTimeout;
-        this.dataSourceClass = dataSourceClass;
+        this.dataSourceClassName = dataSourceClassName;
         this.dataSourceConnectionExpireAfterAccess = dataSourceConnectionExpireAfterAccess;
         this.dataSourceConnectionExpire = dataSourceConnectionExpire;
         this.dataSourceConnectionLoginTimeout = dataSourceConnectionLoginTimeout;
@@ -72,7 +85,7 @@ public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<
 
     @Override
     public Class<? extends DatabaseDriver> getDriverClass() {
-        return this.driverClass;
+        return SQLDatabaseDriver.class;
     }
 
     @Override
@@ -119,8 +132,8 @@ public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<
         return this.connectionNetworkTimeout;
     }
 
-    public Class<? extends DataSource> getDataSourceClass() {
-        return this.dataSourceClass;
+    public String getDataSourceClass() {
+        return this.dataSourceClassName;
     }
 
     public long getDataSourceConnectionExpireAfterAccess() {

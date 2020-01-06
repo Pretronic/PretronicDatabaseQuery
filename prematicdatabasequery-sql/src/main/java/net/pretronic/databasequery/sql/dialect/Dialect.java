@@ -69,6 +69,10 @@ public interface  Dialect {
         return DIALECTS;
     }
 
+    static Dialect byName(String name) {
+        return Iterators.findOne(DIALECTS, dialect -> dialect.getName().equalsIgnoreCase(name));
+    }
+
     static Dialect registerDialect(Dialect dialect) {
         DIALECTS.add(dialect);
         return dialect;

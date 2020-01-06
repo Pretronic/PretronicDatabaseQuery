@@ -25,6 +25,7 @@ import net.prematic.databasequery.api.datatype.DataType;
 import net.prematic.databasequery.api.driver.DatabaseDriverFactory;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.databasequery.api.exceptions.DatabaseQueryConnectException;
+import net.prematic.libraries.document.DocumentRegistry;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.Iterators;
 import net.prematic.libraries.utility.annonations.Internal;
@@ -33,6 +34,7 @@ import net.pretronic.databasequery.common.driver.AbstractDatabaseDriver;
 import net.pretronic.databasequery.sql.DataTypeInfo;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.driver.config.DialectDocumentAdapter;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.datasource.HikariSQLDataSourceFactory;
 import net.pretronic.databasequery.sql.driver.datasource.SQLDataSourceFactory;
@@ -42,24 +44,23 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     static {
+        DocumentRegistry.getDefaultContext().registerAdapter(Dialect.class, new DialectDocumentAdapter());
         SQLDataSourceFactory.FACTORIES.put(HikariDataSource.class, new HikariSQLDataSourceFactory());
         DatabaseDriverFactory.FACTORIES.put(SQLDatabaseDriver.class, new SQLDatabaseDriverFactory());
     }
 
     private DataSource dataSource;
-    private final Set<SQLDatabase> databases;
+    private final Collection<SQLDatabase> databases;
     private final Collection<DataTypeInfo> dataTypeInfos;
 
     public SQLDatabaseDriver(String name, DatabaseDriverConfig<?> config, PrematicLogger logger, ExecutorService executorService) {
         super(name, "SQL", config, logger, executorService);
-        this.databases = new HashSet<>();
+        this.databases = new ArrayList<>();
         this.dataTypeInfos = new ArrayList<>();
         registerDataTypeInfos();
     }
@@ -114,7 +115,12 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     @Override
     public Database getDatabase(String name) {
-        return new SQLDatabase(name, this, this.dataSource);
+        SQLDatabase database = Iterators.findOne(this.databases, sqlDatabase -> sqlDatabase.getName().equalsIgnoreCase(name));
+        if(database == null) {
+            database = new SQLDatabase(name, this, this.dataSource);
+            this.databases.add(database);
+        }
+        return database;
     }
 
     @Internal

@@ -2,7 +2,7 @@
  * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 09.12.19, 18:57
+ * @since 19.12.19, 20:51
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,22 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.common.query.type;
+package net.pretronic.databasequery.sql.query;
 
-import net.prematic.databasequery.api.driver.DatabaseDriver;
-import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.result.QueryResult;
-import net.prematic.libraries.logging.PrematicLogger;
+import net.pretronic.databasequery.common.query.AbstractQueryGroup;
+import net.pretronic.databasequery.sql.SQLDatabase;
 
-import java.util.concurrent.CompletableFuture;
+public class SQLQueryGroup extends AbstractQueryGroup {
 
-public abstract class AbstractQuery implements Query {
+    private final SQLDatabase database;
 
-    private final DatabaseDriver driver;
-
-    protected AbstractQuery(DatabaseDriver driver) {
-        this.driver = driver;
+    public SQLQueryGroup(SQLDatabase database) {
+        this.database = database;
     }
 
     @Override
-    public CompletableFuture<QueryResult> executeAsync(Object... values) {
-        CompletableFuture<QueryResult> future = new CompletableFuture<>();
-        this.driver.getExecutorService().execute(()-> future.complete(execute(values)));
-        return future;
-    }
-
-    public PrematicLogger getLogger() {
-        return this.driver.getLogger();
+    public QueryResult execute() {
+        return null;
     }
 }

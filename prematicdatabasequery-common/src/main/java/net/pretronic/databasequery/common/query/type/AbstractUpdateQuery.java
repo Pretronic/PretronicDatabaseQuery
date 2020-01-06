@@ -41,12 +41,20 @@ public abstract class AbstractUpdateQuery<C extends DatabaseCollection> extends 
 
     public static class SetEntry extends Entry {
 
-        final String field;
-        final Object value;
+        private final String field;
+        private final Object value;
 
         public SetEntry(String field, Object value) {
             this.field = field;
             this.value = value;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Object getValue() {
+            return value;
         }
     }
 }

@@ -27,9 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface InsertQuery extends Query {
 
-    default InsertQuery set(String field) {
-        return set(field, EMPTY_OBJECT_ARRAY);
-    }
+    InsertQuery set(String field);
 
     InsertQuery set(String field, Object... values);
 

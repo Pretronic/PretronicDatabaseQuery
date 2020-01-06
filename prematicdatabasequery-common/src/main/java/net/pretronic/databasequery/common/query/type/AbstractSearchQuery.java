@@ -177,13 +177,13 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @Override
     public T whereIsNull(String field) {
         Validate.notNull(field);
-        return addConditionEntry(ConditionEntry.Type.WHERE_NULL, field);
+        return addConditionEntry(ConditionEntry.Type.WHERE_NULL, field, null);
     }
 
     @Override
     public T whereIsEmpty(String field) {
         Validate.notNull(field);
-        return addConditionEntry(ConditionEntry.Type.WHERE_EMPTY, field);
+        return addConditionEntry(ConditionEntry.Type.WHERE, field, "");
     }
 
     @Override
@@ -216,13 +216,15 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addConditionEntry(ConditionEntry.Type.WHERE_BETWEEN, field, EntryOption.PREPARED, EntryOption.PREPARED);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T not(SearchConsumer searchQuery) {
-        Validate.notNull(searchQuery);
+        System.out.println(searchQuery);
+        if(searchQuery == null) throw new NullPointerException("Test");
         SearchQuery<?> query = this.collection.find();
         searchQuery.accept(query);
         addOperatorEntry(OperationEntry.Type.NOT, query);
-        return null;
+        return (T) this;
     }
 
     @Override
@@ -346,10 +348,6 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addConditionEntry(type, field, value, null);
     }
 
-    protected T addConditionEntry(ConditionEntry.Type type, String field) {
-        return addConditionEntry(type, field, null, null);
-    }
-
     protected T addOperatorEntry(OperationEntry.Type type, SearchQuery<?>... queries) {
         List<Entry> entries = new ArrayList<>();
         for (SearchQuery<?> query : queries) {
@@ -362,9 +360,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class ConditionEntry extends Entry {
 
-        final Type type;
-        final String field;
-        final Object value1, extra;
+        private final Type type;
+        private final String field;
+        private final Object value1, extra;
 
         public ConditionEntry(Type type, String field, Object value1, Object extra) {
             this.type = type;
@@ -373,14 +371,29 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             this.extra = extra;
         }
 
-        protected enum Type {
+        public Type getType() {
+            return type;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Object getValue1() {
+            return value1;
+        }
+
+        public Object getExtra() {
+            return extra;
+        }
+
+        public enum Type {
 
             WHERE,
             WHERE_LIKE,
             WHERE_LOWER,
             WHERE_HIGHER,
             WHERE_NULL,
-            WHERE_EMPTY,
             WHERE_IN,
             WHERE_BETWEEN
         }
@@ -388,8 +401,8 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class OperationEntry extends Entry {
 
-        final Type type;
-        final List<Entry> entries;
+        private final Type type;
+        private final List<Entry> entries;
 
         public OperationEntry(Type type, Entry entry) {
             this(type, Collections.singletonList(entry));
@@ -400,7 +413,16 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             this.entries = entries;
         }
 
-        protected enum Type {
+
+        public Type getType() {
+            return type;
+        }
+
+        public List<Entry> getEntries() {
+            return entries;
+        }
+
+        public enum Type {
 
             NOT,
             AND,
@@ -410,23 +432,35 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class JoinEntry extends Entry {
 
-        final DatabaseCollection collection;
-        final JoinType type;
-        final List<JoinOnEntry> onEntries;
+        private final DatabaseCollection collection;
+        private final JoinType type;
+        private final List<JoinOnEntry> onEntries;
 
         public JoinEntry(DatabaseCollection collection, JoinType type) {
             this.collection = collection;
             this.type = type;
             this.onEntries = new ArrayList<>();
         }
+
+        public DatabaseCollection getCollection() {
+            return collection;
+        }
+
+        public JoinType getType() {
+            return type;
+        }
+
+        public List<JoinOnEntry> getOnEntries() {
+            return onEntries;
+        }
     }
 
-    protected static class JoinOnEntry extends Entry {
+    public static class JoinOnEntry extends Entry {
 
-        final DatabaseCollection collection1;
-        final String column1;
-        final DatabaseCollection collection2;
-        final String column2;
+        private final DatabaseCollection collection1;
+        private final String column1;
+        private final DatabaseCollection collection2;
+        private final String column2;
 
         public JoinOnEntry(DatabaseCollection collection1, String column1, DatabaseCollection collection2, String column2) {
             this.collection1 = collection1;
@@ -434,40 +468,84 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             this.collection2 = collection2;
             this.column2 = column2;
         }
+
+        public DatabaseCollection getCollection1() {
+            return collection1;
+        }
+
+        public String getColumn1() {
+            return column1;
+        }
+
+        public DatabaseCollection getCollection2() {
+            return collection2;
+        }
+
+        public String getColumn2() {
+            return column2;
+        }
     }
 
     public static class LimitEntry extends Entry {
 
-        final int limit;
-        final int offset;
+        private final int limit;
+        private final int offset;
 
         public LimitEntry(int limit, int offset) {
             this.limit = limit;
             this.offset = offset;
         }
+
+        public int getLimit() {
+            return limit;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
     }
 
     public static class OrderByEntry extends Entry {
 
-        final String field;
-        final SearchOrder order;
-        final Aggregation aggregation;
+        private final String field;
+        private final SearchOrder order;
+        private final Aggregation aggregation;
 
         public OrderByEntry(String field, SearchOrder order, Aggregation aggregation) {
             this.field = field;
             this.order = order;
             this.aggregation = aggregation;
         }
+
+        public String getField() {
+            return field;
+        }
+
+        public SearchOrder getOrder() {
+            return order;
+        }
+
+        public Aggregation getAggregation() {
+            return aggregation;
+        }
     }
 
     public static class GroupByEntry extends Entry {
 
-        final String field;
-        final Aggregation aggregation;
+        private final String field;
+        private final Aggregation aggregation;
 
         public GroupByEntry(String field, Aggregation aggregation) {
             this.field = field;
             this.aggregation = aggregation;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Aggregation getAggregation() {
+            return aggregation;
         }
     }
 }

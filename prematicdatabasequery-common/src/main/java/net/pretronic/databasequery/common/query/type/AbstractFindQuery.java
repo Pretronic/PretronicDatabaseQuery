@@ -23,33 +23,52 @@ import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.Aggregation;
 import net.prematic.databasequery.api.query.type.FindQuery;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class AbstractFindQuery<C extends DatabaseCollection> extends AbstractSearchQuery<FindQuery, C> implements FindQuery {
+
+    protected final List<GetEntry> getEntries;
 
     public AbstractFindQuery(C collection) {
         super(collection);
+        this.getEntries = new ArrayList<>();
     }
 
     @Override
     public FindQuery get(String... fields) {
         for (String field : fields) {
-            addEntry(new GetEntry(field, null));
+            this.getEntries.add(new GetEntry(field, null));
         }
         return this;
     }
 
     @Override
     public FindQuery get(Aggregation aggregation, String field) {
-        return addEntry(new GetEntry(field, aggregation));
+        this.getEntries.add(new GetEntry(field, aggregation));
+        return this;
+    }
+
+    public List<GetEntry> getGetEntries() {
+        return getEntries;
     }
 
     public static class GetEntry extends Entry {
 
-        final String field;
-        final Aggregation aggregation;
+        private final String field;
+        private final Aggregation aggregation;
 
         public GetEntry(String field, Aggregation aggregation) {
             this.field = field;
             this.aggregation = aggregation;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public Aggregation getAggregation() {
+            return aggregation;
         }
     }
 }

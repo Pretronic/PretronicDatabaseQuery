@@ -27,6 +27,7 @@ import net.prematic.databasequery.api.query.type.InsertQuery;
 import net.prematic.libraries.utility.Iterators;
 import net.prematic.libraries.utility.Validate;
 import net.prematic.libraries.utility.annonations.Internal;
+import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +55,11 @@ public abstract class AbstractInsertQuery<C extends DatabaseCollection> extends 
             this.entries.add(entry);
         }else entry.values.addAll(Arrays.asList(values));
         return this;
+    }
+
+    @Override
+    public InsertQuery set(String field) {
+        return set(field, EntryOption.PREPARED);
     }
 
     @Override

@@ -30,10 +30,27 @@ import java.util.concurrent.ExecutorService;
 
 public interface DatabaseDriver {
 
+    /**
+     * Get the name of this diver (Only used for logging and identifying this driver)
+     *
+     * @return The name as string
+     */
     String getName();
 
+    /**
+     * Get the database type of this driver.
+     *
+     * <p>Example: MySql, MongoDB, H2, SqLite</p>
+     *
+     * @return The type name as string
+     */
     String getType();
 
+    /**
+     * Get the driver configuration, see {@link DatabaseDriverConfig} for more information.
+     *
+     * @return The configuration object
+     */
     DatabaseDriverConfig<?> getConfig();
 
     PrematicLogger getLogger();

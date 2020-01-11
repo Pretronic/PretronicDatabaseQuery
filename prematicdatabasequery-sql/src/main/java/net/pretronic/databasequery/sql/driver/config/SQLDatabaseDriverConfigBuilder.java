@@ -24,7 +24,6 @@ import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -43,7 +42,7 @@ public class SQLDatabaseDriverConfigBuilder {
     private boolean connectionReadOnly;
     private int connectionIsolationLevel;
     private int connectionNetworkTimeout;
-    private Class<? extends DataSource> dataSourceClass;
+    private String dataSourceClassName;
     private long dataSourceConnectionExpireAfterAccess;
     private long dataSourceConnectionExpire;
     private long dataSourceConnectionLoginTimeout;
@@ -126,19 +125,10 @@ public class SQLDatabaseDriverConfigBuilder {
         return this;
     }
 
-    public SQLDatabaseDriverConfigBuilder setDataSourceClass(Class<? extends DataSource> dataSourceClass) {
-        this.dataSourceClass = dataSourceClass;
-        return this;
-    }
-
     @SuppressWarnings("unchecked")
     public SQLDatabaseDriverConfigBuilder setDataSourceClassName(String dataSourceClassName) {
-        try {
-            Class<?> dataSourceClass = Class.forName(dataSourceClassName);
-            return setDataSourceClass((Class<? extends DataSource>) dataSourceClass);
-        } catch (Exception ignored) {
-            throw new IllegalArgumentException("Can't match datasource class for " + dataSourceClassName);
-        }
+        this.dataSourceClassName = dataSourceClassName;
+        return this;
     }
 
     public SQLDatabaseDriverConfigBuilder setDataSourceConnectionExpireAfterAccess(long dataSourceConnectionExpireAfterAccess) {
@@ -201,14 +191,14 @@ public class SQLDatabaseDriverConfigBuilder {
         if(dialect.getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
             Validate.notNull(location);
             return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit,
-                    connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClass,
+                    connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, location);
         } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
             Validate.isTrue((host != null && port > 0) || address != null);
             Validate.notNull(username);
             return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit,
-                    connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClass,
+                    connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, host, port, address, username, password);
         } else {

@@ -22,7 +22,7 @@ package net.pretronic.databasequery.sql.driver.config;
 import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
-import net.prematic.libraries.document.annotationss.DocumentKey;
+import net.prematic.libraries.document.annotations.DocumentKey;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 

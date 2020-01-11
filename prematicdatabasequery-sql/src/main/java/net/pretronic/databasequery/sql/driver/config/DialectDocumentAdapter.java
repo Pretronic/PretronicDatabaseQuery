@@ -20,15 +20,16 @@
 package net.pretronic.databasequery.sql.driver.config;
 
 import net.prematic.libraries.document.Document;
-import net.prematic.libraries.document.DocumentEntry;
 import net.prematic.libraries.document.adapter.DocumentAdapter;
+import net.prematic.libraries.document.entry.DocumentBase;
+import net.prematic.libraries.document.entry.DocumentEntry;
 import net.prematic.libraries.utility.reflect.TypeReference;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 
 public class DialectDocumentAdapter implements DocumentAdapter<Dialect> {
 
     @Override
-    public Dialect read(DocumentEntry entry, TypeReference<Dialect> typeReference) {
+    public Dialect read(DocumentBase entry, TypeReference<Dialect> typeReference) {
         if(entry.isPrimitive()) {
             return Dialect.byName(entry.toPrimitive().getAsString());
         }

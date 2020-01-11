@@ -27,7 +27,7 @@ import net.prematic.databasequery.api.query.ForeignKey;
 import net.prematic.databasequery.api.query.QueryGroup;
 import net.prematic.databasequery.api.query.type.CreateQuery;
 import net.prematic.libraries.document.Document;
-import net.prematic.libraries.document.DocumentEntry;
+import net.prematic.libraries.document.entry.DocumentEntry;
 
 import java.io.File;
 

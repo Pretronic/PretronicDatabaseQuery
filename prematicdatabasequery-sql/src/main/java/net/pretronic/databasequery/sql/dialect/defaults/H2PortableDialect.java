@@ -2,7 +2,7 @@
  * (C) Copyright 2020 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 11.01.20, 15:40
+ * @since 11.01.20, 15:04
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ package net.pretronic.databasequery.sql.dialect.defaults;
 
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 
-public class MySQLDialect extends AbstractDialect {
+public class H2PortableDialect extends AbstractDialect {
 
-    public MySQLDialect() {
-        super("MySQL", "com.mysql.cj.jdbc.Driver", "mysql", DatabaseDriverEnvironment.REMOTE);
+    public H2PortableDialect() {
+        super("H2Portable", "", "", DatabaseDriverEnvironment.LOCAL);
     }
 }

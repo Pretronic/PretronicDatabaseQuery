@@ -23,7 +23,6 @@ import net.prematic.databasequery.api.driver.config.RemoteDatabaseDriverConfig;
 import net.prematic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 
-import javax.sql.DataSource;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -37,8 +36,8 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
     private final String username;
     private final String password;
 
-    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, Class<? extends DataSource> dataSourceClass, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, InetAddress host, int port, InetSocketAddress address, String username, String password) {
-        super(name, dialect, setConnectionString(name, address, host, port, dialect, connectionString), connectionCatalog, connectionSchema, autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClass, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
+    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, InetAddress host, int port, InetSocketAddress address, String username, String password) {
+        super(name, dialect, setConnectionString(name, address, host, port, dialect, connectionString), connectionCatalog, connectionSchema, autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
         this.host = host;
         this.port = port;
         this.address = address == null ? new InetSocketAddress(host, port) : address;

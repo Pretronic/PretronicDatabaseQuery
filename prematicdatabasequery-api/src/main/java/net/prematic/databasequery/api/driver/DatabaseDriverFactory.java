@@ -25,6 +25,7 @@ import net.prematic.libraries.document.Document;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.logging.PrematicLoggerFactory;
 import net.prematic.libraries.utility.GeneralUtil;
+import net.prematic.libraries.utility.Validate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +77,7 @@ public interface DatabaseDriverFactory {
 
     static DatabaseDriverConfig<?> create(Document config){
         Class<?> configClass = config.getObject("driver",Class.class);
+        Validate.notNull(configClass);
         return create(configClass,config);
     }
 

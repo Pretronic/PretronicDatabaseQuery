@@ -219,7 +219,6 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @SuppressWarnings("unchecked")
     @Override
     public T not(SearchConsumer searchQuery) {
-        System.out.println(searchQuery);
         if(searchQuery == null) throw new NullPointerException("Test");
         SearchQuery<?> query = this.collection.find();
         searchQuery.accept(query);

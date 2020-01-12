@@ -34,7 +34,7 @@ import net.pretronic.databasequery.common.driver.AbstractDatabaseDriver;
 import net.pretronic.databasequery.sql.DataTypeInfo;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.dialect.Dialect;
-import net.pretronic.databasequery.sql.driver.config.DialectDocumentAdapter;
+import net.pretronic.databasequery.sql.dialect.DialectDocumentAdapter;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.datasource.HikariSQLDataSourceFactory;
 import net.pretronic.databasequery.sql.driver.datasource.SQLDataSourceFactory;
@@ -49,9 +49,9 @@ import java.util.concurrent.ExecutorService;
 public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     static {
-        DocumentRegistry.getDefaultContext().registerAdapter(Dialect.class, new DialectDocumentAdapter());
-        SQLDataSourceFactory.FACTORIES.put(HikariDataSource.class, new HikariSQLDataSourceFactory());
-        DatabaseDriverFactory.FACTORIES.put(SQLDatabaseDriver.class, new SQLDatabaseDriverFactory());
+        DocumentRegistry.getDefaultContext().registerHierarchyAdapter(Dialect.class, new DialectDocumentAdapter());
+        SQLDataSourceFactory.register(HikariDataSource.class, new HikariSQLDataSourceFactory());
+        DatabaseDriverFactory.registerFactory(SQLDatabaseDriver.class, new SQLDatabaseDriverFactory());
     }
 
     private DataSource dataSource;
@@ -68,6 +68,7 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
     @Override
     public boolean isConnected() {
         if(getConfig().getDialect().getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
+            if(this.dataSource == null) return false;
             try(Connection ignored = this.dataSource.getConnection()) {
                 return true;
             } catch (SQLException exception) {

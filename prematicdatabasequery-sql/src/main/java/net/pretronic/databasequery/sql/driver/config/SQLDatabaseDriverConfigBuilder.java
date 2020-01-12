@@ -25,7 +25,6 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -53,8 +52,6 @@ public class SQLDatabaseDriverConfigBuilder {
     private File location;
 
     //Remote database driver
-    private InetAddress host;
-    private int port;
     private InetSocketAddress address;
     private String username;
     private String password;
@@ -161,16 +158,6 @@ public class SQLDatabaseDriverConfigBuilder {
         return this;
     }
 
-    public SQLDatabaseDriverConfigBuilder setHost(InetAddress host) {
-        this.host = host;
-        return this;
-    }
-
-    public SQLDatabaseDriverConfigBuilder setPort(int port) {
-        this.port = port;
-        return this;
-    }
-
     public SQLDatabaseDriverConfigBuilder setAddress(InetSocketAddress address) {
         this.address = address;
         return this;
@@ -195,12 +182,11 @@ public class SQLDatabaseDriverConfigBuilder {
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, location);
         } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
-            Validate.isTrue((host != null && port > 0) || address != null);
-            Validate.notNull(username);
+            Validate.notNull(username,address);
             return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
-                    dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, host, port, address, username, password);
+                    dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, address, username, password);
         } else {
             throw new IllegalArgumentException(String.format("Not available database driver environment (%s) for sql dialect %s", dialect.getEnvironment(), dialect.getName()));
         }

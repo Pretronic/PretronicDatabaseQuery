@@ -28,7 +28,7 @@ import java.util.Map;
 
 public interface SQLDataSourceFactory {
 
-    Map<Class<? extends DataSource>, SQLDataSourceFactory> FACTORIES = new HashMap<>();
+    Map<String, SQLDataSourceFactory> FACTORIES = new HashMap<>();
 
 
     DataSource createDataSource(SQLDatabaseDriver driver);
@@ -42,6 +42,6 @@ public interface SQLDataSourceFactory {
     }
 
     static void register(Class<? extends DataSource> dataSourceClass, SQLDataSourceFactory factory) {
-        FACTORIES.put(dataSourceClass, factory);
+        FACTORIES.put(dataSourceClass.getName(), factory);
     }
 }

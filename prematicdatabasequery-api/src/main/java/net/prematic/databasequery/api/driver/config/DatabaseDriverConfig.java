@@ -22,6 +22,7 @@ package net.prematic.databasequery.api.driver.config;
 
 import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.libraries.document.Document;
+import net.prematic.libraries.document.DocumentRegistry;
 import net.prematic.libraries.utility.interfaces.Castable;
 
 public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T> {
@@ -33,5 +34,9 @@ public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends
     String getConnectionString();
 
     Document toDocument();
+
+    static void registerDocumentAdapter(){
+        DocumentRegistry.getDefaultContext().registerAdapter(DatabaseDriverConfig.class,new DatabaseDriverConfigDocumentAdapter());
+    }
 
 }

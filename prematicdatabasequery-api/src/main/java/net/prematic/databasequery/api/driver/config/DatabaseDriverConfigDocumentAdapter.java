@@ -1,8 +1,9 @@
 /*
  * (C) Copyright 2020 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Philipp Elvin Friedhoff
- * @since 06.01.20, 20:40
+ * @author Davide Wietlisbach
+ * @since 11.01.20, 22:53
+ * @website %web%
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +18,24 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.sql.driver.config;
+package net.prematic.databasequery.api.driver.config;
 
-import net.prematic.libraries.document.Document;
+import net.prematic.databasequery.api.driver.DatabaseDriverFactory;
 import net.prematic.libraries.document.adapter.DocumentAdapter;
 import net.prematic.libraries.document.entry.DocumentBase;
 import net.prematic.libraries.document.entry.DocumentEntry;
 import net.prematic.libraries.utility.reflect.TypeReference;
-import net.pretronic.databasequery.sql.dialect.Dialect;
 
-public class DialectDocumentAdapter implements DocumentAdapter<Dialect> {
+public class DatabaseDriverConfigDocumentAdapter implements DocumentAdapter<DatabaseDriverConfig> {
 
     @Override
-    public Dialect read(DocumentBase entry, TypeReference<Dialect> typeReference) {
-        if(entry.isPrimitive()) {
-            return Dialect.byName(entry.toPrimitive().getAsString());
-        }
-        throw new IllegalArgumentException("Can't match primitive for entry " + entry.toString());
+    public DatabaseDriverConfig read(DocumentBase base, TypeReference<DatabaseDriverConfig> typeReference) {
+        if(!base.isObject()) throw new IllegalArgumentException("Database driver config must be an object");
+        return DatabaseDriverFactory.create(base.toDocument());
     }
 
     @Override
-    public DocumentEntry write(String key, Dialect dialect) {
-        return Document.factory().newPrimitiveEntry(key, dialect.getName());
+    public DocumentEntry write(String key, DatabaseDriverConfig config) {
+        return config.toDocument();
     }
 }

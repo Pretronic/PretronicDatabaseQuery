@@ -30,17 +30,20 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
 
     private static String BASE_JDBC_URL = "jdbc:%s://%s:%s";
 
-    private final InetAddress host;
-    private final int port;
     private final InetSocketAddress address;
     private final String username;
     private final String password;
 
-    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, InetAddress host, int port, InetSocketAddress address, String username, String password) {
-        super(name, dialect, setConnectionString(name, address, host, port, dialect, connectionString), connectionCatalog, connectionSchema, autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
-        this.host = host;
-        this.port = port;
-        this.address = address == null ? new InetSocketAddress(host, port) : address;
+    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog
+            , String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel
+            , int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess
+            , long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize
+            , int dataSourceMinimumIdleConnectionPoolSize,  InetSocketAddress address, String username, String password) {
+        super(name, dialect, setConnectionString(name, address, dialect, connectionString), connectionCatalog, connectionSchema
+                , autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
+                , dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout
+                , dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
+        this.address = address;
         this.username = username;
         this.password = password;
     }
@@ -48,12 +51,12 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
 
     @Override
     public InetAddress getHost() {
-        return this.host;
+        return address.getAddress();
     }
 
     @Override
     public int getPort() {
-        return this.port;
+        return address.getPort();
     }
 
     @Override
@@ -69,14 +72,12 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
         return this.password;
     }
 
-    private static String setConnectionString(String name, InetSocketAddress address, InetAddress host, int port, Dialect dialect, String connectionString) {
+    private static String setConnectionString(String name, InetSocketAddress address, Dialect dialect, String connectionString) {
         if(connectionString != null) {
             return connectionString;
         }else if(address != null) {
             return String.format(BASE_JDBC_URL, dialect.getProtocol(), address.getHostName(), address.getPort());
-        } else if(host != null && port != 0) {
-            return String.format(BASE_JDBC_URL, dialect.getProtocol(), host.getHostAddress(), port);
-        } else {
+        }else {
             throw new DatabaseQueryException("Can't match jdbc url for driver " + name);
         }
     }

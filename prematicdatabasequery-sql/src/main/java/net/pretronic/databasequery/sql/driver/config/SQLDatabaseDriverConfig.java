@@ -28,6 +28,7 @@ import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
 public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
 
+    private final Class<?> driver = SQLDatabaseDriver.class;
     @DocumentKey("name")
     private final String name;
     @DocumentKey("dialectName")
@@ -85,7 +86,7 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
 
     @Override
     public Class<? extends DatabaseDriver> getDriverClass() {
-        return SQLDatabaseDriver.class;
+        return (Class<? extends DatabaseDriver>) this.driver;
     }
 
     @Override

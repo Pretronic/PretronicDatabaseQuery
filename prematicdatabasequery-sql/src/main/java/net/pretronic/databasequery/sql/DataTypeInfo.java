@@ -46,7 +46,7 @@ public class DataTypeInfo {
     }
 
     public boolean isSizeAble() {
-        return defaultSize != -1 || sizeAble;
+        return sizeAble;
     }
 
     public int getDefaultSize() {

@@ -20,9 +20,12 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+
+import java.util.List;
 
 public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
@@ -32,8 +35,12 @@ public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
     @Override
     public DatabaseCollection create() {
-        String query = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY).getKey();
-        this.database.executeUpdateQuery(query, true);
+        Pair<String, List<Object>> data = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY);
+        this.database.executeUpdateQuery(data.getKey(), true, preparedStatement -> {
+            for (int i = 1; i <= data.getValue().size(); i++) {
+                preparedStatement.setObject(i, data.getValue().get(i-1));
+            }
+        });
         return new SQLDatabaseCollection(this.name, this.database, this.type);
     }
 }

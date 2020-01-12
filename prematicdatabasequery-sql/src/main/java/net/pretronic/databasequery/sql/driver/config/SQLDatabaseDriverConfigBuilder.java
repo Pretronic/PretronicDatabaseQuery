@@ -37,7 +37,6 @@ public class SQLDatabaseDriverConfigBuilder {
     private String connectionString;
     private String connectionCatalog;
     private String connectionSchema;
-    private boolean autoCommit;
     private boolean connectionReadOnly;
     private int connectionIsolationLevel;
     private int connectionNetworkTimeout;
@@ -58,7 +57,6 @@ public class SQLDatabaseDriverConfigBuilder {
 
     public SQLDatabaseDriverConfigBuilder() {
         this.name = "SQL Pool-" + count++;
-        this.autoCommit = true;
         this.connectionReadOnly = false;
         //datasource @Todo own datasource
         this.dataSourceConnectionExpireAfterAccess = TimeUnit.MINUTES.toMillis(10);
@@ -102,11 +100,6 @@ public class SQLDatabaseDriverConfigBuilder {
         return this;
     }
 
-    public SQLDatabaseDriverConfigBuilder setAutoCommit(boolean autoCommit) {
-        this.autoCommit = autoCommit;
-        return this;
-    }
-
     public SQLDatabaseDriverConfigBuilder setConnectionReadOnly(boolean connectionReadOnly) {
         this.connectionReadOnly = connectionReadOnly;
         return this;
@@ -122,7 +115,6 @@ public class SQLDatabaseDriverConfigBuilder {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     public SQLDatabaseDriverConfigBuilder setDataSourceClassName(String dataSourceClassName) {
         this.dataSourceClassName = dataSourceClassName;
         return this;
@@ -177,13 +169,13 @@ public class SQLDatabaseDriverConfigBuilder {
         Validate.notNull(dialect);
         if(dialect.getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
             Validate.notNull(location);
-            return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit,
+            return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, location);
         } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
             Validate.notNull(username,address);
-            return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema, autoCommit,
+            return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, address, username, password);

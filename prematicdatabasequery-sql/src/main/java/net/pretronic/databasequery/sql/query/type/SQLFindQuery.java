@@ -19,9 +19,11 @@
 
 package net.pretronic.databasequery.sql.query.type;
 
+import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.libraries.utility.io.FileUtil;
 import net.prematic.libraries.utility.map.Pair;
+import net.prematic.libraries.utility.reflect.Primitives;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 import net.pretronic.databasequery.common.query.type.AbstractFindQuery;
@@ -36,13 +38,23 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> {
         super(collection);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public QueryResult execute(Object... values) {
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newFindQuery(this.collection, this.getEntries, this.entries, values);
         return this.collection.getDatabase().executeResultQuery(data.getKey(), true, preparedStatement -> {
             for (int i = 1; i <= data.getValue().size(); i++) {
-                preparedStatement.setObject(i, data.getValue().get(i-1));
+                Object value = data.getValue().get(i-1);
+                if(!Primitives.isPrimitive(value)) {
+                    DataTypeAdapter adapter = this.collection.getDatabase().getDriver().getDataTypeAdapter(value.getClass());
+                    if(adapter != null) {
+                        value = adapter.write(value);
+                    } else {
+                        value = value.toString();
+                    }
+                }
+                preparedStatement.setObject(i, value);
             }
         }, resultSet -> {
             DefaultQueryResult result = new DefaultQueryResult();

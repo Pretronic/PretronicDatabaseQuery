@@ -35,12 +35,12 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
     private final String password;
 
     protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog
-            , String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel
+            , String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel
             , int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess
             , long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize
             , int dataSourceMinimumIdleConnectionPoolSize,  InetSocketAddress address, String username, String password) {
         super(name, dialect, setConnectionString(name, address, dialect, connectionString), connectionCatalog, connectionSchema
-                , autoCommit, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
+                , connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
                 , dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout
                 , dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
         this.address = address;

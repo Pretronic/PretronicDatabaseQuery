@@ -39,8 +39,6 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
     private final String connectionCatalog;
     @DocumentKey("connection.options.schema")
     private final String connectionSchema;
-    @DocumentKey("connection.options.autoCommit")
-    private final boolean autoCommit;
     @DocumentKey("connection.options.readOnly")
     private final boolean connectionReadOnly;
     @DocumentKey("connection.options.isolationLevel")
@@ -60,13 +58,12 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
     @DocumentKey("datasource.minimumIdleConnectionPoolSize")
     private final int dataSourceMinimumIdleConnectionPoolSize;
 
-    protected SQLDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean autoCommit, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
+    protected SQLDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
         this.name = name;
         this.dialect = dialect;
         this.connectionString = connectionString;
         this.connectionCatalog = connectionCatalog;
         this.connectionSchema = connectionSchema;
-        this.autoCommit = autoCommit;
         this.connectionReadOnly = connectionReadOnly;
         this.connectionIsolationLevel = connectionIsolationLevel;
         this.connectionNetworkTimeout = connectionNetworkTimeout;
@@ -115,10 +112,6 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
 
     public String getConnectionSchema() {
         return this.connectionSchema;
-    }
-
-    public boolean isAutoCommit() {
-        return this.autoCommit;
     }
 
     public boolean isConnectionReadOnly() {

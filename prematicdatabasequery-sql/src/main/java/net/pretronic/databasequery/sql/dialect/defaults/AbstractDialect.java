@@ -386,7 +386,6 @@ public abstract class AbstractDialect implements Dialect {
             state.clauseBuilder.append("NOT ");
         }
         state.clauseBuilder.append("NULL");
-        state.preparedValues.add(null);
     }
 
     private void buildSearchQueryWhereInConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state) {

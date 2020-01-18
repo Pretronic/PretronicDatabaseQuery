@@ -41,7 +41,7 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
         if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());
         if(config.getConnectionCatalog() != null) hikariConfig.setCatalog(config.getConnectionCatalog());
         if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
-        hikariConfig.setAutoCommit(config.isAutoCommit());
+        hikariConfig.setAutoCommit(false);
         hikariConfig.setReadOnly(config.isConnectionReadOnly());
         if(config.getDataSourceConnectionExpire() != 0) hikariConfig.setMaxLifetime(config.getDataSourceConnectionExpire());
         if(config.getDataSourceConnectionExpireAfterAccess() != 0) hikariConfig.setIdleTimeout(config.getDataSourceConnectionExpireAfterAccess());

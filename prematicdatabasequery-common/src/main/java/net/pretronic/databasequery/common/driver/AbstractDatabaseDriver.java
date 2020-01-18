@@ -44,6 +44,8 @@ public abstract class AbstractDatabaseDriver implements DatabaseDriver {
         this.logger = logger;
         this.executorService = executorService;
         this.dataTypeAdapters = new HashMap<>();
+
+        registerDefaultAdapters();
     }
 
     @Override

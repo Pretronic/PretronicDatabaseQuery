@@ -22,10 +22,12 @@ package net.prematic.databasequery.api.driver;
 
 import net.prematic.databasequery.api.Database;
 import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.prematic.databasequery.api.datatype.adapter.UUIDDataTypeAdapter;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.logging.PrematicLogger;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 public interface DatabaseDriver {
@@ -75,4 +77,7 @@ public interface DatabaseDriver {
 
     void unregisterDataTypeAdapter(Class<?> clazz);
 
+    default void registerDefaultAdapters(){
+        registerDataTypeAdapter(UUID.class,new UUIDDataTypeAdapter());
+    }
 }

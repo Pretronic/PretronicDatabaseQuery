@@ -133,6 +133,7 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
                             }
                         }
                     }
+                    if(commit) connection.commit();
                     return generatedKeys;
                 }
             }

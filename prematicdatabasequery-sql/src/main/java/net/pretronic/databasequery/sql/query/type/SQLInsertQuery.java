@@ -44,7 +44,7 @@ public class SQLInsertQuery extends AbstractInsertQuery<SQLDatabaseCollection> {
         Number[] keys = this.collection.getDatabase().executeUpdateQuery(data.getKey(), true, preparedStatement -> {
             for (int i = 1; i <= data.getValue().size(); i++) {
                 Object value = data.getValue().get(i-1);
-                if(!Primitives.isPrimitive(value)) {
+                if(value != null && !Primitives.isPrimitive(value)) {
                     DataTypeAdapter adapter = this.collection.getDatabase().getDriver().getDataTypeAdapter(value.getClass());
                     if(adapter != null) {
                         value = adapter.write(value);

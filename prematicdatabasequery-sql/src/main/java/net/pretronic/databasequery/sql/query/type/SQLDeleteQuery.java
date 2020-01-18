@@ -20,13 +20,17 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.map.Pair;
+import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.type.AbstractDeleteQuery;
+import net.pretronic.databasequery.sql.SQLUtil;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.query.CommitOnExecute;
 
 import java.util.List;
 
-public class SQLDeleteQuery extends AbstractDeleteQuery<SQLDatabaseCollection> {
+public class SQLDeleteQuery extends AbstractDeleteQuery<SQLDatabaseCollection> implements CommitOnExecute {
 
     public SQLDeleteQuery(SQLDatabaseCollection collection) {
         super(collection);
@@ -34,13 +38,15 @@ public class SQLDeleteQuery extends AbstractDeleteQuery<SQLDatabaseCollection> {
 
     @Override
     public QueryResult execute(Object... values) {
+        return execute(true, values);
+    }
+
+    @Internal
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newDeleteQuery(this.collection, this.entries, values);
-        this.collection.getDatabase().executeUpdateQuery(data.getKey(), true, preparedStatement -> {
-            for (int i = 1; i <= data.getValue().size(); i++) {
-                preparedStatement.setObject(i, data.getValue().get(i-1));
-            }
-        });
-        return null;
+        this.collection.getDatabase().executeUpdateQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data));
+        return DefaultQueryResult.EMPTY;
     }
 }

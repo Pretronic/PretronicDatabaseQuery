@@ -20,6 +20,7 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.SQLDatabase;
@@ -35,8 +36,13 @@ public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
     @Override
     public DatabaseCollection create() {
+        return create(true);
+    }
+
+    @Internal
+    public DatabaseCollection create(boolean commit) {
         Pair<String, List<Object>> data = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY);
-        this.database.executeUpdateQuery(data.getKey(), true, preparedStatement -> {
+        this.database.executeUpdateQuery(data.getKey(), commit, preparedStatement -> {
             for (int i = 1; i <= data.getValue().size(); i++) {
                 preparedStatement.setObject(i, data.getValue().get(i-1));
             }

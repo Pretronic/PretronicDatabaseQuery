@@ -19,57 +19,70 @@
 
 package net.pretronic.databasequery.sql.query;
 
+import net.prematic.databasequery.api.exceptions.DatabaseQueryTransactionException;
 import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.QueryGroup;
 import net.prematic.databasequery.api.query.QueryTransaction;
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
+import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 import net.pretronic.databasequery.sql.SQLDatabase;
+import net.pretronic.databasequery.sql.query.type.SQLCreateQuery;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.function.Consumer;
 
 public class SQLQueryTransaction implements QueryTransaction {
 
     private final SQLDatabase database;
+    private final Connection connection;
 
     public SQLQueryTransaction(SQLDatabase database) {
         this.database = database;
+        try {
+            connection = database.getDataSource().getConnection();
+        } catch (SQLException exception) {
+            throw new DatabaseQueryTransactionException("Can't create transaction", exception);
+        }
     }
+
 
     @Override
     public void commit() {
-
+        try {
+            this.connection.commit();
+        } catch (SQLException exception) {
+            throw new DatabaseQueryTransactionException("Can't commit sql transaction.", exception);
+        }
     }
 
     @Override
     public void rollback() {
-
+        try {
+            this.connection.rollback();
+        } catch (SQLException exception) {
+            throw new DatabaseQueryTransactionException("Can't rollback sql transaction.", exception);
+        }
     }
 
     @Override
     public QueryResult execute(Query query, Object... values) {
+        if(query instanceof SQLCreateQuery) {
+            return new DefaultQueryResult().addEntry(new DefaultQueryResultEntry(this.database.getDriver()).addEntry("collection", ((SQLCreateQuery)query).create(false)));
+        } else if(query instanceof CommitOnExecute) {
+            return ((CommitOnExecute)query).execute(false, values);
+        }
+        throw new IllegalArgumentException("Can't execute sql transaction for query " + query.getClass());
+    }
+
+    @Override
+    public QueryResult execute(QueryGroup queryGroup, Object... values) {
         return null;
     }
 
     @Override
-    public int size() {
-        return 0;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    public QueryGroup add(Query query, Object... values) {
+    public QueryResult execute(Consumer<QueryGroup> queryGroupConsumer, Object... values) {
         return null;
-    }
-
-    @Override
-    public QueryResult execute() {
-        return null;
-    }
-
-    @Override
-    public void clear() {
-
     }
 }

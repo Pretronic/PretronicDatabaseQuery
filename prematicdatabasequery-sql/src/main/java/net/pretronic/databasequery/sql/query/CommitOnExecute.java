@@ -1,8 +1,8 @@
 /*
- * (C) Copyright 2019 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
+ * (C) Copyright 2020 The PrematicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 19.10.19, 20:44
+ * @since 12.01.20, 15:06
  *
  * The PrematicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,11 @@
  * under the License.
  */
 
-package net.prematic.databasequery.api.query;
+package net.pretronic.databasequery.sql.query;
 
 import net.prematic.databasequery.api.query.result.QueryResult;
 
-import java.util.function.Consumer;
+public interface CommitOnExecute {
 
-public interface QueryTransaction {
-
-    void commit();
-
-    void rollback();
-
-    QueryResult execute(Query query, Object... values);
-
-    QueryResult execute(QueryGroup queryGroup, Object... values);
-
-    QueryResult execute(Consumer<QueryGroup> queryGroupConsumer, Object... values);
+    QueryResult execute(boolean commit, Object... values);
 }

@@ -20,14 +20,17 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.type.AbstractUpdateQuery;
+import net.pretronic.databasequery.sql.SQLUtil;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.query.CommitOnExecute;
 
 import java.util.List;
 
-public class SQLUpdateQuery extends AbstractUpdateQuery<SQLDatabaseCollection> {
+public class SQLUpdateQuery extends AbstractUpdateQuery<SQLDatabaseCollection> implements CommitOnExecute {
 
     public SQLUpdateQuery(SQLDatabaseCollection collection) {
         super(collection);
@@ -35,13 +38,15 @@ public class SQLUpdateQuery extends AbstractUpdateQuery<SQLDatabaseCollection> {
 
     @Override
     public QueryResult execute(Object... values) {
+        return execute(true, values);
+    }
+
+    @Internal
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newUpdateQuery(this.collection, this.entries, values);
-        this.collection.getDatabase().executeUpdateQuery(data.getKey(), true, preparedStatement -> {
-            for (int i = 1; i <= data.getValue().size(); i++) {
-                preparedStatement.setObject(i, data.getValue().get(i-1));
-            }
-        });
+        this.collection.getDatabase().executeUpdateQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data));
         return DefaultQueryResult.EMPTY;
     }
 }

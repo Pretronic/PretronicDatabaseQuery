@@ -19,46 +19,44 @@
 
 package net.pretronic.databasequery.sql.query.type;
 
-import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.map.Pair;
-import net.prematic.libraries.utility.reflect.Primitives;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 import net.pretronic.databasequery.common.query.type.AbstractInsertQuery;
+import net.pretronic.databasequery.sql.SQLUtil;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.query.CommitOnExecute;
 
 import java.util.List;
 
-public class SQLInsertQuery extends AbstractInsertQuery<SQLDatabaseCollection> {
+public class SQLInsertQuery extends AbstractInsertQuery<SQLDatabaseCollection> implements CommitOnExecute {
 
     public SQLInsertQuery(SQLDatabaseCollection collection) {
         super(collection);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public QueryResult executeAndGetGeneratedKeys(String[] keyColumns, Object... values) {
+        return executeAndGetGeneratedKeys(true, keyColumns, values);
+    }
+
+    @Internal
+    public QueryResult executeAndGetGeneratedKeys(boolean commit, String[] keyColumns, Object... values) {
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newInsertQuery(this.collection, this.entries, values);
-        Number[] keys = this.collection.getDatabase().executeUpdateQuery(data.getKey(), true, preparedStatement -> {
-            for (int i = 1; i <= data.getValue().size(); i++) {
-                Object value = data.getValue().get(i-1);
-                if(value != null && !Primitives.isPrimitive(value)) {
-                    DataTypeAdapter adapter = this.collection.getDatabase().getDriver().getDataTypeAdapter(value.getClass());
-                    if(adapter != null) {
-                        value = adapter.write(value);
-                    } else {
-                        value = value.toString();
-                    }
-                }
-                preparedStatement.setObject(i, value);
-            }
-        }, keyColumns);
+        Number[] keys = this.collection.getDatabase().executeUpdateQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data),
+                keyColumns);
         DefaultQueryResult result = new DefaultQueryResult();
         for (int i = 0; i < keyColumns.length; i++) {
             result.addEntry(new DefaultQueryResultEntry(this.collection.getDatabase().getDriver()).addEntry(keyColumns[i], keys[i]));
         }
         return result;
+    }
+
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
+        return executeAndGetGeneratedKeys(commit, EMPTY_STRING_ARRAY, values);
     }
 }

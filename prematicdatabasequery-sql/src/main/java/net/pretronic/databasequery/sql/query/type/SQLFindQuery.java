@@ -19,65 +19,59 @@
 
 package net.pretronic.databasequery.sql.query.type;
 
-import net.prematic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.prematic.databasequery.api.query.result.QueryResult;
+import net.prematic.libraries.utility.annonations.Internal;
 import net.prematic.libraries.utility.io.FileUtil;
 import net.prematic.libraries.utility.map.Pair;
-import net.prematic.libraries.utility.reflect.Primitives;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 import net.pretronic.databasequery.common.query.type.AbstractFindQuery;
+import net.pretronic.databasequery.sql.SQLUtil;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.query.CommitOnExecute;
 
 import java.sql.Clob;
 import java.util.List;
 
-public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> {
+public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> implements CommitOnExecute {
 
     public SQLFindQuery(SQLDatabaseCollection collection) {
         super(collection);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public QueryResult execute(Object... values) {
+        return execute(true, values);
+    }
+
+    @Internal
+    @Override
+    public QueryResult execute(boolean commit, Object... values) {
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newFindQuery(this.collection, this.getEntries, this.entries, values);
-        return this.collection.getDatabase().executeResultQuery(data.getKey(), true, preparedStatement -> {
-            for (int i = 1; i <= data.getValue().size(); i++) {
-                Object value = data.getValue().get(i-1);
-                if(!Primitives.isPrimitive(value)) {
-                    DataTypeAdapter adapter = this.collection.getDatabase().getDriver().getDataTypeAdapter(value.getClass());
-                    if(adapter != null) {
-                        value = adapter.write(value);
-                    } else {
-                        value = value.toString();
-                    }
-                }
-                preparedStatement.setObject(i, value);
-            }
-        }, resultSet -> {
-            DefaultQueryResult result = new DefaultQueryResult();
-            while (resultSet.next()) {
-                DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
-                if(!this.getEntries.isEmpty()) {
-                    for (GetEntry entry : this.getEntries) {
-                        String getter = entry.getAggregation() == null ? entry.getField() : entry.getAggregation() + "(`" + entry.getField() + "`)";
-                        Object value = resultSet.getObject(getter);
-                        resultEntry.addEntry(getter, value);
-                    }
-                } else {
-                    for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                        Object value = resultSet.getObject(i);
-                        if(value instanceof Clob) {
-                            value = FileUtil.readContent(((Clob) value).getAsciiStream());
+        return this.collection.getDatabase().executeResultQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data),
+                resultSet -> {
+                    DefaultQueryResult result = new DefaultQueryResult();
+                    while (resultSet.next()) {
+                        DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
+                        if(!this.getEntries.isEmpty()) {
+                            for (GetEntry entry : this.getEntries) {
+                                String getter = entry.getAggregation() == null ? entry.getField() : entry.getAggregation() + "(`" + entry.getField() + "`)";
+                                Object value = resultSet.getObject(getter);
+                                resultEntry.addEntry(getter, value);
+                            }
+                        } else {
+                            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                                Object value = resultSet.getObject(i);
+                                if(value instanceof Clob) {
+                                    value = FileUtil.readContent(((Clob) value).getAsciiStream());
+                                }
+                                resultEntry.addEntry(resultSet.getMetaData().getColumnName(i), value);
+                            }
                         }
-                        resultEntry.addEntry(resultSet.getMetaData().getColumnName(i), value);
+                        result.addEntry(resultEntry);
                     }
-                }
-                result.addEntry(resultEntry);
-            }
-            return result;
-        });
+                    return result;
+                });
     }
 }

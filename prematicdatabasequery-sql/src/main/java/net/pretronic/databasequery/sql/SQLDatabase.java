@@ -92,6 +92,10 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
         return true;
     }
 
+    @Internal
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 
     @Internal
     public <R> R executeResultQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, ResultSetFunction<R> resultSetFunction, Consumer<SQLException> exceptionConsumer) {

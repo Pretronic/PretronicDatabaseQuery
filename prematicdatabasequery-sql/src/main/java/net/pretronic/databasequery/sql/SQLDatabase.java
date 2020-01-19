@@ -21,6 +21,7 @@ package net.pretronic.databasequery.sql;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.collection.DatabaseCollectionType;
+import net.prematic.databasequery.api.exceptions.DatabaseQueryException;
 import net.prematic.databasequery.api.exceptions.DatabaseQueryExecuteFailedException;
 import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.QueryGroup;
@@ -29,6 +30,7 @@ import net.prematic.databasequery.api.query.result.QueryResult;
 import net.prematic.databasequery.api.query.type.CreateQuery;
 import net.prematic.libraries.utility.annonations.Internal;
 import net.pretronic.databasequery.common.AbstractDatabase;
+import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.query.SQLQueryGroup;
@@ -86,10 +88,15 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
         return null;
     }
 
-
-    //@Todo local connected
     public boolean isLocalConnected() {
-        return true;
+        if(getDriver().getDialect().getEnvironment() != DatabaseDriverEnvironment.LOCAL) {
+            throw new DatabaseQueryException("Only available for database driver with local enviroment");
+        }
+        try(Connection ignored = this.dataSource.getConnection()) {
+            return true;
+        } catch (SQLException exception) {
+            return false;
+        }
     }
 
     @Internal
@@ -166,7 +173,7 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
 
     @Internal
     public void handleDatabaseQueryExecuteFailedException(SQLException exception, String query) {
-        getLogger().info("{} - Error executing sql query: {}", getDriver().getName(), query);
-        throw new DatabaseQueryExecuteFailedException(exception.getMessage(), exception);
+        throw new DatabaseQueryExecuteFailedException(String.format("%s - Error executing sql query: %s", getDriver().getName(), query)
+                , exception);
     }
 }

@@ -25,6 +25,7 @@ import net.prematic.databasequery.api.datatype.DataType;
 import net.prematic.databasequery.api.driver.DatabaseDriverFactory;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.databasequery.api.exceptions.DatabaseQueryConnectException;
+import net.prematic.databasequery.api.exceptions.DatabaseQueryException;
 import net.prematic.libraries.document.DocumentRegistry;
 import net.prematic.libraries.logging.PrematicLogger;
 import net.prematic.libraries.utility.Iterators;
@@ -86,8 +87,8 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     @Override
     public void connect() {
-        if(this.dataSource == null) {
-            this.dataSource = SQLDataSourceFactory.create(this);
+        if(getDialect().getEnvironment() == DatabaseDriverEnvironment.REMOTE && this.dataSource == null) {
+            this.dataSource = SQLDataSourceFactory.create(this, null);
             try (Connection ignored = this.dataSource.getConnection()) {
                 getLogger().info("Connected to remote {} database at {}", getConfig().getDialect().getName(), getConfig().getConnectionString());
             } catch (SQLException exception) {
@@ -96,15 +97,21 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
             }
         } else if(getConfig().getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
             getLogger().info("Connected to local {} database at {}", getConfig().getDialect().getName(), getConfig().getConnectionString());
-        } else {
+        } else if(isConnected()) {
             getLogger().info("DatabaseDriver {} already connected", getName());
+        } else {
+            throw new DatabaseQueryConnectException("Error by connecting to database at " + getConfig().getConnectionString());
         }
     }
 
     @Override
     public void disconnect() {
         getLogger().info("Disconnected from sql database at {}", getConfig().getConnectionString());
-        if(this.dataSource != null && this.dataSource instanceof AutoCloseable) {
+        if(this.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
+            for (SQLDatabase database : this.databases) {
+                try(AutoCloseable ignored = (AutoCloseable) database.getDataSource()) {} catch (Exception ignored) {}
+            }
+        } else if(this.dataSource != null && this.dataSource instanceof AutoCloseable) {
             try(AutoCloseable ignored = (AutoCloseable) this.dataSource) {} catch (Exception ignored) {}
         }
     }
@@ -118,7 +125,13 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
     public Database getDatabase(String name) {
         SQLDatabase database = Iterators.findOne(this.databases, sqlDatabase -> sqlDatabase.getName().equalsIgnoreCase(name));
         if(database == null) {
-            database = new SQLDatabase(name, this, this.dataSource);
+            DataSource dataSource = this.dataSource;
+            if(getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
+                dataSource = SQLDataSourceFactory.create(this, name);
+            }else if(dataSource == null) {
+                throw new DatabaseQueryException(String.format("DatabaseDriver %s not connected", getName()));
+            }
+            database = new SQLDatabase(name, this, dataSource);
             this.databases.add(database);
         }
         return database;

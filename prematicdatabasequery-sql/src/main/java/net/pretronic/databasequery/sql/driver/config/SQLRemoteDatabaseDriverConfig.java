@@ -20,15 +20,12 @@
 package net.pretronic.databasequery.sql.driver.config;
 
 import net.prematic.databasequery.api.driver.config.RemoteDatabaseDriverConfig;
-import net.prematic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRemoteDatabaseDriverConfig> implements RemoteDatabaseDriverConfig {
-
-    private static String BASE_JDBC_URL = "jdbc:%s://%s:%s";
 
     private final InetSocketAddress address;
     private final String username;
@@ -39,7 +36,7 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
             , int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess
             , long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize
             , int dataSourceMinimumIdleConnectionPoolSize,  InetSocketAddress address, String username, String password) {
-        super(name, dialect, setConnectionString(name, address, dialect, connectionString), connectionCatalog, connectionSchema
+        super(name, dialect, dialect.createConnectionString(connectionString, address), connectionCatalog, connectionSchema
                 , connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
                 , dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout
                 , dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
@@ -70,15 +67,5 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
 
     public String getPassword() {
         return this.password;
-    }
-
-    private static String setConnectionString(String name, InetSocketAddress address, Dialect dialect, String connectionString) {
-        if(connectionString != null) {
-            return connectionString;
-        }else if(address != null) {
-            return String.format(BASE_JDBC_URL, dialect.getProtocol(), address.getHostName(), address.getPort());
-        }else {
-            throw new DatabaseQueryException("Can't match jdbc url for driver " + name);
-        }
     }
 }

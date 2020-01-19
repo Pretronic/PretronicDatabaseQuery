@@ -168,7 +168,6 @@ public class SQLDatabaseDriverConfigBuilder {
     public SQLDatabaseDriverConfig<?> build() {
         Validate.notNull(dialect);
         if(dialect.getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            Validate.notNull(location);
             return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,

@@ -94,7 +94,11 @@ public abstract class AbstractDialect implements Dialect {
         List<Object> preparedValues = new ArrayList<>();
         StringBuilder queryBuilder = new StringBuilder();
 
-        queryBuilder.append("CREATE TABLE IF NOT EXISTS `").append(database.getName()).append("`.`").append(name).append("` (");
+        queryBuilder.append("CREATE TABLE IF NOT EXISTS `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(database.getName()).append("`.`");
+        }
+        queryBuilder.append(name).append("`(");
 
         StringBuilder foreignKeyBuilder = new StringBuilder();
         for (int i = 0; i < entries.size(); i++) {
@@ -186,10 +190,11 @@ public abstract class AbstractDialect implements Dialect {
     public Pair<String, List<Object>> newInsertQuery(SQLDatabaseCollection collection, List<AbstractInsertQuery.Entry> entries, Object[] values) {
         List<Object> preparedValues = new ArrayList<>();
 
-        StringBuilder queryBuilder = new StringBuilder().append("INSERT INTO `")
-                .append(collection.getDatabase().getName())
-                .append("`.`")
-                .append(collection.getName()).append("` ");
+        StringBuilder queryBuilder = new StringBuilder().append("INSERT INTO `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(collection.getDatabase().getName()).append("`.`");
+        }
+        queryBuilder.append(collection.getName()).append("` ");
 
         AtomicInteger preparedValuesCount = new AtomicInteger();
 
@@ -242,9 +247,13 @@ public abstract class AbstractDialect implements Dialect {
                 buildSearchQueryEntry(entry, state);
             }
         }
-        String query = "UPDATE `" + collection.getDatabase().getName() + "`.`" + collection.getName() + "` " +
-                state.setBuilder.toString() + state.buildSearchQuery();
-        return new Pair<>(query, state.preparedValues);
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("UPDATE `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(collection.getDatabase().getName()).append("`.`");
+        }
+        queryBuilder.append(collection.getName()).append("` ").append(state.setBuilder).append(state.buildSearchQuery());
+        return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
     private void buildUpdateQueryEntry(AbstractUpdateQuery.SetEntry entry, UpdateQueryBuilderState state) {
@@ -276,11 +285,14 @@ public abstract class AbstractDialect implements Dialect {
         for (AbstractSearchQuery.Entry entry : entries) {
             buildSearchQueryEntry(entry, state);
         }
-        String query = "SELECT " + buildFindQueryGetBuilder(state) +
-                " FROM `" + collection.getDatabase().getName() + "`.`" + collection.getName() + "` " +
-                state.buildSearchQuery();
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("SELECT ").append(buildFindQueryGetBuilder(state)).append(" FROM `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(collection.getDatabase().getName()).append("`.`");
+        }
+        queryBuilder.append(collection.getName()).append("` ").append(state.buildSearchQuery());
 
-        return new Pair<>(query, state.preparedValues);
+        return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
     private String buildFindQueryGetBuilder(FindQueryBuilderState state) {
@@ -307,8 +319,13 @@ public abstract class AbstractDialect implements Dialect {
         for (AbstractSearchQuery.Entry entry : entries) {
             buildSearchQueryEntry(entry, state);
         }
-        String query = "DELETE FROM `" + collection.getDatabase().getName() + "`.`" + collection.getName() + "` " + state.buildSearchQuery();
-        return new Pair<>(query, state.preparedValues);
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("DELETE FROM `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(collection.getDatabase().getName()).append("`.`");
+        }
+        queryBuilder.append(collection.getName()).append("` ").append(state.buildSearchQuery());
+        return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
 

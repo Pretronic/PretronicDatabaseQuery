@@ -30,15 +30,15 @@ public interface SQLDataSourceFactory {
 
     Map<String, SQLDataSourceFactory> FACTORIES = new HashMap<>();
 
+    //database only for local database driver
+    DataSource createDataSource(SQLDatabaseDriver driver, String database);
 
-    DataSource createDataSource(SQLDatabaseDriver driver);
 
-
-    static DataSource create(SQLDatabaseDriver driver) {
+    static DataSource create(SQLDatabaseDriver driver, String database) {
         Validate.notNull(driver);
         SQLDataSourceFactory factory = FACTORIES.get(driver.getConfig().getDataSourceClass());
         Validate.notNull(factory);
-        return factory.createDataSource(driver);
+        return factory.createDataSource(driver, database);
     }
 
     static void register(Class<? extends DataSource> dataSourceClass, SQLDataSourceFactory factory) {

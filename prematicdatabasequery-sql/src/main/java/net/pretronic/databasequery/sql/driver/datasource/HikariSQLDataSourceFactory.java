@@ -23,7 +23,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.IsolationLevel;
 import net.prematic.libraries.utility.Validate;
+import net.prematic.libraries.utility.reflect.ReflectionUtil;
+import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
 
 import javax.sql.DataSource;
@@ -31,14 +34,21 @@ import javax.sql.DataSource;
 public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
 
     @Override
-    public DataSource createDataSource(SQLDatabaseDriver driver) {
-        Validate.isTrue(driver.getConfig() instanceof SQLRemoteDatabaseDriverConfig);
-        SQLRemoteDatabaseDriverConfig config = (SQLRemoteDatabaseDriverConfig) driver.getConfig();
+    public DataSource createDataSource(SQLDatabaseDriver driver, String database) {
+        SQLDatabaseDriverConfig<?> config = driver.getConfig();
         HikariConfig hikariConfig = new HikariConfig();
+        Validate.notNull(ReflectionUtil.getFieldValue(hikariConfig.getClass(), "LOGGER"), "No SLF4J logger set for HikariCP");
         hikariConfig.setPoolName(driver.getName());
-        hikariConfig.setJdbcUrl(config.getConnectionString());
-        if(config.getUsername() != null) hikariConfig.setUsername(config.getUsername());
-        if(config.getPassword() != null) hikariConfig.setPassword(config.getPassword());
+        if(driver.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
+            hikariConfig.setJdbcUrl(String.format(config.getConnectionString(), database));
+        } else {
+            hikariConfig.setJdbcUrl(config.getConnectionString());
+        }
+        if(config instanceof SQLRemoteDatabaseDriverConfig) {
+            SQLRemoteDatabaseDriverConfig remoteConfig = (SQLRemoteDatabaseDriverConfig) config;
+            if(remoteConfig.getUsername() != null) hikariConfig.setUsername(remoteConfig.getUsername());
+            if(remoteConfig.getPassword() != null) hikariConfig.setPassword(remoteConfig.getPassword());
+        }
         if(config.getConnectionCatalog() != null) hikariConfig.setCatalog(config.getConnectionCatalog());
         if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
         hikariConfig.setAutoCommit(false);

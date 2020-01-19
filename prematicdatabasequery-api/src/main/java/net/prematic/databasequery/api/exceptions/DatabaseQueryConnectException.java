@@ -24,4 +24,8 @@ public class DatabaseQueryConnectException extends DatabaseQueryException {
     public DatabaseQueryConnectException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public DatabaseQueryConnectException(String message) {
+        super(message);
+    }
 }

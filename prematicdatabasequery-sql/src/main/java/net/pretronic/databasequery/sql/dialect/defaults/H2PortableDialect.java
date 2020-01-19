@@ -21,9 +21,36 @@ package net.pretronic.databasequery.sql.dialect.defaults;
 
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 
+import java.io.File;
+
 public class H2PortableDialect extends AbstractDialect {
 
     public H2PortableDialect() {
-        super("H2Portable", "", "", DatabaseDriverEnvironment.LOCAL);
+        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL);
+    }
+
+    @Override
+    public String createConnectionString(String connectionString, Object host) {
+        if(connectionString != null) {
+            return connectionString;
+        } else  {
+            File location;
+            if(host instanceof File) {
+                location = (File) host;
+            } else {
+                location = new File("./");
+            }
+            String path = location.getPath().trim();
+            if(path.isEmpty()) {
+                path = "./";
+            } else if(!path.startsWith("./") || !path.startsWith("~/")) {
+                path = "./" + path;
+            }
+            if(!path.endsWith("\\/")) {
+                path += "/";
+            }
+            path+="%s";
+            return "jdbc:h2:file:" + path + ";MODE=Mysql;";
+        }
     }
 }

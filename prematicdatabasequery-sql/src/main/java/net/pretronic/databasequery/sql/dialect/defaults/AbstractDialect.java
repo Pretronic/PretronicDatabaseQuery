@@ -65,17 +65,22 @@ public abstract class AbstractDialect implements Dialect {
         return this.driverName;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Class<? extends Driver> getDriver() {
-        if(this.driver == null) {
+        loadDriver();
+        return this.driver;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void loadDriver() {
+        if(driver == null){
             try {
                 this.driver = (Class<? extends Driver>) Class.forName(this.driverName);
             } catch (ClassNotFoundException ignored) {
-                throw new DatabaseQueryException("Can't load driver " + this.driverName);
+                throw new DatabaseQueryException("Database driver " + this.driverName+" is not available");
             }
         }
-        return this.driver;
     }
 
     @Override

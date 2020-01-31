@@ -59,8 +59,8 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.prematic.prematicsqlconnectionpool</groupId>
-            <artifactId>PrematicSqlConnectionPool</artifactId>
+            <groupId>net.prematic.connectionpool</groupId>
+            <artifactId>PrematicConnectionPool</artifactId>
             <version>${dependency.pretronic.connectionpool}</version>
             <scope>provided</scope>
         </dependency>

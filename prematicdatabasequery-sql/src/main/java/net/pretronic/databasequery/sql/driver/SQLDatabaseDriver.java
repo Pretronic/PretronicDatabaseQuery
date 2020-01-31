@@ -19,7 +19,6 @@
 
 package net.pretronic.databasequery.sql.driver;
 
-import com.zaxxer.hikari.HikariDataSource;
 import net.prematic.databasequery.api.Database;
 import net.prematic.databasequery.api.datatype.DataType;
 import net.prematic.databasequery.api.driver.DatabaseDriverFactory;
@@ -38,6 +37,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.dialect.DialectDocumentAdapter;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.datasource.HikariSQLDataSourceFactory;
+import net.pretronic.databasequery.sql.driver.datasource.PCPSQLDataSourceFactory;
 import net.pretronic.databasequery.sql.driver.datasource.SQLDataSourceFactory;
 
 import javax.sql.DataSource;
@@ -51,7 +51,8 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     static {
         DocumentRegistry.getDefaultContext().registerHierarchyAdapter(Dialect.class, new DialectDocumentAdapter());
-        SQLDataSourceFactory.register(HikariDataSource.class, new HikariSQLDataSourceFactory());
+        SQLDataSourceFactory.registerFactory("com.zaxxer.hikari.HikariDataSource", new HikariSQLDataSourceFactory());
+        SQLDataSourceFactory.registerFactory("net.prematic.sqlconnectionpool.PrematicDataSource", new PCPSQLDataSourceFactory());
         DatabaseDriverFactory.registerFactory(SQLDatabaseDriver.class, new SQLDatabaseDriverFactory());
     }
 
@@ -109,7 +110,9 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
         getLogger().info("Disconnected from sql database at {}", getConfig().getConnectionString());
         if(this.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
             for (SQLDatabase database : this.databases) {
-                try(AutoCloseable ignored = (AutoCloseable) database.getDataSource()) {} catch (Exception ignored) {}
+                if(database.getDataSource() != null && database.getDataSource() instanceof AutoCloseable) {
+                    try(AutoCloseable ignored = (AutoCloseable) database.getDataSource()) {} catch (Exception ignored) {}
+                }
             }
         } else if(this.dataSource != null && this.dataSource instanceof AutoCloseable) {
             try(AutoCloseable ignored = (AutoCloseable) this.dataSource) {} catch (Exception ignored) {}

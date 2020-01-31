@@ -41,7 +41,7 @@ public interface SQLDataSourceFactory {
         return factory.createDataSource(driver, database);
     }
 
-    static void register(Class<? extends DataSource> dataSourceClass, SQLDataSourceFactory factory) {
-        FACTORIES.put(dataSourceClass.getName(), factory);
+    static void registerFactory(String dataSourceClassName, SQLDataSourceFactory factory) {
+        FACTORIES.put(dataSourceClassName, factory);
     }
 }

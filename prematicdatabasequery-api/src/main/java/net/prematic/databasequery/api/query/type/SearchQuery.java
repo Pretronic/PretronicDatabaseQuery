@@ -25,6 +25,9 @@ import net.prematic.databasequery.api.query.Pattern;
 import net.prematic.databasequery.api.query.SearchOrder;
 import net.prematic.databasequery.api.query.type.join.JoinQuery;
 
+import java.util.Collection;
+import java.util.function.Function;
+
 public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQuery<T>> {
 
     T where(String field, Object value);
@@ -82,6 +85,20 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQ
 
 
     T whereIn(String field, Object... values);
+
+    default T whereIn(String field, Collection<?> values){
+        return whereIn(field,values.toArray());
+    }
+
+    default <R> T whereIn(String field, Collection<R> values,Function<R,Object> mapper){
+        Object[] data = new Object[values.size()];
+        int index = 0;
+        for (R value : values) {
+            data[index] = mapper.apply(value);
+            index++;
+        }
+        return whereIn(field,data);
+    }
 
     T whereIn(String field);
 

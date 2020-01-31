@@ -88,6 +88,7 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     @Override
     public void connect() {
+        getDialect().loadDriver();
         if(getDialect().getEnvironment() == DatabaseDriverEnvironment.REMOTE && this.dataSource == null) {
             this.dataSource = SQLDataSourceFactory.create(this, null);
             try (Connection ignored = this.dataSource.getConnection()) {

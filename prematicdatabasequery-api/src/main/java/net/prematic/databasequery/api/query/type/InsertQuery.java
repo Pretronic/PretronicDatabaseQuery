@@ -23,6 +23,7 @@ package net.prematic.databasequery.api.query.type;
 import net.prematic.databasequery.api.query.Query;
 import net.prematic.databasequery.api.query.result.QueryResult;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -54,6 +55,8 @@ public interface InsertQuery extends Query {
     InsertQuery set(String field);
 
     InsertQuery set(String field, Object... values);
+
+    InsertQuery set(String field, List<Object> values);
 
     /**
      * Define one or multiple values.

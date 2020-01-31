@@ -49,11 +49,16 @@ public abstract class AbstractInsertQuery<C extends DatabaseCollection> extends 
 
     @Override
     public InsertQuery set(String field, Object... values) {
+        return set(field, Arrays.asList(values));
+    }
+
+    @Override
+    public InsertQuery set(String field, List<Object> values) {
         Entry entry = getEntry(field);
         if(entry == null){
-            entry = new Entry(field, Arrays.asList(values));
+            entry = new Entry(field, values);
             this.entries.add(entry);
-        }else entry.values.addAll(Arrays.asList(values));
+        }else entry.values.addAll(values);
         return this;
     }
 

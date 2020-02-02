@@ -28,6 +28,7 @@ import net.pretronic.databasequery.common.query.type.*;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.defaults.H2PortableDialect;
+import net.pretronic.databasequery.sql.dialect.defaults.MariaDBDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.MySQLDialect;
 
 import java.sql.Driver;
@@ -40,7 +41,8 @@ public interface Dialect extends ConnectionStringCreator {
     Collection<Dialect> DIALECTS = new ArrayList<>();
 
     Dialect MYSQL = registerDialect(new MySQLDialect());
-    Dialect H2Portable = registerDialect(new H2PortableDialect());
+    Dialect MARIADB = registerDialect(new MariaDBDialect());
+    Dialect H2_PORTABLE = registerDialect(new H2PortableDialect());
 
 
     String getName();

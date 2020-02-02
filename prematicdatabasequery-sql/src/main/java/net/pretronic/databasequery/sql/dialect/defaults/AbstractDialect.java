@@ -38,6 +38,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractDialect implements Dialect {
@@ -148,11 +149,11 @@ public abstract class AbstractDialect implements Dialect {
         for (FieldOption fieldOption : entry.getFieldOptions()) {
             switch (fieldOption) {
                 case INDEX: {
-                    queryParts.setKey(",INDEX `"+database.getName()+ this.name + entry.getField() + "`(`" + entry.getField() + "`)");
+                    queryParts.setKey(",INDEX `"+ UUID.randomUUID().toString() + "`(`" + entry.getField() + "`)");
                     break;
                 }
                 case UNIQUE_INDEX: {
-                    queryParts.setValue(",UNIQUE INDEX `"+database.getName()+ this.name + entry.getField() + "`(`" + entry.getField() + "`)");
+                    queryParts.setValue(",UNIQUE INDEX `"+UUID.randomUUID().toString() + "`(`" + entry.getField() + "`)");
                     break;
                 }
                 case PRIMARY_KEY: {
@@ -174,12 +175,13 @@ public abstract class AbstractDialect implements Dialect {
 
     private void buildForeignKey(SQLDatabase database, StringBuilder queryBuilder, AbstractCreateQuery.ForeignKeyEntry entry) {
         queryBuilder.append("CONSTRAINT `")
-                .append(database.getName())
-                .append(this.name)
-                .append(entry.getField())
+                .append(UUID.randomUUID().toString())
                 .append("` FOREIGN KEY(`")
                 .append(entry.getField())
                 .append("`) REFERENCES `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            queryBuilder.append(database.getName()).append("`.`");
+        }
         queryBuilder.append(entry.getForeignKey().getCollection()).append("`(`").append(entry.getForeignKey().getField()).append("`)");
         if(entry.getForeignKey().getDeleteOption() != null && entry.getForeignKey().getDeleteOption() != ForeignKey.Option.DEFAULT) {
             queryBuilder.append(" ON DELETE ").append(entry.getForeignKey().getDeleteOption().toString().replace("_", " "));

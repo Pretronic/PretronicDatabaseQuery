@@ -28,6 +28,7 @@ import net.prematic.databasequery.api.query.type.SearchQuery;
 import net.prematic.databasequery.api.query.type.join.JoinType;
 import net.prematic.libraries.utility.Iterators;
 import net.prematic.libraries.utility.Validate;
+import net.prematic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
@@ -72,22 +73,22 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     @Override
     public T whereNot(String field, Object value) {
-        return addEntry(new OperationEntry(OperationEntry.Type.NOT, new ConditionEntry(ConditionEntry.Type.WHERE, field, value, null)));
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, value, null)));
     }
 
     @Override
     public T whereNot(Aggregation aggregation, String field, Object value) {
-        return addEntry(new OperationEntry(OperationEntry.Type.NOT, new ConditionEntry(ConditionEntry.Type.WHERE, field, value, aggregation)));
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, value, aggregation)));
     }
 
     @Override
     public T whereNot(String field) {
-        return addEntry(new OperationEntry(OperationEntry.Type.NOT, new ConditionEntry(ConditionEntry.Type.WHERE, field, EntryOption.PREPARED, null)));
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, EntryOption.PREPARED, null)));
     }
 
     @Override
     public T whereNot(Aggregation aggregation, String field) {
-        return addEntry(new OperationEntry(OperationEntry.Type.NOT, new ConditionEntry(ConditionEntry.Type.WHERE, field, EntryOption.PREPARED, aggregation)));
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, EntryOption.PREPARED, aggregation)));
     }
 
     @Override
@@ -299,13 +300,13 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @Override
     public T orderBy(String field, SearchOrder order) {
         Validate.notNull(field, order);
-        return addEntry(new OrderByEntry(field, order, null));
+        return addOrderByEntry(field, order, null);
     }
 
     @Override
     public T orderBy(Aggregation aggregation, String field, SearchOrder order) {
         Validate.notNull(aggregation, field, order);
-        return addEntry(new OrderByEntry(field, order, aggregation));
+        return addOrderByEntry(field, order, aggregation);
     }
 
     @SuppressWarnings("unchecked")
@@ -363,8 +364,13 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return (T) this;
     }
 
-    protected T addConditionEntry(ConditionEntry.Type type, String field, Object value1, Object extra) {
-        return addEntry(new ConditionEntry(type, field, value1, extra));
+    protected ConditionEntry buildConditionEntry(ConditionEntry.Type type, String assignment0, Object value1, Object extra) {
+        Triple<String, String, String> assignment = getAssignment(assignment0);
+        return new ConditionEntry(type, assignment.getFirst(), assignment.getSecond(), assignment.getThird(), value1, extra);
+    }
+
+    protected T addConditionEntry(ConditionEntry.Type type, String assignment0, Object value1, Object extra) {
+        return addEntry(buildConditionEntry(type, assignment0, value1, extra));
     }
 
     protected T addConditionEntry(ConditionEntry.Type type, String field, Object value) {
@@ -379,16 +385,42 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addEntry(new OperationEntry(type, entries));
     }
 
+    protected T addOrderByEntry(String assignment0, SearchOrder order, Aggregation aggregation) {
+        Triple<String, String, String> assignment = getAssignment(assignment0);
+        return addEntry(new OrderByEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), order, aggregation));
+    }
+
+    protected Triple<String, String, String> getAssignment(String assignment0) {
+        String[] assignment = assignment0.split("\\.");
+        String database = null;
+        String databaseCollection = null;
+        String field = null;
+        for (int i = assignment.length - 1; i >= 0; i--) {
+            if(field == null) {
+                field = assignment[i];
+            } else if(databaseCollection == null) {
+                databaseCollection = assignment[i];
+            } else if(database == null) {
+                database = assignment[i];
+            }
+        }
+        return new Triple<>(database, databaseCollection, field);
+    }
+
     public static class Entry {}
 
     public static class ConditionEntry extends Entry {
 
         private final Type type;
+        private final String database;
+        private final String databaseCollection;
         private final String field;
         private final Object value1, extra;
 
-        public ConditionEntry(Type type, String field, Object value1, Object extra) {
+        public ConditionEntry(Type type, String database, String databaseCollection, String field, Object value1, Object extra) {
             this.type = type;
+            this.database = database;
+            this.databaseCollection = databaseCollection;
             this.field = field;
             this.value1 = value1;
             this.extra = extra;
@@ -396,6 +428,14 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
         public Type getType() {
             return type;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getDatabaseCollection() {
+            return databaseCollection;
         }
 
         public String getField() {
@@ -530,14 +570,26 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class OrderByEntry extends Entry {
 
+        private final String database;
+        private final String databaseCollection;
         private final String field;
         private final SearchOrder order;
         private final Aggregation aggregation;
 
-        public OrderByEntry(String field, SearchOrder order, Aggregation aggregation) {
+        public OrderByEntry(String database, String databaseCollection, String field, SearchOrder order, Aggregation aggregation) {
+            this.database = database;
+            this.databaseCollection = databaseCollection;
             this.field = field;
             this.order = order;
             this.aggregation = aggregation;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getDatabaseCollection() {
+            return databaseCollection;
         }
 
         public String getField() {

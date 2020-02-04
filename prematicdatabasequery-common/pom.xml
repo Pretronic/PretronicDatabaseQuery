@@ -50,6 +50,7 @@
             <groupId>net.prematic.databasequery</groupId>
             <artifactId>prematicdatabasequery-api</artifactId>
             <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

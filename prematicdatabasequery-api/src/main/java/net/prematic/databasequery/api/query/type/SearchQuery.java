@@ -110,13 +110,22 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQ
     T whereBetween(String field);
 
 
+    SearchQuery<?> newSearchQuery();
+
 
     T not(SearchConsumer searchQuery);
 
+    T not(SearchQuery<?> query);
+
+
     T and(SearchConsumer... searchQueries);
+
+    T and(SearchQuery<?> query);
+
 
     T or(SearchConsumer... searchQueries);
 
+    T or(SearchQuery<?> query);
 
 
     //Offset 0, if not used

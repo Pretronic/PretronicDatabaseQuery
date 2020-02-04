@@ -31,11 +31,9 @@ import net.prematic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends DatabaseCollection> extends AbstractQuery implements SearchQuery<T> {
 
@@ -218,14 +216,25 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addConditionEntry(ConditionEntry.Type.WHERE_BETWEEN, field, EntryOption.PREPARED, EntryOption.PREPARED);
     }
 
+    @Override
+    public SearchQuery<?> newSearchQuery() {
+        return collection.find();
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public T not(SearchConsumer searchQuery) {
-        if(searchQuery == null) throw new NullPointerException("Test");
+        Validate.notNull(searchQuery);
         SearchQuery<?> query = this.collection.find();
         searchQuery.accept(query);
         addOperatorEntry(OperationEntry.Type.NOT, query);
         return (T) this;
+    }
+
+    @Override
+    public T not(SearchQuery<?> query) {
+        Validate.notNull(query);
+        return addOperatorEntry(OperationEntry.Type.NOT,query);
     }
 
     @Override
@@ -234,11 +243,24 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     }
 
     @Override
+    public T and(SearchQuery<?> query) {
+        Validate.notNull(query);
+        return addOperatorEntry(OperationEntry.Type.AND,query);
+    }
+
+    @Override
     public T or(SearchConsumer... searchQueries) {
         return andOr(OperationEntry.Type.OR, searchQueries);
     }
 
+    @Override
+    public T or(SearchQuery<?> query) {
+        Validate.notNull(query);
+        return addOperatorEntry(OperationEntry.Type.OR,query);
+    }
+
     private T andOr(OperationEntry.Type type, SearchConsumer... searchQueries) {
+        Validate.notNull(type);
         SearchQuery<?>[] queries = new SearchQuery<?>[searchQueries.length];
         for (int i = 0; i < searchQueries.length; i++) {
             SearchQuery<?> searchQuery = this.collection.find();

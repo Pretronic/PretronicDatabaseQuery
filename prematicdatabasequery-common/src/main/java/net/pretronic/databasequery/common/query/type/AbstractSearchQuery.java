@@ -313,14 +313,17 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @Override
     public T groupBy(String... fields) {
         for (String field : fields) {
-            addEntry(new GroupByEntry(field, null));
+            Triple<String, String, String> assignment = getAssignment(field);
+            addEntry(new GroupByEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), null));
         }
         return (T) this;
     }
 
     @Override
     public T groupBy(Aggregation aggregation, String field) {
-        return addEntry(new GroupByEntry(field, aggregation));
+        Validate.notNull(aggregation, field);
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new GroupByEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), aggregation));
     }
 
     @Override
@@ -607,12 +610,24 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class GroupByEntry extends Entry {
 
+        private final String database;
+        private final String databaseCollection;
         private final String field;
         private final Aggregation aggregation;
 
-        public GroupByEntry(String field, Aggregation aggregation) {
+        public GroupByEntry(String database, String databaseCollection, String field, Aggregation aggregation) {
+            this.database = database;
+            this.databaseCollection = databaseCollection;
             this.field = field;
             this.aggregation = aggregation;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getDatabaseCollection() {
+            return databaseCollection;
         }
 
         public String getField() {

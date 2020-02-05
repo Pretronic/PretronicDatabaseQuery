@@ -22,6 +22,8 @@ package net.pretronic.databasequery.common.query.type;
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.Aggregation;
 import net.prematic.databasequery.api.query.type.FindQuery;
+import net.prematic.libraries.utility.Validate;
+import net.prematic.libraries.utility.map.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,29 +40,40 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
     @Override
     public FindQuery get(String... fields) {
         for (String field : fields) {
-            this.getEntries.add(new GetEntry(field, null));
+            Triple<String, String, String> assignment = getAssignment(field);
+            this.getEntries.add(new GetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), null));
         }
         return this;
     }
 
     @Override
     public FindQuery get(Aggregation aggregation, String field) {
-        this.getEntries.add(new GetEntry(field, aggregation));
+        Validate.notNull(aggregation, field);
+        Triple<String, String, String> assignment = getAssignment(field);
+        this.getEntries.add(new GetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), aggregation));
         return this;
-    }
-
-    public List<GetEntry> getGetEntries() {
-        return getEntries;
     }
 
     public static class GetEntry extends Entry {
 
+        private final String database;
+        private final String databaseCollection;
         private final String field;
         private final Aggregation aggregation;
 
-        public GetEntry(String field, Aggregation aggregation) {
+        public GetEntry(String database, String databaseCollection, String field, Aggregation aggregation) {
+            this.database = database;
+            this.databaseCollection = databaseCollection;
             this.field = field;
             this.aggregation = aggregation;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getDatabaseCollection() {
+            return databaseCollection;
         }
 
         public String getField() {

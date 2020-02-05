@@ -138,13 +138,13 @@ public abstract class AbstractDialect implements Dialect {
 
         }
         if(entry.getFieldOptions() != null && entry.getFieldOptions().length != 0) {
-            Pair<String, String> queryParts = buildCreateQueryFieldOptions(database, queryBuilder, entry);
+            Pair<String, String> queryParts = buildCreateQueryFieldOptions(queryBuilder, entry);
             if(queryParts.getKey() != null) queryBuilder.append(queryParts.getKey());
             if(queryParts.getValue() != null) queryBuilder.append(queryParts.getValue());
         }
     }
 
-    private Pair<String, String> buildCreateQueryFieldOptions(SQLDatabase database, StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry) {
+    private Pair<String, String> buildCreateQueryFieldOptions(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry) {
         Pair<String, String> queryParts = new Pair<>(null, null);
         for (FieldOption fieldOption : entry.getFieldOptions()) {
             switch (fieldOption) {
@@ -269,7 +269,7 @@ public abstract class AbstractDialect implements Dialect {
         } else {
             state.setBuilder.append(",");
         }
-        state.setBuilder.append("`").append(entry.getField()).append("`").append("=?");
+        state.setBuilder.append("`").append(buildField(entry)).append("`").append("=?");
         addEntry(entry.getValue(), state);
     }
 
@@ -312,9 +312,9 @@ public abstract class AbstractDialect implements Dialect {
             state.getBuilder.append(",");
         }
         if(entry.getAggregation() != null) {
-            state.getBuilder.append(entry.getAggregation()).append("(`").append(entry.getField()).append("`)");
+            state.getBuilder.append(entry.getAggregation()).append("(`").append(buildField(entry)).append("`)");
         }else {
-            state.getBuilder.append("`").append(entry.getField()).append("`");
+            state.getBuilder.append("`").append(buildField(entry)).append("`");
         }
     }
 
@@ -395,16 +395,16 @@ public abstract class AbstractDialect implements Dialect {
         }
         if(entry.getExtra() != null) {
             Aggregation aggregation = (Aggregation) entry.getExtra();
-            state.clauseBuilder.append(aggregation.toString()).append("(").append("`").append(entry.getField()).append("`").append(")");
+            state.clauseBuilder.append(aggregation.toString()).append("(").append("`").append(buildField(entry)).append("`").append(")");
         } else {
-            state.clauseBuilder.append("`").append(entry.getField()).append("`");
+            state.clauseBuilder.append("`").append(buildField(entry)).append("`");
         }
         addEntry(entry.getValue1(), state);
         state.clauseBuilder.append(getWhereCompareSymbol(entry.getType())).append("?");
     }
 
     private void buildSearchQueryWhereNullConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state) {
-        state.clauseBuilder.append("`").append(entry.getField()).append("`");
+        state.clauseBuilder.append("`").append(buildField(entry)).append("`");
         state.clauseBuilder.append(" IS ");
         if(state.negate) {
             state.clauseBuilder.append("NOT ");
@@ -416,7 +416,7 @@ public abstract class AbstractDialect implements Dialect {
         if(state.negate) {
             state.clauseBuilder.append("NOT ");
         }
-        state.clauseBuilder.append("`").append(entry.getField()).append("` IN (");
+        state.clauseBuilder.append("`").append(buildField(entry)).append("` IN (");
 
         @SuppressWarnings("unchecked")
         List<Object> values = (List<Object>) addAndGetEntry(entry.getValue1(), state);
@@ -432,7 +432,7 @@ public abstract class AbstractDialect implements Dialect {
         if(state.negate) {
             state.clauseBuilder.append("NOT ");
         }
-        state.clauseBuilder.append("`").append(entry.getField()).append("`");
+        state.clauseBuilder.append("`").append(buildField(entry)).append("`");
         state.clauseBuilder.append(" BETWEEN ? AND ?");
         addEntry(entry.getValue1(), state);
         addEntry(entry.getExtra(), state);
@@ -518,9 +518,9 @@ public abstract class AbstractDialect implements Dialect {
         }
 
         if(entry.getAggregation() != null) {
-            state.orderByBuilder.append(entry.getAggregation()).append("(`").append(entry.getField()).append("`)");
+            state.orderByBuilder.append(entry.getAggregation()).append("(`").append(buildField(entry)).append("`)");
         }else {
-            state.orderByBuilder.append("`").append(entry.getField()).append("`");
+            state.orderByBuilder.append("`").append(buildField(entry)).append("`");
         }
 
         state.orderByBuilder.append(" ").append(entry.getOrder());
@@ -534,9 +534,9 @@ public abstract class AbstractDialect implements Dialect {
         }
 
         if(entry.getAggregation() != null) {
-            state.groupByBuilder.append(entry.getAggregation()).append("(`").append(entry.getField()).append("`)");
+            state.groupByBuilder.append(entry.getAggregation()).append("(`").append(buildField(entry)).append("`)");
         } else {
-            state.groupByBuilder.append("`").append(entry.getField()).append("`");
+            state.groupByBuilder.append("`").append(buildField(entry)).append("`");
         }
     }
 
@@ -550,7 +550,38 @@ public abstract class AbstractDialect implements Dialect {
         }
     }
 
+    private String buildField(AbstractSearchQuery.GroupByEntry entry) {
+        return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
+    }
 
+    private String buildField(AbstractFindQuery.GetEntry entry) {
+        return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
+    }
+
+    private String buildField(AbstractUpdateQuery.SetEntry entry) {
+        return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
+    }
+
+    private String buildField(AbstractSearchQuery.OrderByEntry entry) {
+        return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
+    }
+
+    private String buildField(AbstractSearchQuery.ConditionEntry entry) {
+        return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
+    }
+
+    private String buildField(String database, String databaseCollection, String field) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("`");
+        if(database != null) {
+            builder.append(database).append("`.`");
+        }
+        if(databaseCollection != null) {
+            builder.append(databaseCollection).append("`.`");
+        }
+        builder.append(field).append("`");
+        return builder.toString();
+    }
 
     private Object getEntry(Object value, AtomicInteger preparedValuesCount, Object[] values) {
         if(EntryOption.PREPARED != value) {

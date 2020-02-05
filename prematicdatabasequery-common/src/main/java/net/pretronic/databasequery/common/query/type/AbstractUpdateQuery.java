@@ -21,6 +21,7 @@ package net.pretronic.databasequery.common.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.type.UpdateQuery;
+import net.prematic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 public abstract class AbstractUpdateQuery<C extends DatabaseCollection> extends AbstractSearchQuery<UpdateQuery, C> implements UpdateQuery {
@@ -31,22 +32,35 @@ public abstract class AbstractUpdateQuery<C extends DatabaseCollection> extends 
 
     @Override
     public UpdateQuery set(String field, Object value) {
-        return addEntry(new SetEntry(field, value));
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new SetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), value));
     }
 
     @Override
     public UpdateQuery set(String field) {
-        return addEntry(new SetEntry(field, EntryOption.PREPARED));
+        return set(field, EntryOption.PREPARED);
     }
 
     public static class SetEntry extends Entry {
 
+        private final String database;
+        private final String databaseCollection;
         private final String field;
         private final Object value;
 
-        public SetEntry(String field, Object value) {
+        public SetEntry(String database, String databaseCollection, String field, Object value) {
+            this.database = database;
+            this.databaseCollection = databaseCollection;
             this.field = field;
             this.value = value;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getDatabaseCollection() {
+            return databaseCollection;
         }
 
         public String getField() {

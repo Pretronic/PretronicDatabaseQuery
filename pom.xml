@@ -9,6 +9,13 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
+    <distributionManagement>
+        <repository>
+            <id>pretronic</id>
+            <url>https://repository.prematic.net/repository/pretronic/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <kotlin.version>1.3.61</kotlin.version>
 
@@ -35,5 +42,10 @@
         <module>prematicdatabasequery-api-kotlin-dsl</module>
     </modules>
 
-
+    <repositories>
+        <repository>
+            <id>pretronic</id>
+            <url>https://repository.prematic.net/repository/pretronic/</url>
+        </repository>
+    </repositories>
 </project>

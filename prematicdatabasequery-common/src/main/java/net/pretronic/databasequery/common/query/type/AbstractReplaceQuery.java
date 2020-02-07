@@ -21,6 +21,7 @@ package net.pretronic.databasequery.common.query.type;
 
 import net.prematic.databasequery.api.collection.DatabaseCollection;
 import net.prematic.databasequery.api.query.type.ReplaceQuery;
+import net.prematic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
@@ -31,11 +32,12 @@ public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends
 
     @Override
     public ReplaceQuery set(String field, Object value) {
-        return addEntry(new AbstractUpdateQuery.SetEntry(field, value));
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new AbstractUpdateQuery.SetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), value));
     }
 
     @Override
     public ReplaceQuery set(String field) {
-        return addEntry(new AbstractUpdateQuery.SetEntry(field, EntryOption.PREPARED));
+        return set(field, EntryOption.PREPARED);
     }
 }

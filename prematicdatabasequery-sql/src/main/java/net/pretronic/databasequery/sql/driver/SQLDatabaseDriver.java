@@ -92,15 +92,15 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
         if(getDialect().getEnvironment() == DatabaseDriverEnvironment.REMOTE && this.dataSource == null) {
             this.dataSource = SQLDataSourceFactory.create(this, null);
             try (Connection ignored = this.dataSource.getConnection()) {
-                getLogger().info("Connected to remote {} database at {}", getConfig().getDialect().getName(), getConfig().getConnectionString());
+                getLogger().info("{} Connected to remote {} database at {}", getName(),getConfig().getDialect().getName(), getConfig().getConnectionString());
             } catch (SQLException exception) {
-                getLogger().info("Failed to connect to sql database at {}", getConfig().getConnectionString());
+                getLogger().info("{} Failed to connect to sql database at {}", getName(),getConfig().getConnectionString());
                 throw new DatabaseQueryConnectException(exception.getMessage(), exception);
             }
         } else if(getConfig().getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            getLogger().info("Connected to local {} database at {}", getConfig().getDialect().getName(), getConfig().getConnectionString());
+            getLogger().info("{} Connected to local {} database at {}",getName(), getConfig().getDialect().getName(), getConfig().getConnectionString());
         } else if(isConnected()) {
-            getLogger().info("DatabaseDriver {} already connected", getName());
+            getLogger().info("{} Driver already connected", getName());
         } else {
             throw new DatabaseQueryConnectException("Error by connecting to database at " + getConfig().getConnectionString());
         }
@@ -108,7 +108,7 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     @Override
     public void disconnect() {
-        getLogger().info("Disconnected from sql database at {}", getConfig().getConnectionString());
+        getLogger().info("{} Disconnected from sql database at {}",getName(), getConfig().getConnectionString());
         if(this.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
             for (SQLDatabase database : this.databases) {
                 if(database.getDataSource() != null && database.getDataSource() instanceof AutoCloseable) {

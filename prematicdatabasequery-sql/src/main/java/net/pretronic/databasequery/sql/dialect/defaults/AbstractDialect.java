@@ -572,14 +572,13 @@ public abstract class AbstractDialect implements Dialect {
 
     private String buildField(String database, String databaseCollection, String field) {
         StringBuilder builder = new StringBuilder();
-        builder.append("`");
         if(database != null) {
             builder.append(database).append("`.`");
         }
         if(databaseCollection != null) {
             builder.append(databaseCollection).append("`.`");
         }
-        builder.append(field).append("`");
+        builder.append(field);
         return builder.toString();
     }
 

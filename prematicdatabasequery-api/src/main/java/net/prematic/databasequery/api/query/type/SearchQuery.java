@@ -28,7 +28,7 @@ import net.prematic.databasequery.api.query.type.join.JoinQuery;
 import java.util.Collection;
 import java.util.function.Function;
 
-public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQuery<T>> {
+public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
 
     T where(String field, Object value);
 
@@ -150,6 +150,8 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<SearchQ
 
     T groupBy(Aggregation aggregation, String field);
 
+
+    T union(SearchQuery<?> query);
 
     interface SearchConsumer extends java.util.function.Consumer<SearchQuery<?>> {}
 }

@@ -81,6 +81,12 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, value, aggregation)));
     }
 
+    //@Todo sql union implementation
+    @Override
+    public T union(SearchQuery<?> query) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public T whereNot(String field) {
         return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, EntryOption.PREPARED, null)));
@@ -327,12 +333,12 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     }
 
     @Override
-    public SearchQuery<T> join(DatabaseCollection collection) {
+    public T join(DatabaseCollection collection) {
         return join(collection, JoinType.INNER);
     }
 
     @Override
-    public SearchQuery<T> join(DatabaseCollection collection, JoinType type) {
+    public T join(DatabaseCollection collection, JoinType type) {
         Validate.notNull(collection, type);
         return addEntry(new JoinEntry(collection, type));
     }

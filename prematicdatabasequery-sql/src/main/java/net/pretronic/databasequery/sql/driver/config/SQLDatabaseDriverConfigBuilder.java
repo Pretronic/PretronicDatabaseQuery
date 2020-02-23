@@ -19,6 +19,7 @@
 
 package net.pretronic.databasequery.sql.driver.config;
 
+import com.zaxxer.hikari.HikariDataSource;
 import net.prematic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.dialect.Dialect;
@@ -59,6 +60,7 @@ public class SQLDatabaseDriverConfigBuilder {
         this.name = "SQL Pool-" + count++;
         this.connectionReadOnly = false;
         //datasource @Todo own datasource
+        this.dataSourceClassName = HikariDataSource.class.getName();
         this.dataSourceConnectionExpireAfterAccess = TimeUnit.MINUTES.toMillis(10);
         this.dataSourceConnectionExpire = TimeUnit.MINUTES.toMillis(30);
         this.dataSourceConnectionLoginTimeout = TimeUnit.SECONDS.toMillis(30);

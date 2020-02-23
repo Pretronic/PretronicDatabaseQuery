@@ -251,7 +251,7 @@ public abstract class AbstractDialect implements Dialect {
             if(entry instanceof AbstractUpdateQuery.SetEntry) {
                 buildUpdateQueryEntry((AbstractUpdateQuery.SetEntry) entry, state);
             } else {
-                buildSearchQueryEntry(entry, state);
+                buildSearchQueryEntry(entry, state, "AND", false);
             }
         }
         StringBuilder queryBuilder = new StringBuilder();
@@ -290,7 +290,7 @@ public abstract class AbstractDialect implements Dialect {
             buildFindQueryEntry(getEntry, state);
         }
         for (AbstractSearchQuery.Entry entry : entries) {
-            buildSearchQueryEntry(entry, state);
+            buildSearchQueryEntry(entry, state, "AND", false);
         }
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("SELECT ").append(buildFindQueryGetBuilder(state)).append(" FROM `");
@@ -324,7 +324,7 @@ public abstract class AbstractDialect implements Dialect {
     public Pair<String, List<Object>> newDeleteQuery(SQLDatabaseCollection collection, List<AbstractDeleteQuery.Entry> entries, Object[] values) {
         SearchQueryBuilderState state = new SearchQueryBuilderState(values);
         for (AbstractSearchQuery.Entry entry : entries) {
-            buildSearchQueryEntry(entry, state);
+            buildSearchQueryEntry(entry, state, "AND", false);
         }
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("DELETE FROM `");
@@ -337,9 +337,9 @@ public abstract class AbstractDialect implements Dialect {
 
 
 
-    private void buildSearchQueryEntry(AbstractSearchQuery.Entry entry, SearchQueryBuilderState state) {
+    private void buildSearchQueryEntry(AbstractSearchQuery.Entry entry, SearchQueryBuilderState state, String entryConnector, boolean bracketFirst) {
         if(entry instanceof AbstractSearchQuery.ConditionEntry) {
-            buildSearchQueryConditionEntry((AbstractSearchQuery.ConditionEntry) entry, state);
+            buildSearchQueryConditionEntry((AbstractSearchQuery.ConditionEntry) entry, state, entryConnector, bracketFirst);
         } else if(entry instanceof AbstractSearchQuery.OperationEntry) {
             buildSearchQueryOperationEntry((AbstractSearchQuery.OperationEntry) entry, state);
         } else if(entry instanceof AbstractSearchQuery.JoinEntry) {
@@ -353,13 +353,15 @@ public abstract class AbstractDialect implements Dialect {
         }
     }
 
-    private void buildSearchQueryConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state) {
+    private void buildSearchQueryConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state, String entryConnector, boolean bracketFirst) {
         if(state.operator) {
-            if(state.where) {
-                state.clauseBuilder.append(" WHERE ");
-                state.where = false;
-            } else {
-                state.clauseBuilder.append(" AND ");
+            if(!bracketFirst) {
+                if(state.where) {
+                    state.clauseBuilder.append(" WHERE ");
+                    state.where = false;
+                } else {
+                    state.clauseBuilder.append(" ").append(entryConnector).append(" ");
+                }
             }
         }
         buildSearchQueryConditionEntryType(entry, state);
@@ -460,7 +462,7 @@ public abstract class AbstractDialect implements Dialect {
             case NOT : {
                 state.negate = true;
                 for (AbstractSearchQuery.Entry child : entry.getEntries()) {
-                    buildSearchQueryEntry(child, state);
+                    buildSearchQueryEntry(child, state, "AND", false);
                 }
                 state.negate = false;
             }
@@ -482,9 +484,10 @@ public abstract class AbstractDialect implements Dialect {
         }
 
         state.clauseBuilder.append("(");
-
+        boolean first = true;
         for (AbstractSearchQuery.Entry child : entry.getEntries()) {
-            buildSearchQueryEntry(child, state);
+            buildSearchQueryEntry(child, state, symbol, first);
+            first = false;
         }
 
         state.clauseBuilder.append(")");

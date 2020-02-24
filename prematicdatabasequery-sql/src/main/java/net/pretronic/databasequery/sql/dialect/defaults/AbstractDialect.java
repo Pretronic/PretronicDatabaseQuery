@@ -506,10 +506,12 @@ public abstract class AbstractDialect implements Dialect {
                 state.joinBuilder.append("AND ");
             }
             state.joinBuilder.append("`").append(onEntry.getCollection1().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection1().getName()).append("`")
+                    .append(onEntry.getCollection1().getName()).append("`.`")
+                    .append(onEntry.getColumn1()).append("`")
                     .append("=")
                     .append("`").append(onEntry.getCollection2().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection2().getName()).append("`");
+                    .append(onEntry.getCollection2().getName()).append("`.`")
+                    .append(onEntry.getColumn2()).append("`");
         }
     }
 

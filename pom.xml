@@ -7,7 +7,7 @@
     <groupId>net.prematic.databasequery</groupId>
     <artifactId>PrematicDatabaseQuery</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <distributionManagement>
         <repository>

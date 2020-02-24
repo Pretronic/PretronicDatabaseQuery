@@ -362,7 +362,8 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             else if(!(entry instanceof JoinOnEntry)) wrongJoinEntry.set(true);
             return false;
         });
-        Validate.isTrue(joinEntry == null || wrongJoinEntry.get(), "Wrong search query order for join");
+        Validate.notNull(joinEntry, "Wrong search query order for join");
+        Validate.isTrue(!wrongJoinEntry.get(), "Wrong search query order for join");
         joinEntry.onEntries.add(new JoinOnEntry(collection1, column1, collection2, column2));
         return (T) this;
     }

@@ -82,6 +82,7 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
     public CreateQuery field(String field, DataType type, ForeignKey foreignKey, FieldOption... options) {
         Validate.notNull(field, type, foreignKey);
         this.entries.add(new CreateEntry(field, type, 0, EntryOption.NOT_DEFINED, options));
+        this.entries.add(new ForeignKeyEntry(field, foreignKey));
         return this;
     }
 

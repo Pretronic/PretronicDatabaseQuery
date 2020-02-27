@@ -106,7 +106,6 @@ public abstract class AbstractDialect implements Dialect {
         }
         queryBuilder.append(name).append("`(");
 
-        StringBuilder foreignKeyBuilder = new StringBuilder();
         for (int i = 0; i < entries.size(); i++) {
             if(i != 0) {
                 queryBuilder.append(",");
@@ -116,7 +115,7 @@ public abstract class AbstractDialect implements Dialect {
             if(entry instanceof AbstractCreateQuery.CreateEntry) {
                 buildCreateQueryCreateEntry(database, queryBuilder, preparedValues,(AbstractCreateQuery.CreateEntry) entry);
             } else if(entry instanceof AbstractCreateQuery.ForeignKeyEntry) {
-                buildForeignKey(database, foreignKeyBuilder, (AbstractCreateQuery.ForeignKeyEntry) entry);
+                buildForeignKey(database, queryBuilder, (AbstractCreateQuery.ForeignKeyEntry) entry);
             } else {
                 throw new IllegalArgumentException(String.format("Entry %s is not supported for MySQL query", entry.getClass().getName()));
             }

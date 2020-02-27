@@ -6,7 +6,7 @@ final String BRANCH_DEVELOPMENT = "origin/development"
 final String BRANCH_MASTER = "origin/master"
 
 final String PROJECT_SSH = "git@github.com:Fridious/PrematicDatabaseQuery.git"
-
+final String PROJECT_NAME = "PrematicDatabaseQuery"
 
 String VERSION = "UNDEFINED"
 String BRANCH = "UNDEFINED"
@@ -135,7 +135,7 @@ pipeline {
                             cd tempDevelopment/
                             git clone --single-branch --branch development $PROJECT_SSH
                             
-                            cd PrematicLibraries/
+                            cd $PROJECT_NAME/
                             mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$version-SNAPSHOT
 
                             git add . -v

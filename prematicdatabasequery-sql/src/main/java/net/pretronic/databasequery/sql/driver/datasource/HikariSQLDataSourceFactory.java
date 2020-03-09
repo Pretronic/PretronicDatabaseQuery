@@ -27,6 +27,7 @@ import net.prematic.libraries.utility.reflect.ReflectionUtil;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
+import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
 
 import javax.sql.DataSource;
@@ -40,9 +41,17 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
         Validate.notNull(ReflectionUtil.getFieldValue(hikariConfig.getClass(), "LOGGER"), "No SLF4J logger set for HikariCP");
         hikariConfig.setPoolName(driver.getName());
         if(driver.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            hikariConfig.setJdbcUrl(String.format(config.getConnectionString(), database));
+            String jdbcUrl = config.getConnectionString();
+            if(jdbcUrl == null) {
+                jdbcUrl = driver.getDialect().createConnectionString(null, ((SQLLocalDatabaseDriverConfig)config).getLocation());
+            }
+            hikariConfig.setJdbcUrl(String.format(jdbcUrl, database));
         } else {
-            hikariConfig.setJdbcUrl(config.getConnectionString());
+            String jdbcUrl = config.getConnectionString();
+            if(jdbcUrl == null) {
+                jdbcUrl = driver.getDialect().createConnectionString(null, ((SQLRemoteDatabaseDriverConfig)config).getAddress());
+            }
+            hikariConfig.setJdbcUrl(String.format(jdbcUrl, database));
         }
         if(config instanceof SQLRemoteDatabaseDriverConfig) {
             SQLRemoteDatabaseDriverConfig remoteConfig = (SQLRemoteDatabaseDriverConfig) config;

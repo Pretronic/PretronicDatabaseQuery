@@ -19,44 +19,71 @@
 
 package net.pretronic.databasequery.sql.driver.config;
 
+import com.zaxxer.hikari.HikariDataSource;
 import net.prematic.databasequery.api.driver.DatabaseDriver;
 import net.prematic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.prematic.libraries.document.Document;
+import net.prematic.libraries.document.annotations.DocumentIgnoreBooleanValue;
+import net.prematic.libraries.document.annotations.DocumentIgnoreZeroValue;
 import net.prematic.libraries.document.annotations.DocumentKey;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
+import java.util.concurrent.TimeUnit;
+
 public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
 
     private final Class<?> driver = SQLDatabaseDriver.class;
+
     @DocumentKey("name")
     private final String name;
+
     @DocumentKey("dialectName")
     private final Dialect dialect;
+
     @DocumentKey("connectionString")
     private final String connectionString;
+
     @DocumentKey("connection.options.catalog")
     private final String connectionCatalog;
+
     @DocumentKey("connection.options.schema")
     private final String connectionSchema;
+
+    @DocumentIgnoreBooleanValue(ignore = false)
     @DocumentKey("connection.options.readOnly")
     private final boolean connectionReadOnly;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("connection.options.isolationLevel")
     private final int connectionIsolationLevel;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("connection.options.networkTimeout")
     private final int connectionNetworkTimeout;
+
     @DocumentKey("datasource.className")
-    private final String dataSourceClassName;
+    private String dataSourceClassName;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionExpireAfterAccess")
-    private final long dataSourceConnectionExpireAfterAccess;
+    private long dataSourceConnectionExpireAfterAccess;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionExpire")
-    private final long dataSourceConnectionExpire;
+    private long dataSourceConnectionExpire;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionLoginTimeout")
-    private final long dataSourceConnectionLoginTimeout;
+    private long dataSourceConnectionLoginTimeout;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("datasource.maximumPoolSize")
-    private final int dataSourceMaximumPoolSize;
+    private int dataSourceMaximumPoolSize;
+
+    @DocumentIgnoreZeroValue
     @DocumentKey("datasource.minimumIdleConnectionPoolSize")
-    private final int dataSourceMinimumIdleConnectionPoolSize;
+    private int dataSourceMinimumIdleConnectionPoolSize;
 
     protected SQLDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
         this.name = name;
@@ -67,14 +94,7 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
         this.connectionReadOnly = connectionReadOnly;
         this.connectionIsolationLevel = connectionIsolationLevel;
         this.connectionNetworkTimeout = connectionNetworkTimeout;
-        this.dataSourceClassName = dataSourceClassName;
-        this.dataSourceConnectionExpireAfterAccess = dataSourceConnectionExpireAfterAccess;
-        this.dataSourceConnectionExpire = dataSourceConnectionExpire;
-        this.dataSourceConnectionLoginTimeout = dataSourceConnectionLoginTimeout;
-        this.dataSourceMaximumPoolSize = dataSourceMaximumPoolSize;
-        this.dataSourceMinimumIdleConnectionPoolSize = dataSourceMinimumIdleConnectionPoolSize;
     }
-
 
     @Override
     public String getName() {
@@ -127,26 +147,45 @@ public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> imple
     }
 
     public String getDataSourceClass() {
+        //@Todo own default datasource
+        if(this.dataSourceClassName == null) {
+            this.dataSourceClassName = HikariDataSource.class.getName();
+        }
         return this.dataSourceClassName;
     }
 
     public long getDataSourceConnectionExpireAfterAccess() {
+        if(this.dataSourceConnectionExpireAfterAccess == 0) {
+            this.dataSourceConnectionExpireAfterAccess = TimeUnit.MINUTES.toMillis(10);
+        }
         return this.dataSourceConnectionExpireAfterAccess;
     }
 
     public long getDataSourceConnectionExpire() {
+        if(this.dataSourceConnectionExpire == 0) {
+            this.dataSourceConnectionExpire = TimeUnit.MINUTES.toMillis(30);
+        }
         return this.dataSourceConnectionExpire;
     }
 
     public long getDataSourceConnectionLoginTimeout() {
+        if(this.dataSourceConnectionLoginTimeout == 0) {
+            this.dataSourceConnectionLoginTimeout = TimeUnit.SECONDS.toMillis(30);
+        }
         return this.dataSourceConnectionLoginTimeout;
     }
 
     public int getDataSourceMaximumPoolSize() {
+        if(this.dataSourceMaximumPoolSize == 0) {
+            this.dataSourceMaximumPoolSize = 10;
+        }
         return this.dataSourceMaximumPoolSize;
     }
 
     public int getDataSourceMinimumIdleConnectionPoolSize() {
+        if(this.dataSourceMinimumIdleConnectionPoolSize == 0) {
+            this.dataSourceMinimumIdleConnectionPoolSize = 10;
+        }
         return this.dataSourceMinimumIdleConnectionPoolSize;
     }
 }

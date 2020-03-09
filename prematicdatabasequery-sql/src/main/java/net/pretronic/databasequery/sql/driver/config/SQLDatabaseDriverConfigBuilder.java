@@ -19,7 +19,7 @@
 
 package net.pretronic.databasequery.sql.driver.config;
 
-import com.zaxxer.hikari.HikariDataSource;
+import net.prematic.libraries.document.annotations.DocumentIgnoreBooleanValue;
 import net.prematic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.dialect.Dialect;
@@ -27,17 +27,17 @@ import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 
 public class SQLDatabaseDriverConfigBuilder {
 
-    private static int count = 1;
+    private static int COUNT = 1;
 
     private String name;
     private Dialect dialect;
     private String connectionString;
     private String connectionCatalog;
     private String connectionSchema;
+    @DocumentIgnoreBooleanValue(ignore = false)
     private boolean connectionReadOnly;
     private int connectionIsolationLevel;
     private int connectionNetworkTimeout;
@@ -57,15 +57,8 @@ public class SQLDatabaseDriverConfigBuilder {
     private String password;
 
     public SQLDatabaseDriverConfigBuilder() {
-        this.name = "SQL Pool-" + count++;
+        this.name = "SQL Pool-" + COUNT++;
         this.connectionReadOnly = false;
-        //datasource @Todo own datasource
-        this.dataSourceClassName = HikariDataSource.class.getName();
-        this.dataSourceConnectionExpireAfterAccess = TimeUnit.MINUTES.toMillis(10);
-        this.dataSourceConnectionExpire = TimeUnit.MINUTES.toMillis(30);
-        this.dataSourceConnectionLoginTimeout = TimeUnit.SECONDS.toMillis(30);
-        this.dataSourceMaximumPoolSize = 10;
-        this.dataSourceMinimumIdleConnectionPoolSize = 10;
         loadDriverClass();
     }
 

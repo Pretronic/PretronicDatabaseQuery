@@ -36,7 +36,7 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
             , int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess
             , long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize
             , int dataSourceMinimumIdleConnectionPoolSize,  InetSocketAddress address, String username, String password) {
-        super(name, dialect, dialect.createConnectionString(connectionString, address), connectionCatalog, connectionSchema
+        super(name, dialect, connectionString, connectionCatalog, connectionSchema
                 , connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
                 , dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout
                 , dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);

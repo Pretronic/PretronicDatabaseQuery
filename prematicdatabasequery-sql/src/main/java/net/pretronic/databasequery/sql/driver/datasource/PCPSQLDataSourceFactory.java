@@ -23,6 +23,7 @@ import net.prematic.connectionpool.PrematicDataSourceBuilder;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
+import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
 
 import javax.sql.DataSource;
@@ -34,9 +35,17 @@ public class PCPSQLDataSourceFactory implements SQLDataSourceFactory {
         SQLDatabaseDriverConfig<?> config = driver.getConfig();
         PrematicDataSourceBuilder builder = new PrematicDataSourceBuilder();
         if(driver.getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            builder.jdbcUrl(String.format(config.getConnectionString(), database));
+            String jdbcUrl = config.getConnectionString();
+            if(jdbcUrl == null) {
+                jdbcUrl = driver.getDialect().createConnectionString(null, ((SQLLocalDatabaseDriverConfig)config).getLocation());
+            }
+            builder.jdbcUrl(String.format(jdbcUrl, database));
         } else {
-            builder.jdbcUrl(config.getConnectionString());
+            String jdbcUrl = config.getConnectionString();
+            if(jdbcUrl == null) {
+                jdbcUrl = driver.getDialect().createConnectionString(null, ((SQLRemoteDatabaseDriverConfig)config).getAddress());
+            }
+            builder.jdbcUrl(String.format(jdbcUrl, database));
         }
         if(config instanceof SQLRemoteDatabaseDriverConfig) {
             SQLRemoteDatabaseDriverConfig remoteConfig = (SQLRemoteDatabaseDriverConfig) config;

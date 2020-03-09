@@ -12,7 +12,7 @@
     <distributionManagement>
         <repository>
             <id>pretronic</id>
-            <url>https://repository.prematic.net/repository/pretronic/</url>
+            <url>https://repository.pretronic.net/repository/pretronic/</url>
         </repository>
     </distributionManagement>
 
@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency version -->
-        <dependency.pretronic.libraries>1.0.0</dependency.pretronic.libraries>
+        <dependency.pretronic.libraries>1.0.31-SNAPSHOT</dependency.pretronic.libraries>
         <dependency.pretronic.connectionpool>1.0.0</dependency.pretronic.connectionpool>
 
         <dependency.hikaricp>3.4.1</dependency.hikaricp>
@@ -45,7 +45,7 @@
     <repositories>
         <repository>
             <id>pretronic</id>
-            <url>https://repository.prematic.net/repository/pretronic/</url>
+            <url>https://repository.pretronic.net/repository/pretronic/</url>
         </repository>
     </repositories>
 </project>

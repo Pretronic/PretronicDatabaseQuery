@@ -30,6 +30,7 @@ public final class SQLUtil {
 
     public static PreparedStatementConsumer getSelectConsumer(DatabaseCollection collection, Pair<String, List<Object>> data) {
         return preparedStatement -> {
+            System.out.println("selectConsumer: " + data.getValue());
             for (int i = 1; i <= data.getValue().size(); i++) {
                 Object value = data.getValue().get(i-1);
                 if(value != null && !Primitives.isPrimitive(value)) {

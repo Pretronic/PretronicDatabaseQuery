@@ -37,6 +37,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 
 import java.sql.Driver;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -597,7 +598,8 @@ public abstract class AbstractDialect implements Dialect {
 
     private Object addAndGetEntry(Object value, SearchQueryBuilderState state) {
         if(EntryOption.PREPARED != value) {
-            state.preparedValues.add(value);
+            if(value instanceof Collection<?>) state.preparedValues.addAll((Collection<?>) value);
+            else state.preparedValues.add(value);
             return value;
         } else if(state.values.length > state.preparedValuesCount) {
             Object preparedValue = state.values[state.preparedValuesCount++];
@@ -605,7 +607,8 @@ public abstract class AbstractDialect implements Dialect {
                 state.preparedValues.addAll(((PreparedValue) preparedValue).getValues());
                 return ((PreparedValue)preparedValue).getValues();
             } else {
-                state.preparedValues.add(preparedValue);
+                if(preparedValue instanceof Collection<?>) state.preparedValues.addAll((Collection<?>) preparedValue);
+                else state.preparedValues.add(preparedValue);
                 return preparedValue;
             }
         }

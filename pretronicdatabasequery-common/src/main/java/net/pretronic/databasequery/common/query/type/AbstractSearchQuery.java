@@ -32,6 +32,7 @@ import net.pretronic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -196,7 +197,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @Override
     public T whereIn(String field, Object... values) {
         Validate.notNull(field, values);
-        return addConditionEntry(ConditionEntry.Type.WHERE_IN, field, values);
+        return addConditionEntry(ConditionEntry.Type.WHERE_IN, field, Arrays.asList(values));
     }
 
     @Override

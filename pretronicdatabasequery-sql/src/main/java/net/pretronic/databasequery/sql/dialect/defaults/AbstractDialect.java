@@ -548,7 +548,7 @@ public abstract class AbstractDialect implements Dialect {
         if(state.limitBuilder.length() == 0) {
             addEntry(entry.getLimit(), state);
             addEntry(entry.getOffset(), state);
-            state.limitBuilder.append("LIMIT ? OFFSET ?");
+            state.limitBuilder.append(" LIMIT ? OFFSET ?");
         } else {
             throw new IllegalArgumentException("Query can't have more than one limit and offset");
         }

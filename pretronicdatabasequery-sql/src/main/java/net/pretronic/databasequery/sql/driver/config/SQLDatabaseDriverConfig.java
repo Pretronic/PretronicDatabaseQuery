@@ -32,7 +32,7 @@ import net.pretronic.libraries.utility.interfaces.Copyable;
 
 import java.util.concurrent.TimeUnit;
 
-public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T>, Copyable<T> {
+public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
 
     private final Class<?> driver = SQLDatabaseDriver.class;
 

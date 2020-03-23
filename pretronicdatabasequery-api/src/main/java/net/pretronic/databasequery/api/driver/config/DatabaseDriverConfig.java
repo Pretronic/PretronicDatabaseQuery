@@ -24,8 +24,9 @@ import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.libraries.document.Document;
 import net.pretronic.libraries.document.DocumentRegistry;
 import net.pretronic.libraries.utility.interfaces.Castable;
+import net.pretronic.libraries.utility.interfaces.Copyable;
 
-public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T> {
+public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T>, Copyable<T> {
 
     String getName();
 

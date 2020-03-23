@@ -68,4 +68,13 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
     public String getPassword() {
         return this.password;
     }
+
+    @Override
+    public SQLRemoteDatabaseDriverConfig copy() {
+        return new SQLRemoteDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.connectionCatalog
+                , this.connectionSchema, this.connectionReadOnly, this.connectionIsolationLevel, this.connectionNetworkTimeout
+                , this.dataSourceClassName, this.dataSourceConnectionExpireAfterAccess, this.dataSourceConnectionExpire
+                , this.dataSourceConnectionLoginTimeout, this.dataSourceMaximumPoolSize, this.dataSourceMinimumIdleConnectionPoolSize
+                , this.address, this.username, this.password);
+    }
 }

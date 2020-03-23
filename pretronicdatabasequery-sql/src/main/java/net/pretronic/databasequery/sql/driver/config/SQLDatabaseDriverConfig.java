@@ -28,62 +28,63 @@ import net.pretronic.libraries.document.annotations.DocumentIgnoreZeroValue;
 import net.pretronic.libraries.document.annotations.DocumentKey;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.libraries.utility.interfaces.Copyable;
 
 import java.util.concurrent.TimeUnit;
 
-public class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T> {
+public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<T>> implements DatabaseDriverConfig<T>, Copyable<T> {
 
     private final Class<?> driver = SQLDatabaseDriver.class;
 
     @DocumentKey("name")
-    private final String name;
+    protected final String name;
 
     @DocumentKey("dialectName")
-    private final Dialect dialect;
+    protected final Dialect dialect;
 
     @DocumentKey("connectionString")
-    private final String connectionString;
+    protected final String connectionString;
 
     @DocumentKey("connection.options.catalog")
-    private final String connectionCatalog;
+    protected final String connectionCatalog;
 
     @DocumentKey("connection.options.schema")
-    private final String connectionSchema;
+    protected final String connectionSchema;
 
     @DocumentIgnoreBooleanValue(ignore = false)
     @DocumentKey("connection.options.readOnly")
-    private final boolean connectionReadOnly;
+    protected final boolean connectionReadOnly;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("connection.options.isolationLevel")
-    private final int connectionIsolationLevel;
+    protected final int connectionIsolationLevel;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("connection.options.networkTimeout")
-    private final int connectionNetworkTimeout;
+    protected final int connectionNetworkTimeout;
 
     @DocumentKey("datasource.className")
-    private String dataSourceClassName;
+    protected String dataSourceClassName;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionExpireAfterAccess")
-    private long dataSourceConnectionExpireAfterAccess;
+    protected long dataSourceConnectionExpireAfterAccess;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionExpire")
-    private long dataSourceConnectionExpire;
+    protected long dataSourceConnectionExpire;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("datasource.connectionLoginTimeout")
-    private long dataSourceConnectionLoginTimeout;
+    protected long dataSourceConnectionLoginTimeout;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("datasource.maximumPoolSize")
-    private int dataSourceMaximumPoolSize;
+    protected int dataSourceMaximumPoolSize;
 
     @DocumentIgnoreZeroValue
     @DocumentKey("datasource.minimumIdleConnectionPoolSize")
-    private int dataSourceMinimumIdleConnectionPoolSize;
+    protected int dataSourceMinimumIdleConnectionPoolSize;
 
     protected SQLDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize) {
         this.name = name;

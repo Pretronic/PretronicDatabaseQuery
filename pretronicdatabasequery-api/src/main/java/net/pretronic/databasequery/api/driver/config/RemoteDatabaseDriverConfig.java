@@ -23,7 +23,7 @@ package net.pretronic.databasequery.api.driver.config;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-public interface RemoteDatabaseDriverConfig {
+public interface RemoteDatabaseDriverConfig<T extends RemoteDatabaseDriverConfig<T>> extends DatabaseDriverConfig<T> {
 
     InetAddress getHost();
 

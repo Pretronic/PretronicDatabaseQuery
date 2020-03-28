@@ -25,7 +25,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRemoteDatabaseDriverConfig> implements RemoteDatabaseDriverConfig {
+public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRemoteDatabaseDriverConfig> implements RemoteDatabaseDriverConfig<SQLRemoteDatabaseDriverConfig> {
 
     private final InetSocketAddress address;
     private final String username;

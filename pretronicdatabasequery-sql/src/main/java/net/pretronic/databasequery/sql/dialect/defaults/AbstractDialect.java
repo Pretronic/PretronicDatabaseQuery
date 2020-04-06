@@ -494,23 +494,31 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     private void buildSearchQueryJoinEntry(AbstractSearchQuery.JoinEntry entry, SearchQueryBuilderState state) {
-        state.joinBuilder.append(entry.getType().toString()).append(" JOIN `")
-                .append(entry.getCollection().getDatabase().getName()).append("`.`")
-                .append(entry.getCollection().getName()).append("` ");
+        state.joinBuilder.append(entry.getType().toString()).append(" JOIN `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            state.joinBuilder.append(entry.getCollection().getDatabase().getName()).append("`.`");
+        }
+        state.joinBuilder.append(entry.getCollection().getName()).append("` ");
 
         for (int i = 0; i < entry.getOnEntries().size(); i++) {
             AbstractSearchQuery.JoinOnEntry onEntry = entry.getOnEntries().get(i);
             if(i == 0) {
-                state.joinBuilder.append("ON ");
+                state.joinBuilder.append("ON `");
             } else {
-                state.joinBuilder.append("AND ");
+                state.joinBuilder.append("AND `");
             }
-            state.joinBuilder.append("`").append(onEntry.getCollection1().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection1().getName()).append("`.`")
+            if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+                state.joinBuilder.append(onEntry.getCollection1().getDatabase().getName()).append("`.`");
+            }
+            state.joinBuilder.append(onEntry.getCollection1().getName()).append("`.`")
                     .append(onEntry.getColumn1()).append("`")
-                    .append("=")
-                    .append("`").append(onEntry.getCollection2().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection2().getName()).append("`.`")
+                    .append("=`");
+
+            if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+                state.joinBuilder.append(onEntry.getCollection2().getDatabase().getName()).append("`.`");
+            }
+
+            state.joinBuilder.append(onEntry.getCollection2().getName()).append("`.`")
                     .append(onEntry.getColumn2()).append("`");
         }
     }

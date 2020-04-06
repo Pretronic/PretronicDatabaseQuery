@@ -9,8 +9,7 @@ import net.pretronic.databasequery.api.query.QueryTransaction;
 import net.pretronic.databasequery.api.query.type.*;
 import net.pretronic.databasequery.common.collection.AbstractDatabaseCollection;
 import net.pretronic.databasequery.mongodb.MongoDBDatabase;
-import net.pretronic.databasequery.mongodb.query.MongoDBFindQuery;
-import net.pretronic.databasequery.mongodb.query.MongoDBInsertQuery;
+import net.pretronic.databasequery.mongodb.query.*;
 import org.bson.Document;
 
 import java.util.Collection;
@@ -41,17 +40,17 @@ public class MongoDBDatabaseCollection extends AbstractDatabaseCollection<MongoD
 
     @Override
     public UpdateQuery update() {
-        return null;
+        return new MongoDBUpdateQuery(this);
     }
 
     @Override
     public ReplaceQuery replace() {
-        return null;
+        return new MongoDBReplaceQuery(this);
     }
 
     @Override
     public DeleteQuery delete() {
-        return null;
+        return new MongoDBDeleteQuery(this);
     }
 
     @Override

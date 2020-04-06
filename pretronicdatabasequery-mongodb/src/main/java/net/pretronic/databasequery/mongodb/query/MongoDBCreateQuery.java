@@ -16,7 +16,7 @@ public class MongoDBCreateQuery extends AbstractCreateQuery<MongoDBDatabase> {
 
     @Override
     public DatabaseCollection create() {
-        if(!database.existCollection(name)) database.createCollection(this.name);
+        if(!database.existCollection(name)) this.database.getDatabase().createCollection(this.name);
 
         for (Entry entry : entries) {
             if(entry instanceof CreateEntry) {

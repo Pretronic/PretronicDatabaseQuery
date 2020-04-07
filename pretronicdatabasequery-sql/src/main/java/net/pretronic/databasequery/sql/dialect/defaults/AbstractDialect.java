@@ -515,11 +515,14 @@ public abstract class AbstractDialect implements Dialect {
                     .append("=`");
 
             if(this.environment == DatabaseDriverEnvironment.REMOTE) {
-                state.joinBuilder.append(onEntry.getCollection2().getDatabase().getName()).append("`.`");
+                if(onEntry.getCollection2() != null) {
+                    state.joinBuilder.append(onEntry.getCollection2().getDatabase().getName()).append("`.`");
+                }
             }
-
-            state.joinBuilder.append(onEntry.getCollection2().getName()).append("`.`")
-                    .append(onEntry.getColumn2()).append("`");
+            if(onEntry.getCollection2() != null) {
+                state.joinBuilder.append(onEntry.getCollection2().getName()).append("`.`");
+            }
+            state.joinBuilder.append(onEntry.getColumn2()).append("`");
         }
     }
 

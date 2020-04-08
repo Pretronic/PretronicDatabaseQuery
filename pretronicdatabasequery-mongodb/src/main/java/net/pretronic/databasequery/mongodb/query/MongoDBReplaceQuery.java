@@ -4,8 +4,8 @@ import com.mongodb.client.MongoCursor;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
+import net.pretronic.databasequery.common.query.type.AbstractChangeAndSearchQuery;
 import net.pretronic.databasequery.common.query.type.AbstractReplaceQuery;
-import net.pretronic.databasequery.common.query.type.AbstractUpdateQuery;
 import net.pretronic.databasequery.mongodb.collection.MongoDBDatabaseCollection;
 import net.pretronic.databasequery.mongodb.query.utils.BuildContext;
 import net.pretronic.databasequery.mongodb.query.utils.MongoDBQueryUtil;
@@ -23,10 +23,10 @@ public class MongoDBReplaceQuery extends AbstractReplaceQuery<MongoDBDatabaseCol
     @Override
     public QueryResult execute(Object... values) {
         BuildContext context = BuildContext.newContext(this.collection);
-        List<AbstractUpdateQuery.SetEntry> setEntries = new ArrayList<>();
+        List<ChangeAndSearchEntry> setEntries = new ArrayList<>();
         for (Entry entry : entries) {
-            if(entry instanceof AbstractUpdateQuery.SetEntry) {
-                setEntries.add((AbstractUpdateQuery.SetEntry) entry);
+            if(entry instanceof AbstractChangeAndSearchQuery.ChangeAndSearchEntry) {
+                setEntries.add((ChangeAndSearchEntry) entry);
             } else {
                 MongoDBQueryUtil.buildEntry(context, entry);
             }
@@ -42,8 +42,8 @@ public class MongoDBReplaceQuery extends AbstractReplaceQuery<MongoDBDatabaseCol
             document.forEach(entry::addEntry);
             result.addEntry(entry);
             Document update = new Document();
-            for (AbstractUpdateQuery.SetEntry setEntry : setEntries) {
-                update.append(setEntry.getField(), setEntry.getValue());
+            for (ChangeAndSearchEntry changeAndSearchEntry : setEntries) {
+                update.append(changeAndSearchEntry.getField(), changeAndSearchEntry.getValue());
             }
             this.collection.getCollection().replaceOne(document, update);
         }

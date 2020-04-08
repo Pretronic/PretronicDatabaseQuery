@@ -22,7 +22,15 @@ package net.pretronic.databasequery.api.query.type;
 
 import net.pretronic.databasequery.api.query.Query;
 
-public interface ChangeQuery<T extends ChangeQuery<T>> extends Query {
+public interface ChangeQuery<T extends Query> extends Query {
+
+    T add(String field, Number value);
+
+    T subtract(String field, Number value);
+
+    T multiply(String field, Number value);
+
+    T divide(String field, Number value);
 
     T set(String field, Object value);
 

@@ -248,8 +248,8 @@ public abstract class AbstractDialect implements Dialect {
     public Pair<String, List<Object>> newUpdateQuery(SQLDatabaseCollection collection, List<AbstractUpdateQuery.Entry> entries, Object[] values) {
         UpdateQueryBuilderState state = new UpdateQueryBuilderState(values);
         for (AbstractSearchQuery.Entry entry : entries) {
-            if(entry instanceof AbstractUpdateQuery.SetEntry) {
-                buildUpdateQueryEntry((AbstractUpdateQuery.SetEntry) entry, state);
+            if(entry instanceof AbstractChangeAndSearchQuery.ChangeAndSearchEntry) {
+                buildUpdateQueryEntry((AbstractChangeAndSearchQuery.ChangeAndSearchEntry) entry, state);
             } else {
                 buildSearchQueryEntry(entry, state, "AND", false);
             }
@@ -263,13 +263,18 @@ public abstract class AbstractDialect implements Dialect {
         return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
-    private void buildUpdateQueryEntry(AbstractUpdateQuery.SetEntry entry, UpdateQueryBuilderState state) {
+    private void buildUpdateQueryEntry(AbstractChangeAndSearchQuery.ChangeAndSearchEntry entry, UpdateQueryBuilderState state) {
         if(state.setBuilder.length() == 0) {
             state.setBuilder.append("SET ");
         } else {
             state.setBuilder.append(",");
         }
-        state.setBuilder.append("`").append(buildField(entry)).append("`").append("=?");
+        String field = buildField(entry);
+        state.setBuilder.append("`").append(field).append("`=");
+        if(entry.getOperator() != null) {
+            state.setBuilder.append("`").append(field).append("`").append(entry.getOperator());
+        }
+        state.setBuilder.append("?");
         addEntry(entry.getValue(), state);
     }
 
@@ -574,7 +579,7 @@ public abstract class AbstractDialect implements Dialect {
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 
-    private String buildField(AbstractUpdateQuery.SetEntry entry) {
+    private String buildField(AbstractChangeAndSearchQuery.ChangeAndSearchEntry entry) {
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 

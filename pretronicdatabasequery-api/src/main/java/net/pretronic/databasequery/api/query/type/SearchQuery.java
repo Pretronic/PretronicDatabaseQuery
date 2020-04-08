@@ -90,7 +90,9 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
         return whereIn(field,values.toArray());
     }
 
+    @SuppressWarnings("unchecked")
     default <R> T whereIn(String field, Collection<R> values,Function<R,Object> mapper){
+        if(values.isEmpty()) return (T) this;
         Object[] data = new Object[values.size()];
         int index = 0;
         for (R value : values) {

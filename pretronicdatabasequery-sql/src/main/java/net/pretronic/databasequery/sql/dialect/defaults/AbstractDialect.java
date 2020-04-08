@@ -272,7 +272,7 @@ public abstract class AbstractDialect implements Dialect {
         String field = buildField(entry);
         state.setBuilder.append("`").append(field).append("`=");
         if(entry.getOperator() != null) {
-            state.setBuilder.append("`").append(field).append("`").append(entry.getOperator());
+            state.setBuilder.append("`").append(field).append("`").append(entry.getOperator().getSymbol());
         }
         state.setBuilder.append("?");
         addEntry(entry.getValue(), state);

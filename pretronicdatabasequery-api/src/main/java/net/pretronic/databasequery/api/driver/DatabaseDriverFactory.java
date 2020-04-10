@@ -21,6 +21,7 @@
 package net.pretronic.databasequery.api.driver;
 
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
+import net.pretronic.databasequery.api.driver.config.DynamicDriverLoader;
 import net.pretronic.libraries.document.Document;
 import net.pretronic.libraries.logging.PretronicLogger;
 import net.pretronic.libraries.logging.PretronicLoggerFactory;
@@ -32,25 +33,33 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
-public interface DatabaseDriverFactory {
+public abstract class DatabaseDriverFactory {
 
-    Map<Class<?>,DatabaseDriverFactory> FACTORIES = new HashMap<>();
-
-
-    DatabaseDriver createDriver(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService);
-
-    DatabaseDriverConfig<?> createConfig(Document config);
+    private final static Map<Class<?>,DatabaseDriverFactory> FACTORIES = new HashMap<>();
+    private static DynamicDriverLoader DRIVER_LOADER;
 
 
-    static DatabaseDriver create(String name, DatabaseDriverConfig<?> config){
+    public abstract DatabaseDriver createDriver(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService);
+
+    public abstract DatabaseDriverConfig<?> createConfig(Document config);
+
+    public static DynamicDriverLoader getDriverLoader() {
+        return DRIVER_LOADER;
+    }
+
+    public static void setDriverLoader(DynamicDriverLoader driverLoader) {
+        DRIVER_LOADER = driverLoader;
+    }
+
+    public static DatabaseDriver create(String name, DatabaseDriverConfig<?> config){
         return create(name, config, PretronicLoggerFactory.getLogger(DatabaseDriver.class));
     }
 
-    static DatabaseDriver create(String name, DatabaseDriverConfig<?> config, PretronicLogger logger){
+    public static DatabaseDriver create(String name, DatabaseDriverConfig<?> config, PretronicLogger logger){
         return create(name, config, logger, GeneralUtil.getDefaultExecutorService());
     }
 
-    static DatabaseDriver create(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService){
+    public static DatabaseDriver create(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService){
         Objects.requireNonNull(name);
         Objects.requireNonNull(config);
         Objects.requireNonNull(logger);
@@ -62,26 +71,39 @@ public interface DatabaseDriverFactory {
     }
 
 
-    static DatabaseDriver create(String name, Document config){
+    public static DatabaseDriver create(String name, Document config){
         return create(name, config,PretronicLoggerFactory.getLogger(DatabaseDriver.class));
     }
 
-    static DatabaseDriver create(String name, Document config, PretronicLogger logger){
+    public static DatabaseDriver create(String name, Document config, PretronicLogger logger){
         return create(name, config, logger, GeneralUtil.getDefaultExecutorService());
     }
 
-    static DatabaseDriver create(String name, Document config, PretronicLogger logger, ExecutorService executorService){
+    public static DatabaseDriver create(String name, Document config, PretronicLogger logger, ExecutorService executorService){
         return create(name,create(config), logger,executorService);
     }
 
 
-    static DatabaseDriverConfig<?> create(Document config){
-        Class<?> configClass = config.getObject("driver",Class.class);
-        Validate.notNull(configClass);
+    public static DatabaseDriverConfig<?> create(Document config){
+        Validate.notNull(config);
+        String driverClassName = config.getString("driver");
+        if(driverClassName == null){
+            throw new IllegalArgumentException("No driver defined");
+        }
+        Class<?> configClass;
+        try{
+            configClass = Class.forName(driverClassName);
+        }catch (ClassNotFoundException e){
+            if(DRIVER_LOADER != null){
+                configClass = DRIVER_LOADER.loadDriver(driverClassName);
+            }else{
+                throw new IllegalArgumentException("Driver "+driverClassName+" is not available");
+            }
+        }
         return create(configClass,config);
     }
 
-    static DatabaseDriverConfig<?> create(Class<?> configClass, Document config){
+    public static DatabaseDriverConfig<?> create(Class<?> configClass, Document config){
         Objects.requireNonNull(configClass);
         Objects.requireNonNull(config);
 
@@ -91,15 +113,16 @@ public interface DatabaseDriverFactory {
     }
 
 
-    static void registerFactory(Class<? extends DatabaseDriver> driverClass, DatabaseDriverFactory factory) {
+    public static void registerFactory(Class<? extends DatabaseDriver> driverClass, DatabaseDriverFactory factory) {
         Objects.requireNonNull(driverClass);
         Objects.requireNonNull(factory);
         FACTORIES.put(driverClass,factory);
     }
 
-    static void unregisterFactory(Class<? extends DatabaseDriver> driverClass) {
+    public static void unregisterFactory(Class<? extends DatabaseDriver> driverClass) {
         Objects.requireNonNull(driverClass);
         FACTORIES.remove(driverClass);
     }
+
 
 }

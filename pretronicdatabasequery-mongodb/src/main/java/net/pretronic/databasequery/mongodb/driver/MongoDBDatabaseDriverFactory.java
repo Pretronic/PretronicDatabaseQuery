@@ -10,7 +10,7 @@ import net.pretronic.libraries.utility.Validate;
 
 import java.util.concurrent.ExecutorService;
 
-public class MongoDBDatabaseDriverFactory implements DatabaseDriverFactory {
+public class MongoDBDatabaseDriverFactory extends DatabaseDriverFactory {
 
     @Override
     public DatabaseDriver createDriver(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService) {

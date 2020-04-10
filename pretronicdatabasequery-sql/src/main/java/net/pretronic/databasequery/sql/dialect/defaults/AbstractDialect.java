@@ -21,11 +21,13 @@ package net.pretronic.databasequery.sql.dialect.defaults;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
 import net.pretronic.databasequery.api.collection.field.FieldOption;
+import net.pretronic.databasequery.api.driver.DatabaseDriverFactory;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.PreparedValue;
 import net.pretronic.databasequery.api.query.type.FindQuery;
+import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
@@ -50,11 +52,14 @@ public abstract class AbstractDialect implements Dialect {
     private final String protocol;
     private final DatabaseDriverEnvironment environment;
 
-    public AbstractDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment) {
+    private final boolean dynamicDependencies;
+
+    public AbstractDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment, boolean dynamicDependencies) {
         this.name = name;
         this.driverName = driverName;
         this.protocol = protocol;
         this.environment = environment;
+        this.dynamicDependencies = dynamicDependencies;
     }
 
     @Override
@@ -80,6 +85,13 @@ public abstract class AbstractDialect implements Dialect {
             try {
                 this.driver = (Class<? extends Driver>) Class.forName(this.driverName);
             } catch (ClassNotFoundException ignored) {
+                if(dynamicDependencies && DatabaseDriverFactory.getDriverLoader() != null){
+                    DatabaseDriverFactory.getDriverLoader().loadOptionalDriverDependencies(SQLDatabaseDriver.class,name);
+                    try{
+                        this.driver = (Class<? extends Driver>) Class.forName(this.driverName);
+                        return;
+                    }catch (ClassNotFoundException ignored2){}
+                }
                 throw new DatabaseQueryException("Database driver " + this.driverName+" is not available");
             }
         }

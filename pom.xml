@@ -23,11 +23,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency version -->
-        <dependency.pretronic.libraries.version>1.0.49-SNAPSHOT</dependency.pretronic.libraries.version>
+        <dependency.pretronic.libraries.version>1.0.100.73-SNAPSHOT</dependency.pretronic.libraries.version>
         <dependency.pretronic.connectionpool.version>1.0.1-SNAPSHOT</dependency.pretronic.connectionpool.version>
 
         <dependency.hikaricp.version>3.4.1</dependency.hikaricp.version>
         <dependency.mongodb.version>3.12.2</dependency.mongodb.version>
+        <dependency.h2.version>1.4.200</dependency.h2.version>
+        <dependency.mysql.version>8.0.19</dependency.mysql.version>
+        <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
 
         <!-- Test dependencies -->
         <test.junit.jupiter.version>5.5.2</test.junit.jupiter.version>
@@ -43,6 +46,7 @@
         <module>pretronicdatabasequery-sql</module>
         <module>pretronicdatabasequery-api-kotlin-dsl</module>
         <module>pretronicdatabasequery-mongodb</module>
+        <module>pretronicdatabasequery-driverloader</module>
     </modules>
 
     <repositories>

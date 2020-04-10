@@ -33,7 +33,7 @@ import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConf
 
 import java.util.concurrent.ExecutorService;
 
-public class SQLDatabaseDriverFactory implements DatabaseDriverFactory {
+public class SQLDatabaseDriverFactory extends DatabaseDriverFactory {
 
     @Override
     public DatabaseDriver createDriver(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService) {

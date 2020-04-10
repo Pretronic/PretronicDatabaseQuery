@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 public class MySQLDialect extends AbstractDialect {
 
     public MySQLDialect() {
-        super("MySQL", "com.mysql.cj.jdbc.Driver", "mysql", DatabaseDriverEnvironment.REMOTE);
+        super("MySQL", "com.mysql.cj.jdbc.Driver", "mysql", DatabaseDriverEnvironment.REMOTE,true);
     }
 
 

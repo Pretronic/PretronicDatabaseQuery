@@ -20,6 +20,14 @@
 
 package net.pretronic.databasequery.api.datatype.adapter;
 
+/**
+ * The {@link DataTypeAdapter} class represents a datatype adapter, which converts a specific type {@link T} on insert to a Object with {@link #write(Object)}.
+ * When getting a object with a type using the method {@link net.pretronic.databasequery.api.query.result.QueryResultEntry#getObject(String, Class)}
+ * or {@link net.pretronic.databasequery.api.query.result.QueryResultEntry#getObject(int, Class)}, the result entry converts,
+ * if possible the read value from database back to {@link T}.
+ *
+ * @param <T> type to convert at select or insert
+ */
 public interface DataTypeAdapter<T> {
 
     Object write(T value);

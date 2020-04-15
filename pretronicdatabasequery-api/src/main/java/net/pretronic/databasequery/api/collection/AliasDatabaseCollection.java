@@ -20,8 +20,17 @@
 
 package net.pretronic.databasequery.api.collection;
 
+/**
+ * The {@link AliasDatabaseCollection} represents a {@link DatabaseCollection} with a custom name in the query.
+ * It can be used in queries, like the join query. It may be not included in some implementations.
+ */
 public interface AliasDatabaseCollection extends DatabaseCollection{
 
+    /**
+     * Returns the original database collection.
+     *
+     * @return original database collection
+     */
     DatabaseCollection getOriginal();
 
 }

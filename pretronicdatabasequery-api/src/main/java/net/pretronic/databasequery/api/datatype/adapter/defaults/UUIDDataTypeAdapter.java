@@ -27,6 +27,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
+/**
+ * The {@link UUIDDataTypeAdapter} represents an implementation of {@link DataTypeAdapter}, which converts a object to a uuid and back.
+ * For more information, see {@link DataTypeAdapter}.
+ */
 public class UUIDDataTypeAdapter implements DataTypeAdapter<UUID> {
 
     @Override

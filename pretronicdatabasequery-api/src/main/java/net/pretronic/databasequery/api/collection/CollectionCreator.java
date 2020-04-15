@@ -31,12 +31,28 @@ import net.pretronic.libraries.document.entry.DocumentEntry;
 
 import java.io.File;
 
+/**
+ * The {@link CollectionCreator} represents a creator of {@link DatabaseCollection}, which creates one or multiple {@link DatabaseCollection} with a document.
+ * An example of the document structure in json is on the github repository named table.json.
+ */
 public class CollectionCreator {
 
+    /**
+     *
+     * @param database on which the collections will be created
+     * @param location of the document file
+     */
     public static void create(Database database, File location) {
         create(database,Document.read(location));
     }
 
+    /**
+     * Creates all configured {@link DatabaseCollection} with the given information in the document {@code document}
+     * on the given database {@code database}.
+     *
+     * @param database on which the collections will be created
+     * @param document which includes the information for creating the database collections
+     */
     public static void create(Database database,Document document) {
         QueryGroup group = database.group();
         for (DocumentEntry collection : document.getDocument("collections")) {

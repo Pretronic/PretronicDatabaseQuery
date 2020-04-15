@@ -22,7 +22,7 @@ package net.pretronic.databasequery.api.driver;
 
 import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.datatype.adapter.DataTypeAdapter;
-import net.pretronic.databasequery.api.datatype.adapter.UUIDDataTypeAdapter;
+import net.pretronic.databasequery.api.datatype.adapter.defaults.UUIDDataTypeAdapter;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.pretronic.libraries.logging.PretronicLogger;
 

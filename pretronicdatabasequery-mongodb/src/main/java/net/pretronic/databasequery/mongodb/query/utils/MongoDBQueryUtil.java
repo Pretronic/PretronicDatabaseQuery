@@ -1,3 +1,23 @@
+/*
+ * (C) Copyright 2020 The PretronicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
+ *
+ * @author Philipp Elvin Friedhoff
+ * @since 10.04.20, 19:05
+ * @web %web%
+ *
+ * The PretronicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
 package net.pretronic.databasequery.mongodb.query.utils;
 
 import com.mongodb.MongoClient;
@@ -120,11 +140,12 @@ public final class MongoDBQueryUtil {
 
 
 
-        Bson lookUp = Aggregates.lookup(entry.getCollection().getName(), variables, Collections.singletonList(pipeline), "result");
+        Bson lookUp = Aggregates.lookup(entry.getCollection().getName(), variables, Collections.singletonList(pipeline),
+                "result"+entry.getCollection().getName());
 
         context.add(lookUp);
 
-        context.add(Aggregates.replaceRoot(new Document("$mergeObjects", new BsonArray(
+        /*context.add(Aggregates.replaceRoot(new Document("$mergeObjects", new BsonArray(
                 Arrays.asList(
                         new BsonDocument("$arrayElemAt", new BsonArray(Arrays.asList(
                                 new BsonString("$result"), new BsonInt32(0)
@@ -132,7 +153,7 @@ public final class MongoDBQueryUtil {
                         new BsonString("$$ROOT")
                 )
         ))));
-        context.add(Aggregates.project(new Document("result", 0)));
+        context.add(Aggregates.project(new Document("result", 0)));*/
     }
 
     public static void buildLimitEntry(BuildContext context, AbstractSearchQuery.LimitEntry entry) {

@@ -22,10 +22,22 @@ package net.pretronic.databasequery.api.query.type;
 
 import net.pretronic.databasequery.api.query.Aggregation;
 
+/**
+ * The {@link FindQuery} represents the query to search data in the executed {@link net.pretronic.databasequery.api.collection.DatabaseCollection}.
+ */
 public interface FindQuery extends SearchQuery<FindQuery> {
 
+    /**
+     * @param fields to get
+     * @return the query instance
+     */
     FindQuery get(String... fields);
 
+    /**
+     * @param aggregation to get
+     * @param field to get with the aggregation
+     * @return the query instance
+     */
     FindQuery get(Aggregation aggregation,String field);
 
 }

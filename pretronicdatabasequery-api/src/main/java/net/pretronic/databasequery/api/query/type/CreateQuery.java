@@ -33,6 +33,17 @@ import java.util.function.Consumer;
 
 public interface CreateQuery extends Query {
 
+    /**
+     * Creates a field for a {@link DatabaseCollection}.
+     *
+     * @param field name
+     * @param type of the field
+     * @param size of the field
+     * @param defaultValue of the field
+     * @param foreignKey of the field
+     * @param options for the field
+     * @return the query instance
+     */
     CreateQuery field(String field, DataType type, int size, Object defaultValue, ForeignKey foreignKey, FieldOption... options);
 
     CreateQuery field(String field, DataType type, int size, Object defaultValue, FieldOption... options);
@@ -46,12 +57,28 @@ public interface CreateQuery extends Query {
     CreateQuery field(Consumer<FieldBuilder> builder);
 
 
-
+    /**
+     * Sets the database engine for the query. It is not implemented in all implementations.
+     *
+     * @param engine name
+     * @return the query instance
+     */
     CreateQuery engine(String engine);
 
+    /**
+     * Sets the collection type
+     *
+     * @param type of the collection
+     * @return the query instance
+     */
     CreateQuery type(DatabaseCollectionType type);
 
-
+    /**
+     * Sets a foreign key, which referred to another {@link DatabaseCollection} and field.
+     * @param field of this collection
+     * @param foreignKey object
+     * @return th query instance
+     */
     CreateQuery foreignKey(String field, ForeignKey foreignKey);
 
 
@@ -68,9 +95,20 @@ public interface CreateQuery extends Query {
     }
 
 
+    /**
+     * Includes a query for this database collection. It is used for views.
+     *
+     * @param query to include
+     * @return the query instance
+     */
     CreateQuery include(FindQuery query);
 
 
+    /**
+     * Creates the database collection.
+     *
+     * @return database collection object
+     */
     DatabaseCollection create();
 
     CompletableFuture<DatabaseCollection> createAsync();

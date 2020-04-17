@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.exceptions;
 
+/**
+ * This exception is used by general errors or for mapping other exceptions, like the {@link java.sql.SQLException}.
+ */
 public class DatabaseQueryException extends RuntimeException {
 
     public DatabaseQueryException(String message, Throwable cause) {

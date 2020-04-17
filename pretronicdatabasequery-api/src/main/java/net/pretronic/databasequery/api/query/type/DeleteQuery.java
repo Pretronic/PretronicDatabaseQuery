@@ -20,4 +20,7 @@
 
 package net.pretronic.databasequery.api.query.type;
 
+/**
+ * The {@link DeleteQuery} represents the query, which deletes data with possible conditions.
+ */
 public interface DeleteQuery extends SearchQuery<DeleteQuery> {}

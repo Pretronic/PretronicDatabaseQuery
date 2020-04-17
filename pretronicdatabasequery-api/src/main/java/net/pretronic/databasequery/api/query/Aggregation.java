@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.query;
 
+/**
+ * Represents all aggregations, which can be used in the queries.
+ */
 public enum Aggregation {
 
     MIN,

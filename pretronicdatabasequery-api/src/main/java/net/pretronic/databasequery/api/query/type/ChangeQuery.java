@@ -22,6 +22,12 @@ package net.pretronic.databasequery.api.query.type;
 
 import net.pretronic.databasequery.api.query.Query;
 
+/**
+ * The change query is implemented in the {@link ReplaceQuery} and the {@link UpdateQuery}.
+ * It represents the changed data of fields in a {@link net.pretronic.databasequery.api.collection.DatabaseCollection}.
+ *
+ * @param <T>
+ */
 public interface ChangeQuery<T extends Query> extends Query {
 
     T add(String field, Number value);
@@ -32,7 +38,20 @@ public interface ChangeQuery<T extends Query> extends Query {
 
     T divide(String field, Number value);
 
+    /**
+     * Sets the value for the {@code field}.
+     *
+     * @param field which should be updated
+     * @param value to update
+     * @return this query instance
+     */
     T set(String field, Object value);
 
+    /**
+     * Sets the value for the {@code field}. The value is prepared and must be pass in the {@link Query#execute(Object...)} method.
+     *
+     * @param field which should be updated
+     * @return this query instance
+     */
     T set(String field);
 }

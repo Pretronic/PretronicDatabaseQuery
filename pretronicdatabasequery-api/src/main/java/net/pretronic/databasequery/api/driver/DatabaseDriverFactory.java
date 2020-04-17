@@ -33,20 +33,47 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Represents the factory for creating {@link DatabaseDriver}.
+ */
 public abstract class DatabaseDriverFactory {
 
     private final static Map<Class<?>,DatabaseDriverFactory> FACTORIES = new HashMap<>();
     private static DynamicDriverLoader DRIVER_LOADER;
 
 
+    /**
+     * Creates a database driver instance.
+     *
+     * @param name of the driver
+     * @param config of the driver
+     * @param logger for this driver
+     * @param executorService for this driver
+     * @return driver
+     */
     public abstract DatabaseDriver createDriver(String name, DatabaseDriverConfig<?> config, PretronicLogger logger, ExecutorService executorService);
 
+    /**
+     * Creates a database driver config with a document, which should includes information of a {@link DatabaseDriverConfig} implementation.
+     * @param config
+     * @return the config
+     */
     public abstract DatabaseDriverConfig<?> createConfig(Document config);
 
+    /**
+     * Returns the dynamic driver loader, if configured.
+     *
+     * @return driver loader or null
+     */
     public static DynamicDriverLoader getDriverLoader() {
         return DRIVER_LOADER;
     }
 
+    /**
+     * Set the driver loader instance for the runtime.
+     *
+     * @param driverLoader to set
+     */
     public static void setDriverLoader(DynamicDriverLoader driverLoader) {
         DRIVER_LOADER = driverLoader;
     }

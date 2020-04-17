@@ -20,6 +20,11 @@
 
 package net.pretronic.databasequery.api.exceptions;
 
+import net.pretronic.databasequery.api.query.Query;
+
+/**
+ * This exception is thrown, if the {@link Query#execute()} is failed. If possible, the failed query should contain in the message.
+ */
 public class DatabaseQueryExecuteFailedException extends DatabaseQueryException {
 
     public DatabaseQueryExecuteFailedException(String message, Throwable cause) {

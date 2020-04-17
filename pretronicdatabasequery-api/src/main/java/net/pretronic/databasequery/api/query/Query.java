@@ -24,11 +24,20 @@ import net.pretronic.databasequery.api.query.result.QueryResult;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The {@link Query} represents the base query for all queries.
+ */
 public interface Query {
 
     Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     String[] EMPTY_STRING_ARRAY = new String[0];
 
+    /**
+     * Executes a query with the values, which are prepared in the query.
+     *
+     * @param values to set for prepared values
+     * @return result
+     */
     QueryResult execute(Object... values);
 
     default QueryResult execute() {
@@ -41,7 +50,7 @@ public interface Query {
         return executeAsync(EMPTY_OBJECT_ARRAY);
     }
 
-
+    @Deprecated
     enum Option {
         NULL
     }

@@ -24,7 +24,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 
 import java.io.File;
 
-public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> implements LocalDatabaseDriverConfig {
+public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> implements LocalDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> {
 
     private final File location;
 

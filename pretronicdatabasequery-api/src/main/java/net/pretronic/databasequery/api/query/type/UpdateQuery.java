@@ -20,4 +20,7 @@
 
 package net.pretronic.databasequery.api.query.type;
 
+/**
+ * The {@link UpdateQuery} represents the query, which update data in a {@link net.pretronic.databasequery.api.collection.DatabaseCollection}.
+ */
 public interface UpdateQuery extends ChangeQuery<UpdateQuery>, SearchQuery<UpdateQuery> {}

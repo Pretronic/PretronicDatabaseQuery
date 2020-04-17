@@ -26,6 +26,9 @@ import net.pretronic.libraries.document.entry.DocumentBase;
 import net.pretronic.libraries.document.entry.DocumentEntry;
 import net.pretronic.libraries.utility.reflect.TypeReference;
 
+/**
+ * The {@link DatabaseDriverConfigDocumentAdapter} represents the document adapter for {@link DatabaseDriverConfig}.
+ */
 public class DatabaseDriverConfigDocumentAdapter implements DocumentAdapter<DatabaseDriverConfig> {
 
     @Override

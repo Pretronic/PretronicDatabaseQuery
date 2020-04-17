@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.exceptions;
 
+/**
+ * This exception is thrown, if the {@link net.pretronic.databasequery.api.driver.DatabaseDriver} can't connect.
+ */
 public class DatabaseQueryConnectException extends DatabaseQueryException {
 
     public DatabaseQueryConnectException(String message, Throwable cause) {

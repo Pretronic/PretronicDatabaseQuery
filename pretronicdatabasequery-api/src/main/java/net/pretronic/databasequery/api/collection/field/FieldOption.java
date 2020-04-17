@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.collection.field;
 
+/**
+ * Represents all possible options for a {@link CollectionField}.
+ */
 public enum FieldOption {
 
     PRIMARY_KEY,

@@ -26,7 +26,7 @@ import java.io.File;
 public class H2PortableDialect extends AbstractDialect {
 
     public H2PortableDialect() {
-        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL);
+        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL,true);
     }
 
     @Override

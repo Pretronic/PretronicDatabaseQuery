@@ -1,9 +1,9 @@
 /*
  * (C) Copyright 2020 The PretronicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
- * @author Davide Wietlisbach
- * @since 11.03.20, 20:28
- * @website %web%
+ * @author Philipp Elvin Friedhoff
+ * @since 16.04.20, 00:01
+ * @web %web%
  *
  * The PretronicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,19 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.api.datatype.adapter;
+package net.pretronic.databasequery.api.datatype.adapter.defaults;
 
+import net.pretronic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.pretronic.libraries.utility.Convert;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.UUID;
 
+/**
+ * The {@link UUIDDataTypeAdapter} represents an implementation of {@link DataTypeAdapter}, which converts a object to a uuid and back.
+ * For more information, see {@link DataTypeAdapter}.
+ */
 public class UUIDDataTypeAdapter implements DataTypeAdapter<UUID> {
 
     @Override

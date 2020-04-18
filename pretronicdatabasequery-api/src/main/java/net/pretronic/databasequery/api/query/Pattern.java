@@ -20,6 +20,10 @@
 
 package net.pretronic.databasequery.api.query;
 
+/**
+ * The {@link Pattern} represents the pattern to filer. It is used in {@link net.pretronic.databasequery.api.query.type.SearchQuery}.
+ * It has the syntax, like the SQL pattern.
+ */
 public class Pattern {
 
     private String pattern, startsWith, endsWith, contains;

@@ -22,7 +22,7 @@ package net.pretronic.databasequery.api.driver;
 
 import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.datatype.adapter.DataTypeAdapter;
-import net.pretronic.databasequery.api.datatype.adapter.UUIDDataTypeAdapter;
+import net.pretronic.databasequery.api.datatype.adapter.defaults.UUIDDataTypeAdapter;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.pretronic.libraries.logging.PretronicLogger;
 
@@ -55,28 +55,81 @@ public interface DatabaseDriver {
      */
     DatabaseDriverConfig<?> getConfig();
 
+    /**
+     * Get the configured logger of this driver.
+     *
+     * @return logger
+     */
     PretronicLogger getLogger();
 
+    /**
+     * Returns the executor service for this driver. It is used by async methods in the queries.
+     *
+     * @return executor service
+     */
     ExecutorService getExecutorService();
 
-
+    /**
+     * Gets a database from the connected host.
+     *
+     * @param name of database
+     * @return database instance
+     */
     Database getDatabase(String name);
 
+    /**
+     * Checks if the database driver is connected.
+     *
+     * @return if connected
+     */
     boolean isConnected();
 
+    /**
+     * Connect to the database.
+     */
     void connect();
 
+    /**
+     * Disconnect from the database.
+     */
     void disconnect();
 
 
+    /**
+     * Get all registered data type adapter. They are used by inserting or getting in the {@link net.pretronic.databasequery.api.query.result.QueryResultEntry}.
+     *
+     * @return registered data type adapter
+     */
     Map<Class<?>, DataTypeAdapter<?>> getDataTypeAdapters();
 
+    /**
+     * Get a data type adapter or null.
+     *
+     * @param clazz of the data type adapter
+     * @param <T> type of the data type
+     * @return data type adapter or null
+     */
     <T> DataTypeAdapter<T> getDataTypeAdapter(Class<T> clazz);
 
+    /**
+     * Register a {@link DataTypeAdapter} with the given parameters.
+     *
+     * @param clazz of the data type
+     * @param adapter instance
+     * @param <T> adapter type
+     */
     <T> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<T> adapter);
 
+    /**
+     * Unregister, if exist a data type adapter with the class.
+     *
+     * @param clazz of the data type adapter
+     */
     void unregisterDataTypeAdapter(Class<?> clazz);
 
+    /**
+     * Registers all default data type adapter. It should be implemented by default in the {@link DatabaseDriver} implementation.
+     */
     default void registerDefaultAdapters(){
         registerDataTypeAdapter(UUID.class,new UUIDDataTypeAdapter());
     }

@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.query.type.join;
 
+/**
+ * Represents all join types for {@link JoinQuery}.
+ */
 public enum JoinType {
 
     INNER(),

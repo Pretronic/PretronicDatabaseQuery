@@ -20,6 +20,9 @@
 
 package net.pretronic.databasequery.api.exceptions;
 
+/**
+ * This exception is thrown, if errors are occur in a {@link net.pretronic.databasequery.api.query.QueryTransaction}.
+ */
 public class DatabaseQueryTransactionException extends DatabaseQueryException {
 
     public DatabaseQueryTransactionException(String message, Throwable cause) {

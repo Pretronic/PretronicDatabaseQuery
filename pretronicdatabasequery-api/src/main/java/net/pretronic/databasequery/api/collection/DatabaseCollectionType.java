@@ -20,9 +20,19 @@
 
 package net.pretronic.databasequery.api.collection;
 
+/**
+ * The {@link DatabaseCollectionType} represents all possible {@link DatabaseCollection} types. Not all database type may be implemented.
+ * If the using type is not implemented, {@link #NORMAL} will be used.
+ */
 public enum DatabaseCollectionType {
 
+    /**
+     * Represents a normal database type.
+     */
     NORMAL,
     EDGE,
+    /**
+     * Represents a view of a database collection, which calculates his values by other database collections.
+     */
     VIEW
 }

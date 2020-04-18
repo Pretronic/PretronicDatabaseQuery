@@ -24,19 +24,46 @@ import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.libraries.document.Document;
 import net.pretronic.libraries.document.DocumentRegistry;
 import net.pretronic.libraries.utility.interfaces.Castable;
+import net.pretronic.libraries.utility.interfaces.Copyable;
 
-public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T> {
+/**
+ * The {@link DatabaseDriverConfig} represents the base {@link DatabaseDriver} config-
+ * @param <T>
+ */
+public interface DatabaseDriverConfig<T extends DatabaseDriverConfig<T>> extends Castable<T>, Copyable<T> {
 
+    /**
+     * Name of Database driver
+     *
+     * @return name
+     */
     String getName();
 
+    /**
+     * Returns the database driver class, which can be configured via this config.
+     *
+     * @return driver class
+     */
     Class<? extends DatabaseDriver> getDriverClass();
 
+    /**
+     * Returns the connection string of this config for connecting to the database.
+     *
+     * @return connection string
+     */
     String getConnectionString();
 
+    /**
+     * Returns this {@link DatabaseDriverConfig} as an document.
+     *
+     * @return document
+     */
     Document toDocument();
 
+    /**
+     * Register the default document database driver adapter.
+     */
     static void registerDocumentAdapter(){
         DocumentRegistry.getDefaultContext().registerAdapter(DatabaseDriverConfig.class,new DatabaseDriverConfigDocumentAdapter());
     }
-
 }

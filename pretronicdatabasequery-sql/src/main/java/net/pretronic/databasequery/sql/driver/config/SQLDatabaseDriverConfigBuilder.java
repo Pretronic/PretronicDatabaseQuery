@@ -19,11 +19,10 @@
 
 package net.pretronic.databasequery.sql.driver.config;
 
-import net.pretronic.libraries.document.annotations.DocumentIgnoreBooleanValue;
-import net.pretronic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.libraries.utility.Validate;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -37,7 +36,6 @@ public class SQLDatabaseDriverConfigBuilder {
     private String connectionString;
     private String connectionCatalog;
     private String connectionSchema;
-    @DocumentIgnoreBooleanValue(ignore = false)
     private boolean connectionReadOnly;
     private int connectionIsolationLevel;
     private int connectionNetworkTimeout;

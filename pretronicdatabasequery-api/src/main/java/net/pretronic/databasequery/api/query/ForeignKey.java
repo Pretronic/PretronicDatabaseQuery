@@ -22,6 +22,9 @@ package net.pretronic.databasequery.api.query;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 
+/**
+ * Represents a foreign key, which can be configured for {@link DatabaseCollection} with the {@link net.pretronic.databasequery.api.query.type.CreateQuery}.
+ */
 public class ForeignKey {
 
     private final String database, collection, field;

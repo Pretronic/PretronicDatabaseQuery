@@ -51,7 +51,9 @@ public interface Dialect extends ConnectionStringCreator {
 
     Class<? extends Driver> getDriver();
 
+
     void loadDriver();
+
 
     String getProtocol();
 

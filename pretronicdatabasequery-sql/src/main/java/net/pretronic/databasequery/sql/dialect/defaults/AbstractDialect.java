@@ -21,11 +21,13 @@ package net.pretronic.databasequery.sql.dialect.defaults;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
 import net.pretronic.databasequery.api.collection.field.FieldOption;
+import net.pretronic.databasequery.api.driver.DatabaseDriverFactory;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.PreparedValue;
 import net.pretronic.databasequery.api.query.type.FindQuery;
+import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
@@ -37,6 +39,7 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 
 import java.sql.Driver;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,11 +52,14 @@ public abstract class AbstractDialect implements Dialect {
     private final String protocol;
     private final DatabaseDriverEnvironment environment;
 
-    public AbstractDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment) {
+    private final boolean dynamicDependencies;
+
+    public AbstractDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment, boolean dynamicDependencies) {
         this.name = name;
         this.driverName = driverName;
         this.protocol = protocol;
         this.environment = environment;
+        this.dynamicDependencies = dynamicDependencies;
     }
 
     @Override
@@ -79,6 +85,13 @@ public abstract class AbstractDialect implements Dialect {
             try {
                 this.driver = (Class<? extends Driver>) Class.forName(this.driverName);
             } catch (ClassNotFoundException ignored) {
+                if(dynamicDependencies && DatabaseDriverFactory.getDriverLoader() != null){
+                    DatabaseDriverFactory.getDriverLoader().loadOptionalDriverDependencies(SQLDatabaseDriver.class,name);
+                    try{
+                        this.driver = (Class<? extends Driver>) Class.forName(this.driverName);
+                        return;
+                    }catch (ClassNotFoundException ignored2){}
+                }
                 throw new DatabaseQueryException("Database driver " + this.driverName+" is not available");
             }
         }
@@ -247,8 +260,8 @@ public abstract class AbstractDialect implements Dialect {
     public Pair<String, List<Object>> newUpdateQuery(SQLDatabaseCollection collection, List<AbstractUpdateQuery.Entry> entries, Object[] values) {
         UpdateQueryBuilderState state = new UpdateQueryBuilderState(values);
         for (AbstractSearchQuery.Entry entry : entries) {
-            if(entry instanceof AbstractUpdateQuery.SetEntry) {
-                buildUpdateQueryEntry((AbstractUpdateQuery.SetEntry) entry, state);
+            if(entry instanceof AbstractChangeAndSearchQuery.ChangeAndSearchEntry) {
+                buildUpdateQueryEntry((AbstractChangeAndSearchQuery.ChangeAndSearchEntry) entry, state);
             } else {
                 buildSearchQueryEntry(entry, state, "AND", false);
             }
@@ -262,24 +275,25 @@ public abstract class AbstractDialect implements Dialect {
         return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
-    private void buildUpdateQueryEntry(AbstractUpdateQuery.SetEntry entry, UpdateQueryBuilderState state) {
+    private void buildUpdateQueryEntry(AbstractChangeAndSearchQuery.ChangeAndSearchEntry entry, UpdateQueryBuilderState state) {
         if(state.setBuilder.length() == 0) {
             state.setBuilder.append("SET ");
         } else {
             state.setBuilder.append(",");
         }
-        state.setBuilder.append("`").append(buildField(entry)).append("`").append("=?");
+        String field = buildField(entry);
+        state.setBuilder.append("`").append(field).append("`=");
+        if(entry.getOperator() != null) {
+            state.setBuilder.append("`").append(field).append("`").append(entry.getOperator().getSymbol());
+        }
+        state.setBuilder.append("?");
         addEntry(entry.getValue(), state);
     }
-
-
 
     @Override
     public Pair<String, List<Object>> newReplaceQuery(SQLDatabaseCollection collection, List<AbstractReplaceQuery.Entry> entries, Object[] values) {
         return null;
     }
-
-
 
     @Override
     public Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractFindQuery.GetEntry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values) {
@@ -493,24 +507,35 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     private void buildSearchQueryJoinEntry(AbstractSearchQuery.JoinEntry entry, SearchQueryBuilderState state) {
-        state.joinBuilder.append(entry.getType().toString()).append(" JOIN `")
-                .append(entry.getCollection().getDatabase().getName()).append("`.`")
-                .append(entry.getCollection().getName()).append("` ");
+        state.joinBuilder.append(entry.getType().toString()).append(" JOIN `");
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            state.joinBuilder.append(entry.getCollection().getDatabase().getName()).append("`.`");
+        }
+        state.joinBuilder.append(entry.getCollection().getName()).append("` ");
 
         for (int i = 0; i < entry.getOnEntries().size(); i++) {
             AbstractSearchQuery.JoinOnEntry onEntry = entry.getOnEntries().get(i);
             if(i == 0) {
-                state.joinBuilder.append("ON ");
+                state.joinBuilder.append("ON `");
             } else {
-                state.joinBuilder.append("AND ");
+                state.joinBuilder.append("AND `");
             }
-            state.joinBuilder.append("`").append(onEntry.getCollection1().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection1().getName()).append("`.`")
+            if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+                state.joinBuilder.append(onEntry.getCollection1().getDatabase().getName()).append("`.`");
+            }
+            state.joinBuilder.append(onEntry.getCollection1().getName()).append("`.`")
                     .append(onEntry.getColumn1()).append("`")
-                    .append("=")
-                    .append("`").append(onEntry.getCollection2().getDatabase().getName()).append("`.`")
-                    .append(onEntry.getCollection2().getName()).append("`.`")
-                    .append(onEntry.getColumn2()).append("`");
+                    .append("=`");
+
+            if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+                if(onEntry.getCollection2() != null) {
+                    state.joinBuilder.append(onEntry.getCollection2().getDatabase().getName()).append("`.`");
+                }
+            }
+            if(onEntry.getCollection2() != null) {
+                state.joinBuilder.append(onEntry.getCollection2().getName()).append("`.`");
+            }
+            state.joinBuilder.append(onEntry.getColumn2()).append("`");
         }
     }
 
@@ -548,7 +573,7 @@ public abstract class AbstractDialect implements Dialect {
         if(state.limitBuilder.length() == 0) {
             addEntry(entry.getLimit(), state);
             addEntry(entry.getOffset(), state);
-            state.limitBuilder.append("LIMIT ? OFFSET ?");
+            state.limitBuilder.append(" LIMIT ? OFFSET ?");
         } else {
             throw new IllegalArgumentException("Query can't have more than one limit and offset");
         }
@@ -562,7 +587,7 @@ public abstract class AbstractDialect implements Dialect {
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 
-    private String buildField(AbstractUpdateQuery.SetEntry entry) {
+    private String buildField(AbstractChangeAndSearchQuery.ChangeAndSearchEntry entry) {
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 
@@ -597,7 +622,8 @@ public abstract class AbstractDialect implements Dialect {
 
     private Object addAndGetEntry(Object value, SearchQueryBuilderState state) {
         if(EntryOption.PREPARED != value) {
-            state.preparedValues.add(value);
+            if(value instanceof Collection<?>) state.preparedValues.addAll((Collection<?>) value);
+            else state.preparedValues.add(value);
             return value;
         } else if(state.values.length > state.preparedValuesCount) {
             Object preparedValue = state.values[state.preparedValuesCount++];
@@ -605,7 +631,8 @@ public abstract class AbstractDialect implements Dialect {
                 state.preparedValues.addAll(((PreparedValue) preparedValue).getValues());
                 return ((PreparedValue)preparedValue).getValues();
             } else {
-                state.preparedValues.add(preparedValue);
+                if(preparedValue instanceof Collection<?>) state.preparedValues.addAll((Collection<?>) preparedValue);
+                else state.preparedValues.add(preparedValue);
                 return preparedValue;
             }
         }

@@ -24,6 +24,11 @@ import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.query.ForeignKey;
 
+import java.util.function.Consumer;
+
+/**
+ * The {@link FieldBuilder} is a builder for creating a field of a {@link DatabaseCollection} using the method {@link net.pretronic.databasequery.api.query.type.CreateQuery#field(Consumer)}.
+ */
 public interface FieldBuilder {
 
     FieldBuilder name(String name);

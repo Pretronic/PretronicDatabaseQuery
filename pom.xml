@@ -7,14 +7,16 @@
     <groupId>net.pretronic.databasequery</groupId>
     <artifactId>PretronicDatabaseQuery</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.8</version>
+    <version>1.1.20.18-SNAPSHOT</version>
 
-    <distributionManagement>
-        <repository>
-            <id>pretronic</id>
-            <url>https://repository.pretronic.net/repository/pretronic/</url>
-        </repository>
-    </distributionManagement>
+    <modules>
+        <module>pretronicdatabasequery-api</module>
+        <module>pretronicdatabasequery-common</module>
+        <module>pretronicdatabasequery-sql</module>
+        <module>pretronicdatabasequery-api-kotlin-dsl</module>
+        <module>pretronicdatabasequery-mongodb</module>
+        <module>pretronicdatabasequery-driverloader</module>
+    </modules>
 
     <properties>
         <kotlin.version>1.3.61</kotlin.version>
@@ -23,10 +25,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency version -->
-        <dependency.pretronic.libraries.version>1.0.32-SNAPSHOT</dependency.pretronic.libraries.version>
+        <dependency.pretronic.libraries.version>1.0.100.73-SNAPSHOT</dependency.pretronic.libraries.version>
         <dependency.pretronic.connectionpool.version>1.0.1-SNAPSHOT</dependency.pretronic.connectionpool.version>
 
         <dependency.hikaricp.version>3.4.1</dependency.hikaricp.version>
+        <dependency.mongodb.version>3.12.2</dependency.mongodb.version>
+        <dependency.h2.version>1.4.200</dependency.h2.version>
+        <dependency.mysql.version>8.0.19</dependency.mysql.version>
+        <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
 
         <!-- Test dependencies -->
         <test.junit.jupiter.version>5.5.2</test.junit.jupiter.version>
@@ -34,14 +40,8 @@
         <!-- Plugin -->
         <plugin.maven.compiler.version>3.8.1</plugin.maven.compiler.version>
         <plugin.maven.source.version>3.2.1</plugin.maven.source.version>
+        <plugin.maven.javadoc.version>3.2.0</plugin.maven.javadoc.version>
     </properties>
-
-    <modules>
-        <module>pretronicdatabasequery-api</module>
-        <module>pretronicdatabasequery-common</module>
-        <module>pretronicdatabasequery-sql</module>
-        <module>pretronicdatabasequery-api-kotlin-dsl</module>
-    </modules>
 
     <repositories>
         <repository>
@@ -49,4 +49,44 @@
             <url>https://repository.pretronic.net/repository/pretronic/</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>pretronic</id>
+            <url>https://repository.pretronic.net/repository/pretronic/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${plugin.maven.javadoc.version}</version>
+                <configuration>
+                    <show>private</show>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate-jar</goal>
+                        </goals>
+                        <phase>site</phase>
+                        <configuration>
+                            <show>private</show>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

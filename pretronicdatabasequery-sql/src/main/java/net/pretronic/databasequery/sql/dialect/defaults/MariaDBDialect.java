@@ -27,7 +27,7 @@ import java.net.InetSocketAddress;
 public class MariaDBDialect extends AbstractDialect {
 
     public MariaDBDialect() {
-        super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb", DatabaseDriverEnvironment.REMOTE);
+        super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb", DatabaseDriverEnvironment.REMOTE,true);
     }
 
     @Override

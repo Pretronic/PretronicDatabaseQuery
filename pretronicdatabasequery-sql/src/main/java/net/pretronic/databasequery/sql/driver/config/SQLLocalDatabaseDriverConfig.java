@@ -24,12 +24,18 @@ import net.pretronic.databasequery.sql.dialect.Dialect;
 
 import java.io.File;
 
-public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> implements LocalDatabaseDriverConfig {
+public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> implements LocalDatabaseDriverConfig<SQLLocalDatabaseDriverConfig> {
 
     private final File location;
 
-    protected SQLLocalDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog, String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel, int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess, long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize, int dataSourceMinimumIdleConnectionPoolSize, File location) {
-        super(name, dialect, connectionString, connectionCatalog, connectionSchema, connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
+    protected SQLLocalDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog,
+                                           String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel,
+                                           int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess,
+                                           long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize,
+                                           int dataSourceMinimumIdleConnectionPoolSize, File location) {
+        super(name, dialect, connectionString, connectionCatalog, connectionSchema, connectionReadOnly, connectionIsolationLevel,
+                connectionNetworkTimeout, dataSourceClassName, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire,
+                dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
         this.location = location;
     }
 
@@ -37,5 +43,14 @@ public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLoc
     @Override
     public File getLocation() {
         return this.location;
+    }
+
+    @Override
+    public SQLLocalDatabaseDriverConfig copy() {
+        return new SQLLocalDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.connectionCatalog
+                , this.connectionSchema, this.connectionReadOnly, this.connectionIsolationLevel, this.connectionNetworkTimeout
+                , this.dataSourceClassName, this.dataSourceConnectionExpireAfterAccess, this.dataSourceConnectionExpire
+                , this.dataSourceConnectionLoginTimeout, this.dataSourceMaximumPoolSize, this.dataSourceMinimumIdleConnectionPoolSize
+                , this.location);
     }
 }

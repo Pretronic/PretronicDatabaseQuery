@@ -27,3 +27,5 @@ public interface ResultSetFunction<R> {
     R apply(ResultSet resultSet) throws SQLException;
 
 }
+
+

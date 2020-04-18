@@ -22,8 +22,18 @@ package net.pretronic.databasequery.api.driver.config;
 
 import java.io.File;
 
-public interface LocalDatabaseDriverConfig {
+/**
+ * The {@link LocalDatabaseDriverConfig} represents the base configuration for local {@link net.pretronic.databasequery.api.driver.DatabaseDriver}.
+ *
+ * @param <T>
+ */
+public interface LocalDatabaseDriverConfig<T extends LocalDatabaseDriverConfig<T>> extends DatabaseDriverConfig<T> {
 
+    /**
+     * Returns the file location of the local database.
+     *
+     * @return location
+     */
     File getLocation();
 
 }

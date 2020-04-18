@@ -26,12 +26,14 @@ import net.pretronic.databasequery.api.query.SearchOrder;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.api.query.type.SearchQuery;
 import net.pretronic.databasequery.api.query.type.join.JoinType;
+import net.pretronic.libraries.utility.GeneralUtil;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -196,7 +198,7 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     @Override
     public T whereIn(String field, Object... values) {
         Validate.notNull(field, values);
-        return addConditionEntry(ConditionEntry.Type.WHERE_IN, field, values);
+        return addConditionEntry(ConditionEntry.Type.WHERE_IN, field, Arrays.asList(values));
     }
 
     @Override
@@ -295,12 +297,19 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     @Override
     public T index(int start, int end) {
-        return null;
+        int limit = end-start+1;
+        int offset = start-1;
+        if(offset < 0) {
+            offset = 0;
+        }
+        return limit(limit, offset);
     }
 
     @Override
     public T page(int page, int entriesPerPage) {
-        return null;
+        int start = entriesPerPage * (page - 1) + 1;
+        int end = page * entriesPerPage;
+        return index(start, end);
     }
 
     @Override

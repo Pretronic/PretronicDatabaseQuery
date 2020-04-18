@@ -1,0 +1,61 @@
+{
+  "name": "SQL",
+  "driverClass": "net.pretronic.databasequery.sql.driver.SQLDatabaseDriver",
+  "required": {
+    "name": "SQL Driver",
+    "dependencies":[
+      {
+        "repository": "https://repo1.maven.org/maven2/",
+        "groupId": "com.zaxxer",
+        "artifactId": "HikariCP",
+        "version": "${dependency.hikaricp.version}",
+        "checkAvailableClass": "com.zaxxer.hikari.HikariDataSource"
+      },
+      {
+        "repository": "https://repository.pretronic.net/repository/pretronic/",
+        "groupId": "net.pretronic.databasequery",
+        "artifactId": "pretronicdatabasequery-sql",
+        "version": "${project.version}",
+        "checkAvailableClass": "net.pretronic.databasequery.sql.driver.SQLDatabaseDriver"
+      }
+    ]
+  },
+  "optional": [
+    {
+      "name": "H2Portable",
+      "dependencies":[
+        {
+          "repository": "https://repo1.maven.org/maven2/",
+          "groupId": "com.h2database",
+          "artifactId": "h2",
+          "version": "${dependency.h2.version}",
+          "checkAvailableClass": "org.h2.Driver"
+        }
+      ]
+    },
+    {
+      "name": "MySQL",
+      "dependencies":[
+        {
+          "repository": "https://repo1.maven.org/maven2/",
+          "groupId": "mysql",
+          "artifactId": "mysql-connector-java",
+          "version": "${dependency.mysql.version}",
+          "checkAvailableClass": "com.mysql.cj.jdbc.Driver"
+        }
+      ]
+    },
+    {
+      "name": "MariaDB",
+      "dependencies":[
+        {
+          "repository": "https://repo1.maven.org/maven2/",
+          "groupId": "org.mariadb.jdbc",
+          "artifactId": "mariadb-java-client",
+          "version": "${dependency.mariadb.version}",
+          "checkAvailableClass": "org.mariadb.jdbc.Driver"
+        }
+      ]
+    }
+  ]
+}

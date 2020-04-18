@@ -107,13 +107,14 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
     @Internal
     public <R> R executeResultQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, ResultSetFunction<R> resultSetFunction, Consumer<SQLException> exceptionConsumer) {
         try(Connection connection = this.dataSource.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatementConsumer.accept(preparedStatement);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            R result = resultSetFunction.apply(resultSet);
-            if(commit) connection.commit();
-            if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", getDriver().getName(), query);
-            return result;
+            try(PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatementConsumer.accept(preparedStatement);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                R result = resultSetFunction.apply(resultSet);
+                if(commit) connection.commit();
+                if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", getDriver().getName(), query);
+                return result;
+            }
         } catch (SQLException exception) {
             exceptionConsumer.accept(exception);
         }
@@ -129,31 +130,35 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
     @Internal
     public Number[] executeUpdateQuery(String query, boolean commit, PreparedStatementConsumer preparedStatementConsumer, String[] keyColumns, Consumer<SQLException> exceptionConsumer) {
         try(Connection connection = this.dataSource.getConnection()) {
-            PreparedStatement preparedStatement;
-            if(keyColumns != null) preparedStatement = connection.prepareStatement(query, keyColumns);
-            else preparedStatement = connection.prepareStatement(query);
-            preparedStatementConsumer.accept(preparedStatement);
-            int affectedRows = preparedStatement.executeUpdate();
-            if(affectedRows != 0) {
-                if(keyColumns != null && keyColumns.length > 0) {
-                    Number[] generatedKeys = new Number[keyColumns.length];
-                    try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
-                        if(resultSet.next()) {
-                            for (int i = 1; i <= keyColumns.length; i++) {
-                                generatedKeys[i-1] = (Number) resultSet.getObject(i);
+            try(PreparedStatement preparedStatement = setPrepareStatement(connection, query, keyColumns)) {
+                preparedStatementConsumer.accept(preparedStatement);
+                int affectedRows = preparedStatement.executeUpdate();
+                if(affectedRows != 0) {
+                    if(keyColumns != null && keyColumns.length > 0) {
+                        Number[] generatedKeys = new Number[keyColumns.length];
+                        try(ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                            if(resultSet.next()) {
+                                for (int i = 1; i <= keyColumns.length; i++) {
+                                    generatedKeys[i-1] = (Number) resultSet.getObject(i);
+                                }
                             }
                         }
+                        if(commit) connection.commit();
+                        return generatedKeys;
                     }
-                    if(commit) connection.commit();
-                    return generatedKeys;
                 }
+                if(commit) connection.commit();
+                if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", this.getDriver().getName(), query);
             }
-            if(commit) connection.commit();
-            if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", this.getDriver().getName(), query);
         } catch (SQLException exception) {
             exceptionConsumer.accept(exception);
         }
         return new Number[0];
+    }
+
+    private PreparedStatement setPrepareStatement(Connection connection, String query, String[] keyColumns) throws SQLException {
+        if(keyColumns != null) return connection.prepareStatement(query, keyColumns);
+        else return connection.prepareStatement(query);
     }
 
     @Internal

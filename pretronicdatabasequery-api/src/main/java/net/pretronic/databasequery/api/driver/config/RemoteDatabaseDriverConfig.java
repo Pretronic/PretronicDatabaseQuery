@@ -23,12 +23,32 @@ package net.pretronic.databasequery.api.driver.config;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-public interface RemoteDatabaseDriverConfig {
+/**
+ * The {@link RemoteDatabaseDriverConfig} represents the base configuration for remote {@link net.pretronic.databasequery.api.driver.DatabaseDriver}.
+ *
+ * @param <T>
+ */
+public interface RemoteDatabaseDriverConfig<T extends RemoteDatabaseDriverConfig<T>> extends DatabaseDriverConfig<T> {
 
+    /**
+     * Returns the host for the {@link net.pretronic.databasequery.api.driver.DatabaseDriver}.
+     *
+     * @return host
+     */
     InetAddress getHost();
 
+    /**
+     * Returns the port of the database.
+     *
+     * @return port
+     */
     int getPort();
 
+    /**
+     * Returns the full address of the database.
+     *
+     * @return address
+     */
     InetSocketAddress getAddress();
 
 }

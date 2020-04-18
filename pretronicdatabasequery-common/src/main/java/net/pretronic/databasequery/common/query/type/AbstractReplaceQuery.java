@@ -24,20 +24,9 @@ import net.pretronic.databasequery.api.query.type.ReplaceQuery;
 import net.pretronic.libraries.utility.map.Triple;
 import net.pretronic.databasequery.common.query.EntryOption;
 
-public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
+public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractChangeAndSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
 
     public AbstractReplaceQuery(C collection) {
         super(collection);
-    }
-
-    @Override
-    public ReplaceQuery set(String field, Object value) {
-        Triple<String, String, String> assignment = getAssignment(field);
-        return addEntry(new AbstractUpdateQuery.SetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), value));
-    }
-
-    @Override
-    public ReplaceQuery set(String field) {
-        return set(field, EntryOption.PREPARED);
     }
 }

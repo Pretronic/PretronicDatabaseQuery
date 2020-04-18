@@ -290,14 +290,10 @@ public abstract class AbstractDialect implements Dialect {
         addEntry(entry.getValue(), state);
     }
 
-
-
     @Override
     public Pair<String, List<Object>> newReplaceQuery(SQLDatabaseCollection collection, List<AbstractReplaceQuery.Entry> entries, Object[] values) {
         return null;
     }
-
-
 
     @Override
     public Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractFindQuery.GetEntry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values) {

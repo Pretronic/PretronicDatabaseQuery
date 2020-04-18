@@ -57,7 +57,6 @@ public class PretronicDependencyDriverLoader implements DynamicDriverLoader {
         }
 
         try {
-            System.out.println(config.getDriverClass());
             return (Class<? extends DatabaseDriver>) Class.forName(config.getDriverClass());
         } catch (ClassNotFoundException e) {
             config.setLoaded(false);

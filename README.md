@@ -1,12 +1,12 @@
 # PretronicDatabaseQuery
 Welcome to the official PretronicDatabaseQuery repository.
 
-###Introduction
+### Introduction
 The Pretronic database query is a java database framework for reading data from different databases. 
 It provides many functionalities for reading, writing and updating database on different remote and local databases. 
 
 
-###Supported Databases
+### Supported Databases
  * SQL 
     * MySQL
     * MariaDB

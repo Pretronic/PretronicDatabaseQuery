@@ -5,7 +5,7 @@ final String COMMIT_MESSAGE = "Version change %version%"
 final String BRANCH_DEVELOPMENT = "origin/development"
 final String BRANCH_MASTER = "origin/master"
 
-final String PROJECT_SSH = "git@github.com:Fridious/PretronicDatabaseQuery.git"
+final String PROJECT_SSH = "git@github.com:Pretronic/PretronicDatabaseQuery.git"
 final String PROJECT_NAME = "PretronicDatabaseQuery"
 
 String VERSION = "UNDEFINED"

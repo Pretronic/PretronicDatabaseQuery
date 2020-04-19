@@ -5,7 +5,7 @@ final String COMMIT_MESSAGE = "Version change %version%"
 final String BRANCH_DEVELOPMENT = "origin/development"
 final String BRANCH_MASTER = "origin/master"
 
-final String PROJECT_SSH = "git@github.com:Fridious/PretronicDatabaseQuery.git"
+final String PROJECT_SSH = "git@github.com:Pretronic/PretronicDatabaseQuery.git"
 final String PROJECT_NAME = "PretronicDatabaseQuery"
 
 String VERSION = "UNDEFINED"
@@ -73,26 +73,25 @@ pipeline {
             }
         }
         stage('Publish javadoc') {
-            when {
-                allOf {
-                    equals expected: false, actual: SKIP
-                    branch 'master'
-                }
-            }
+            when { equals expected: false, actual: SKIP }
 
             steps {
-                sh 'mvn javadoc:aggregate-jar'
-                script {
-                    withCredentials([string(credentialsId: '120a9a64-81a7-4557-80bf-161e3ab8b976', variable: 'SECRET')]) {
-                        String name = env.JOB_NAME
 
-                        httpRequest(acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_OCTETSTREAM',
-                                httpMode: 'POST', ignoreSslErrors: true, timeout: 3000,
-                                multipartName: 'file',
-                                responseHandle: 'NONE',
-                                uploadFile: "target/${name}-${VERSION}-javadoc.jar",
-                                customHeaders:[[name:'token', value:"${SECRET}", maskValue:true]],
-                                url: "https://pretronic.net/javadoc/${name}/${VERSION}/create")
+                script {
+
+                    if(BRANCH == BRANCH_MASTER) {
+                        sh 'mvn javadoc:aggregate-jar'
+                        withCredentials([string(credentialsId: '120a9a64-81a7-4557-80bf-161e3ab8b976', variable: 'SECRET')]) {
+                            String name = env.JOB_NAME
+
+                            httpRequest(acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_OCTETSTREAM',
+                                    httpMode: 'POST', ignoreSslErrors: true, timeout: 3000,
+                                    multipartName: 'file',
+                                    responseHandle: 'NONE',
+                                    uploadFile: "target/${name}-${VERSION}-javadoc.jar",
+                                    customHeaders:[[name:'token', value:"${SECRET}", maskValue:true]],
+                                    url: "https://pretronic.net/javadoc/${name}/${VERSION}/create")
+                        }
                     }
                 }
             }
@@ -108,7 +107,6 @@ pipeline {
         success {
             script {
                 if(!SKIP) {
-                    BUILD_NUMBER++
                     sh """
                     git config --global user.name '$CI_NAME' -v
                     git config --global user.email '$CI_EMAIL' -v
@@ -122,6 +120,7 @@ pipeline {
 
                     if (BRANCH == BRANCH_DEVELOPMENT) {
                         patchVersion++
+                        BUILD_NUMBER++
 
                         String version = major + "." + minorVersion + "." + patchVersion+ "." + BUILD_NUMBER + "-SNAPSHOT"
                         String commitMessage = COMMIT_MESSAGE.replace("%version%", version)
@@ -135,20 +134,21 @@ pipeline {
                             sh "git push origin HEAD:development -v"
                         }
                     } else if (BRANCH == BRANCH_MASTER) {
-                        minorVersion++
-                        patchVersion = 0
 
                         String version = major + "." + minorVersion + "." + patchVersion + "." + BUILD_NUMBER
                         String commitMessage = COMMIT_MESSAGE.replace("%version%", version)
 
                         sshagent(['1c1bd183-26c9-48aa-94ab-3fe4f0bb39ae']) {
-
                             sh """
                             mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$version
                             git add . -v
                             git commit -m '$commitMessage' -v
                             git push origin HEAD:master -v
                             """
+
+                            BUILD_NUMBER++
+                            minorVersion++
+                            patchVersion = 0
 
                             version = major + "." + minorVersion + "." + patchVersion + "." + BUILD_NUMBER + "-SNAPSHOT"
                             commitMessage = COMMIT_MESSAGE.replace("%version%", version)
@@ -176,4 +176,3 @@ pipeline {
         }
     }
 }
-

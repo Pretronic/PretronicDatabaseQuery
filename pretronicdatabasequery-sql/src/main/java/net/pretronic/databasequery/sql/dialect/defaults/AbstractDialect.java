@@ -329,6 +329,9 @@ public abstract class AbstractDialect implements Dialect {
         }else {
             state.getBuilder.append("`").append(buildField(entry)).append("`");
         }
+        if(entry.getAlias() != null) {
+            state.getBuilder.append(" AS ").append(entry.getAlias());
+        }
     }
 
 

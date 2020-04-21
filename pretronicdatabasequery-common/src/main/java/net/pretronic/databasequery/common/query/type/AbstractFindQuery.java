@@ -47,10 +47,61 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
     }
 
     @Override
+    public FindQuery get(String collection, String field) {
+        Validate.notNull(collection, field);
+        this.getEntries.add(new GetEntry(null, collection, field, null));
+        return this;
+    }
+
+    @Override
+    public FindQuery getAs(String field, String alias) {
+        Validate.notNull(field, alias);
+        Triple<String, String, String> assignment = getAssignment(field);
+        this.getEntries.add(new GetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), null, alias));
+        return this;
+    }
+
+    @Override
+    public FindQuery getAs(String collection, String field, String alias) {
+        Validate.notNull(collection);
+        Validate.notNull(field);
+        Validate.notNull(alias);
+        this.getEntries.add(new GetEntry(null, collection, field, null, alias));
+        return this;
+    }
+
+    @Override
     public FindQuery get(Aggregation aggregation, String field) {
         Validate.notNull(aggregation, field);
         Triple<String, String, String> assignment = getAssignment(field);
         this.getEntries.add(new GetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), aggregation));
+        return this;
+    }
+
+    @Override
+    public FindQuery get(Aggregation aggregation, String collection, String field) {
+        Validate.notNull(aggregation, collection, field);
+        this.getEntries.add(new GetEntry(null, collection, field, aggregation));
+        return this;
+    }
+
+    @Override
+    public FindQuery getAs(Aggregation aggregation, String field, String alias) {
+        Validate.notNull(aggregation);
+        Validate.notNull(field);
+        Validate.notNull(alias);
+        Triple<String, String, String> assignment = getAssignment(field);
+        this.getEntries.add(new GetEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), aggregation, alias));
+        return this;
+    }
+
+    @Override
+    public FindQuery getAs(Aggregation aggregation, String collection, String field, String alias) {
+        Validate.notNull(aggregation);
+        Validate.notNull(collection);
+        Validate.notNull(field);
+        Validate.notNull(alias);
+        this.getEntries.add(new GetEntry(null, collection, field, null, alias));
         return this;
     }
 
@@ -60,12 +111,18 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         private final String databaseCollection;
         private final String field;
         private final Aggregation aggregation;
+        private final String alias;
 
         public GetEntry(String database, String databaseCollection, String field, Aggregation aggregation) {
+            this(database, databaseCollection, field, aggregation, null);
+        }
+
+        public GetEntry(String database, String databaseCollection, String field, Aggregation aggregation, String alias) {
             this.database = database;
             this.databaseCollection = databaseCollection;
             this.field = field;
             this.aggregation = aggregation;
+            this.alias = alias;
         }
 
         public String getDatabase() {
@@ -82,6 +139,10 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
 
         public Aggregation getAggregation() {
             return aggregation;
+        }
+
+        public String getAlias() {
+            return alias;
         }
     }
 }

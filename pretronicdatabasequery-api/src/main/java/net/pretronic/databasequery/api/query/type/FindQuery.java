@@ -20,6 +20,8 @@
 
 package net.pretronic.databasequery.api.query.type;
 
+import net.pretronic.databasequery.api.Database;
+import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.Aggregation;
 
 /**
@@ -33,6 +35,37 @@ public interface FindQuery extends SearchQuery<FindQuery> {
      */
     FindQuery get(String... fields);
 
+    default FindQuery get(DatabaseCollection collection, String field) {
+        return get(collection.getName(), field);
+    }
+
+    /**
+     * @param collection of field
+     * @param field to get
+     * @return the query instance
+     */
+    FindQuery get(String collection, String field);
+
+    /**
+     * @param field to get
+     * @param alias for getting in query result
+     * @return the query instance
+     */
+    FindQuery getAs(String field, String alias);
+
+    default FindQuery getAs(DatabaseCollection collection, String field, String alias) {
+        return getAs(collection.getName(), field, alias);
+    }
+
+    /**
+     * @param collection of field
+     * @param field to get
+     * @param alias for getting in query result
+     * @return the query instance
+     */
+    FindQuery getAs(String collection, String field, String alias);
+
+
     /**
      * @param aggregation to get
      * @param field to get with the aggregation
@@ -40,4 +73,36 @@ public interface FindQuery extends SearchQuery<FindQuery> {
      */
     FindQuery get(Aggregation aggregation,String field);
 
+    default FindQuery get(Aggregation aggregation, DatabaseCollection collection, String field) {
+        return getAs(aggregation, collection.getName(), field);
+    }
+
+    /**
+     * @param aggregation to get
+     * @param collection of field
+     * @param field
+     * @return the query instance
+     */
+    FindQuery get(Aggregation aggregation, String collection, String field);
+
+    /**
+     * @param aggregation to get
+     * @param field to get with aggregation
+     * @param alias for getting in query result
+     * @return the query instance
+     */
+    FindQuery getAs(Aggregation aggregation, String field, String alias);
+
+    default FindQuery getAs(Aggregation aggregation, DatabaseCollection collection, String field, String alias) {
+        return getAs(aggregation, collection.getName(), field, alias);
+    }
+
+    /**
+     * @param aggregation to get
+     * @param collection of field
+     * @param field to get with the aggregation
+     * @param alias for getting in query result
+     * @return the query instance
+     */
+    FindQuery getAs(Aggregation aggregation, String collection, String field, String alias);
 }

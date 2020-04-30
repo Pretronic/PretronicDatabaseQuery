@@ -23,8 +23,8 @@ import net.pretronic.databasequery.api.collection.field.FieldBuilder;
 import net.pretronic.databasequery.api.collection.field.FieldOption;
 import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.query.ForeignKey;
-import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.databasequery.common.query.EntryOption;
+import net.pretronic.libraries.utility.annonations.Internal;
 
 public class DefaultFieldBuilder implements FieldBuilder {
 

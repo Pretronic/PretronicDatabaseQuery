@@ -25,7 +25,6 @@ import net.pretronic.databasequery.api.collection.field.CollectionField;
 import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
 import net.pretronic.databasequery.api.query.type.*;
-import net.pretronic.databasequery.api.query.type.*;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;

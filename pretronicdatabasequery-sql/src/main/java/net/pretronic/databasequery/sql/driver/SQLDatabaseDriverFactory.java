@@ -22,14 +22,14 @@ package net.pretronic.databasequery.sql.driver;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.databasequery.api.driver.DatabaseDriverFactory;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
-import net.pretronic.libraries.document.Document;
-import net.pretronic.libraries.logging.PretronicLogger;
-import net.pretronic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
+import net.pretronic.libraries.document.Document;
+import net.pretronic.libraries.logging.PretronicLogger;
+import net.pretronic.libraries.utility.Validate;
 
 import java.util.concurrent.ExecutorService;
 

@@ -27,8 +27,6 @@ import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.PreparedValue;
 import net.pretronic.databasequery.api.query.type.FindQuery;
-import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
-import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.*;
@@ -36,6 +34,8 @@ import net.pretronic.databasequery.sql.DataTypeInfo;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.libraries.utility.map.Pair;
 
 import java.sql.Driver;
 import java.util.ArrayList;

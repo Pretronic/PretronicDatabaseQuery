@@ -19,8 +19,8 @@
 
 package net.pretronic.databasequery.sql.driver.datasource;
 
-import net.pretronic.libraries.utility.Validate;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.libraries.utility.Validate;
 
 import javax.sql.DataSource;
 import java.util.HashMap;

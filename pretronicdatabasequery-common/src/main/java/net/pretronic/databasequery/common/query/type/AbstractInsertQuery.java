@@ -24,10 +24,10 @@ import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.result.QueryResultEntry;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.api.query.type.InsertQuery;
+import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.annonations.Internal;
-import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
 import java.util.Arrays;

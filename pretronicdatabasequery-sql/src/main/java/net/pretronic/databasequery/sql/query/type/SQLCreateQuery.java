@@ -20,11 +20,11 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
-import net.pretronic.libraries.utility.annonations.Internal;
-import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.libraries.utility.annonations.Internal;
+import net.pretronic.libraries.utility.map.Pair;
 
 import java.util.List;
 

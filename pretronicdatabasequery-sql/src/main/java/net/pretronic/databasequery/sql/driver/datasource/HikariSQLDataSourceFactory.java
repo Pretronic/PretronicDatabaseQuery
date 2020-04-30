@@ -22,13 +22,13 @@ package net.pretronic.databasequery.sql.driver.datasource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.IsolationLevel;
-import net.pretronic.libraries.utility.Validate;
-import net.pretronic.libraries.utility.reflect.ReflectionUtil;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLRemoteDatabaseDriverConfig;
+import net.pretronic.libraries.utility.Validate;
+import net.pretronic.libraries.utility.reflect.ReflectionUtil;
 
 import javax.sql.DataSource;
 

@@ -28,7 +28,6 @@ import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
-import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.databasequery.common.AbstractDatabase;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
@@ -36,6 +35,7 @@ import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.query.SQLQueryGroup;
 import net.pretronic.databasequery.sql.query.SQLQueryTransaction;
 import net.pretronic.databasequery.sql.query.type.SQLCreateQuery;
+import net.pretronic.libraries.utility.annonations.Internal;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

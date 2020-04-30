@@ -23,7 +23,6 @@ package net.pretronic.databasequery.api.dsl
 import net.pretronic.databasequery.api.collection.DatabaseCollection
 import net.pretronic.databasequery.api.query.QueryGroup
 import net.pretronic.databasequery.api.query.type.*
-import net.pretronic.databasequery.api.query.type.*
 
 fun DatabaseCollection.insert(initializer: InsertQuery.() -> Unit) : InsertQuery {
     return this.insert().apply(initializer)

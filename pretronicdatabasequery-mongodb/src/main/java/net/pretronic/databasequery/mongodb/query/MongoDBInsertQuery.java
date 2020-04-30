@@ -21,7 +21,6 @@
 package net.pretronic.databasequery.mongodb.query;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;

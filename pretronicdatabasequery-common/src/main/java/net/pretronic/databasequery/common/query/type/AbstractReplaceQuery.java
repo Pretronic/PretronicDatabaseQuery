@@ -21,8 +21,6 @@ package net.pretronic.databasequery.common.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.type.ReplaceQuery;
-import net.pretronic.libraries.utility.map.Triple;
-import net.pretronic.databasequery.common.query.EntryOption;
 
 public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractChangeAndSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
 

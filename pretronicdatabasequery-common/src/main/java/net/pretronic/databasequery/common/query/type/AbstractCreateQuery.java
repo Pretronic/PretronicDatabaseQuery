@@ -29,11 +29,11 @@ import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
 import net.pretronic.databasequery.api.query.type.FindQuery;
-import net.pretronic.libraries.utility.Validate;
 import net.pretronic.databasequery.common.collection.field.DefaultFieldBuilder;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
+import net.pretronic.libraries.utility.Validate;
 
 import java.util.ArrayList;
 import java.util.List;

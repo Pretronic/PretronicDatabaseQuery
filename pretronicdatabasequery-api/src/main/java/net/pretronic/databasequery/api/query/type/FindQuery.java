@@ -20,7 +20,6 @@
 
 package net.pretronic.databasequery.api.query.type;
 
-import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.Aggregation;
 

@@ -20,12 +20,12 @@
 package net.pretronic.databasequery.sql.query.type;
 
 import net.pretronic.databasequery.api.query.result.QueryResult;
-import net.pretronic.libraries.utility.annonations.Internal;
-import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
 import net.pretronic.databasequery.common.query.type.AbstractReplaceQuery;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.query.CommitOnExecute;
+import net.pretronic.libraries.utility.annonations.Internal;
+import net.pretronic.libraries.utility.map.Pair;
 
 import java.util.List;
 

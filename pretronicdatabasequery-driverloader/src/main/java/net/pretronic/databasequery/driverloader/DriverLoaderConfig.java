@@ -3,7 +3,6 @@ package net.pretronic.databasequery.driverloader;
 import net.pretronic.libraries.dependency.DependencyGroup;
 
 import java.util.Collection;
-import java.util.Map;
 
 public class DriverLoaderConfig {
 

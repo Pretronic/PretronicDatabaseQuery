@@ -62,11 +62,50 @@ public class MongoDBUpdateQuery extends AbstractUpdateQuery<MongoDBDatabaseColle
             document.forEach(entry::addEntry);
             result.addEntry(entry);
             Document update = new Document();
+            Document set = new Document();
+            Document inc = new Document();
+            Document mul = new Document();
             for (ChangeAndSearchEntry changeAndSearchEntry : setEntries) {
-                update.append(changeAndSearchEntry.getField(), changeAndSearchEntry.getValue());
+                if(changeAndSearchEntry.getOperator() == null) {
+                    set.append(changeAndSearchEntry.getField(), changeAndSearchEntry.getValue());
+                } else {
+                    ChangeAndSearchEntry.ArithmeticOperator operator = changeAndSearchEntry.getOperator();
+                    switch (operator) {
+                        case ADD: {
+                            inc.append(changeAndSearchEntry.getField(), changeAndSearchEntry.getValue());
+                            break;
+                        }
+                        case SUBTRACT: {
+                            inc.append(changeAndSearchEntry.getField(), createCounterPart((Number) changeAndSearchEntry.getValue()));
+                            break;
+                        }
+                        case MULTIPLY: {
+                            mul.append(changeAndSearchEntry.getField(), changeAndSearchEntry.getValue());
+                            break;
+                        }
+                        case DIVIDE: {
+                            double divider = 1/((Number)changeAndSearchEntry.getValue()).doubleValue();
+                            mul.append(changeAndSearchEntry.getField(), divider);
+                            break;
+                        }
+                    }
+                }
             }
-            this.collection.getCollection().updateOne(document, new Document("$set", update));
+            if(!set.isEmpty()) update.append("$set", set);
+            if(!inc.isEmpty()) update.append("$inc", inc);
+            if(!mul.isEmpty()) update.append("$mul", mul);
+
+            this.collection.getCollection().updateOne(document, update);
         }
         return result;
+    }
+
+    private static Number createCounterPart(Number number) {
+        if(number instanceof Integer) return -number.intValue();
+        if(number instanceof Long) return -number.longValue();
+        if(number instanceof Float) return -number.floatValue();
+        if(number instanceof Byte) return -number.byteValue();
+        if(number instanceof Short) return -number.shortValue();
+        return -number.doubleValue();
     }
 }

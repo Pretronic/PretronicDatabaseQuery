@@ -22,13 +22,12 @@ package net.pretronic.databasequery.sql.driver.config;
 import com.zaxxer.hikari.HikariDataSource;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
+import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.libraries.document.Document;
 import net.pretronic.libraries.document.annotations.DocumentIgnoreBooleanValue;
 import net.pretronic.libraries.document.annotations.DocumentIgnoreZeroValue;
 import net.pretronic.libraries.document.annotations.DocumentKey;
-import net.pretronic.databasequery.sql.dialect.Dialect;
-import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
-import net.pretronic.libraries.utility.interfaces.Copyable;
 
 import java.util.concurrent.TimeUnit;
 

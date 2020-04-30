@@ -26,11 +26,10 @@ import net.pretronic.databasequery.api.query.SearchOrder;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.api.query.type.SearchQuery;
 import net.pretronic.databasequery.api.query.type.join.JoinType;
-import net.pretronic.libraries.utility.GeneralUtil;
+import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.map.Triple;
-import net.pretronic.databasequery.common.query.EntryOption;
 
 import java.util.ArrayList;
 import java.util.Arrays;

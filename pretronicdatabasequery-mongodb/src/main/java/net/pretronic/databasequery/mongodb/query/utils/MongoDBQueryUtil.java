@@ -25,8 +25,10 @@ import com.mongodb.client.model.*;
 import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.SearchOrder;
 import net.pretronic.databasequery.common.query.type.AbstractSearchQuery;
-import net.pretronic.libraries.utility.StringUtil;
-import org.bson.*;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;

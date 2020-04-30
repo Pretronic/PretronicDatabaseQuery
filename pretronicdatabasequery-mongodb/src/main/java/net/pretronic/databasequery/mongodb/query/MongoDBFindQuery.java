@@ -20,8 +20,6 @@
 
 package net.pretronic.databasequery.mongodb.query;
 
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCursor;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
@@ -30,9 +28,7 @@ import net.pretronic.databasequery.common.query.type.AbstractFindQuery;
 import net.pretronic.databasequery.mongodb.collection.MongoDBDatabaseCollection;
 import net.pretronic.databasequery.mongodb.query.utils.BuildContext;
 import net.pretronic.databasequery.mongodb.query.utils.MongoDBQueryUtil;
-import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;

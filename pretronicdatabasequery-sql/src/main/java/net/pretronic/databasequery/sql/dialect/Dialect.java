@@ -21,8 +21,6 @@ package net.pretronic.databasequery.sql.dialect;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
 import net.pretronic.databasequery.api.query.type.FindQuery;
-import net.pretronic.libraries.utility.Iterators;
-import net.pretronic.libraries.utility.map.Pair;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.type.*;
 import net.pretronic.databasequery.sql.SQLDatabase;
@@ -30,6 +28,8 @@ import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.defaults.H2PortableDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.MariaDBDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.MySQLDialect;
+import net.pretronic.libraries.utility.Iterators;
+import net.pretronic.libraries.utility.map.Pair;
 
 import java.sql.Driver;
 import java.util.ArrayList;

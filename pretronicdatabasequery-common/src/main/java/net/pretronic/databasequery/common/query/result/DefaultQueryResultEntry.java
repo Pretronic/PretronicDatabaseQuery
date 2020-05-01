@@ -22,6 +22,7 @@ package net.pretronic.databasequery.common.query.result;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.databasequery.api.query.result.QueryResultEntry;
 import net.pretronic.libraries.utility.Convert;
+import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.libraries.utility.map.IndexCaseIntensiveLinkedHashMap;
 import net.pretronic.libraries.utility.map.IndexCaseIntensiveMap;
@@ -29,6 +30,7 @@ import net.pretronic.libraries.utility.reflect.UnsafeInstanceCreator;
 
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -82,7 +84,13 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
 
     @Override
     public Object getObject(String key) {
-        return this.results.get(key.toLowerCase());
+        if(results.containsKey(key)){
+            return this.results.get(key);
+        }
+        for (Map.Entry<String, Object> entry : this.results.entrySet()) {
+            if(entry.getKey().endsWith(key)) return entry.getValue();
+        }
+        return null;
     }
 
     @Override

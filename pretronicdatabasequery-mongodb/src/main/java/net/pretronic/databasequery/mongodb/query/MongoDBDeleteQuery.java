@@ -38,7 +38,7 @@ public class MongoDBDeleteQuery extends AbstractDeleteQuery<MongoDBDatabaseColle
 
     @Override
     public QueryResult execute(Object... values) {
-        BuildContext context = BuildContext.newContext(this.collection);
+        BuildContext context = BuildContext.newContext(values, this.collection);
         MongoDBQueryUtil.buildEntries(context, this.entries);
 
         MongoDBQueryUtil.printQuery(context);

@@ -41,7 +41,7 @@ public class MongoDBFindQuery extends AbstractFindQuery<MongoDBDatabaseCollectio
 
     @Override
     public QueryResult execute(Object... values) {
-        BuildContext context = BuildContext.newContext(this.collection);
+        BuildContext context = BuildContext.newContext(values, this.collection);
         MongoDBQueryUtil.buildEntries(context, this.entries);
 
         MongoDBQueryUtil.printQuery(context);
@@ -56,9 +56,7 @@ public class MongoDBFindQuery extends AbstractFindQuery<MongoDBDatabaseCollectio
 
             });
             if(getEntries.isEmpty()) {
-                System.out.println("get entries empty");
                 document.forEach((key, value)-> {
-                    System.out.println(value.getClass());
                     if(value instanceof ArrayList<?>) {
                         List<Document> subResult = (List<Document>) value;
                         if(!subResult.isEmpty()) {
@@ -71,14 +69,16 @@ public class MongoDBFindQuery extends AbstractFindQuery<MongoDBDatabaseCollectio
             } else {
                 for (GetEntry getEntry : getEntries) {
                     if(getEntry.getDatabase() != null) throw new UnsupportedOperationException("MongoDB cross database entry getting is not possible");
-                    Object value;
+
                     if(getEntry.getDatabaseCollection() != null) {
                         Document subDocument = document.get("result"+getEntry.getDatabaseCollection(), Document.class);
-                        value = subDocument.get(getEntry.getField());
+                        Object value = subDocument.get(getEntry.getField());
+                        resultEntry.addEntry(getEntry.getDatabaseCollection()+"."+getEntry.getField(), value);
                     } else {
-                        value = document.get(getEntry.getField());
+                        Object value = document.get(getEntry.getField());
+                        resultEntry.addEntry(getEntry.getField(), value);
                     }
-                    resultEntry.addEntry(getEntry.getField(), value);
+
                 }
             }
             result.addEntry(resultEntry);

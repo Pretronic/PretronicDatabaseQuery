@@ -74,17 +74,17 @@ public class MongoDBDatabaseDriver extends AbstractDatabaseDriver implements Ser
 
     @Override
     public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
-        System.out.println("started");
+
     }
 
     @Override
     public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
-        System.out.println("success");
+
     }
 
     @Override
     public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
-        System.out.println("failed");
+
     }
 
     public MongoClient getClient() {

@@ -41,6 +41,34 @@ public abstract class AbstractChangeAndSearchQuery<T extends SearchQuery<T>, C e
     }
 
     @Override
+    public T add(String field) {
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new ChangeAndSearchEntry(assignment.getFirst(), assignment.getSecond(),
+                assignment.getThird(), EntryOption.PREPARED, ChangeAndSearchEntry.ArithmeticOperator.ADD));
+    }
+
+    @Override
+    public T subtract(String field) {
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new ChangeAndSearchEntry(assignment.getFirst(), assignment.getSecond(),
+                assignment.getThird(), EntryOption.PREPARED, ChangeAndSearchEntry.ArithmeticOperator.SUBTRACT));
+    }
+
+    @Override
+    public T multiply(String field) {
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new ChangeAndSearchEntry(assignment.getFirst(), assignment.getSecond(),
+                assignment.getThird(), EntryOption.PREPARED, ChangeAndSearchEntry.ArithmeticOperator.MULTIPLY));
+    }
+
+    @Override
+    public T divide(String field) {
+        Triple<String, String, String> assignment = getAssignment(field);
+        return addEntry(new ChangeAndSearchEntry(assignment.getFirst(), assignment.getSecond(),
+                assignment.getThird(), EntryOption.PREPARED, ChangeAndSearchEntry.ArithmeticOperator.DIVIDE));
+    }
+
+    @Override
     public T set(String field, Object value) {
         Triple<String, String, String> assignment = getAssignment(field);
         return addEntry(new ChangeAndSearchEntry(assignment.getFirst(), assignment.getSecond(),

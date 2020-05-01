@@ -32,11 +32,19 @@ public interface ChangeQuery<T extends Query> extends Query {
 
     T add(String field, Number value);
 
+    T add(String field);
+
     T subtract(String field, Number value);
+
+    T subtract(String field);
 
     T multiply(String field, Number value);
 
+    T multiply(String field);
+
     T divide(String field, Number value);
+
+    T divide(String field);
 
     /**
      * Sets the value for the {@code field}.

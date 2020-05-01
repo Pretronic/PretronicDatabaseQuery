@@ -1,0 +1,24 @@
+{
+  "name": "MongoDB",
+  "driverClass": "net.pretronic.databasequery.mongodb.driver.MongoDBDatabaseDriver",
+  "required": {
+    "name": "MongoDB Driver",
+    "dependencies":[
+      {
+        "repository": "https://repository.pretronic.net/repository/pretronic/",
+        "groupId": "net.pretronic.databasequery",
+        "artifactId": "pretronicdatabasequery-mongodb",
+        "version": "${project.version}",
+        "checkAvailableClass": "net.pretronic.databasequery.mongodb.driver.MongoDBDatabaseDriver"
+      },
+      {
+        "repository": "https://repo1.maven.org/maven2/",
+        "groupId": "org.mongodb",
+        "artifactId": "mongo-java-driver",
+        "version": "${dependency.mongodb.version}",
+        "checkAvailableClass": "com.mongodb.MongoClient"
+      }
+    ]
+  },
+  "optional": []
+}

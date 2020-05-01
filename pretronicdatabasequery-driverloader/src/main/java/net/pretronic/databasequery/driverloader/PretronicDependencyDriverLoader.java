@@ -43,6 +43,9 @@ public class PretronicDependencyDriverLoader implements DynamicDriverLoader {
         DRIVER_LOADER_CONFIGS.add(DocumentFileType.JSON.getReader()
                 .read(PretronicDependencyDriverLoader.class.getClassLoader().getResourceAsStream("drivers/sql-driver.json"))
                 .getAsObject(DriverLoaderConfig.class));
+        DRIVER_LOADER_CONFIGS.add(DocumentFileType.JSON.getReader()
+                .read(PretronicDependencyDriverLoader.class.getClassLoader().getResourceAsStream("drivers/mongodb-driver.json"))
+                .getAsObject(DriverLoaderConfig.class));
     }
 
     @SuppressWarnings("unchecked")

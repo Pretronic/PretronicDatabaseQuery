@@ -28,12 +28,12 @@ public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLoc
 
     private final File location;
 
-    protected SQLLocalDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog,
+    protected SQLLocalDatabaseDriverConfig(String name, Dialect dialect, String connectionString, boolean useSSL, String connectionCatalog,
                                            String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel,
                                            int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess,
                                            long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize,
                                            int dataSourceMinimumIdleConnectionPoolSize, File location) {
-        super(name, dialect, connectionString, connectionCatalog, connectionSchema, connectionReadOnly, connectionIsolationLevel,
+        super(name, dialect, connectionString, useSSL, connectionCatalog, connectionSchema, connectionReadOnly, connectionIsolationLevel,
                 connectionNetworkTimeout, dataSourceClassName, dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire,
                 dataSourceConnectionLoginTimeout, dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
         this.location = location;
@@ -47,7 +47,7 @@ public class SQLLocalDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLLoc
 
     @Override
     public SQLLocalDatabaseDriverConfig copy() {
-        return new SQLLocalDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.connectionCatalog
+        return new SQLLocalDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.useSSL, this.connectionCatalog
                 , this.connectionSchema, this.connectionReadOnly, this.connectionIsolationLevel, this.connectionNetworkTimeout
                 , this.dataSourceClassName, this.dataSourceConnectionExpireAfterAccess, this.dataSourceConnectionExpire
                 , this.dataSourceConnectionLoginTimeout, this.dataSourceMaximumPoolSize, this.dataSourceMinimumIdleConnectionPoolSize

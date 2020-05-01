@@ -61,7 +61,7 @@ public class Test {
                 .field("id", DataType.INTEGER, FieldOption.AUTO_INCREMENT, FieldOption.PRIMARY_KEY)
                 .field("name", DataType.STRING, FieldOption.NOT_NULL)
                 .field("firstName", DataType.STRING, FieldOption.NOT_NULL)
-                .field("verified", DataType.BOOLEAN, -1, false, FieldOption.NOT_NULL)
+                .field("verified", DataType.BOOLEAN, 1, false, FieldOption.NOT_NULL)
                 .field("phoneNumber", DataType.STRING)
                 .create();
 

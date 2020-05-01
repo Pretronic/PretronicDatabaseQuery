@@ -34,6 +34,7 @@ public class SQLDatabaseDriverConfigBuilder {
     private String name;
     private Dialect dialect;
     private String connectionString;
+    private boolean useSSL;
     private String connectionCatalog;
     private String connectionSchema;
     private boolean connectionReadOnly;
@@ -56,6 +57,7 @@ public class SQLDatabaseDriverConfigBuilder {
 
     public SQLDatabaseDriverConfigBuilder() {
         this.name = "SQL Pool-" + COUNT++;
+        this.useSSL = false;
         this.connectionReadOnly = false;
         loadDriverClass();
     }
@@ -80,6 +82,11 @@ public class SQLDatabaseDriverConfigBuilder {
 
     public SQLDatabaseDriverConfigBuilder setConnectionString(String connectionString) {
         this.connectionString = connectionString;
+        return this;
+    }
+
+    public SQLDatabaseDriverConfigBuilder setUseSSL(boolean useSSL) {
+        this.useSSL = useSSL;
         return this;
     }
 
@@ -161,13 +168,13 @@ public class SQLDatabaseDriverConfigBuilder {
     public SQLDatabaseDriverConfig<?> build() {
         Validate.notNull(dialect);
         if(dialect.getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema,
+            return new SQLLocalDatabaseDriverConfig(name, dialect, connectionString, useSSL, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, location);
         } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
             Validate.notNull(username,address);
-            return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, connectionCatalog, connectionSchema,
+            return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, useSSL, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, address, username, password);

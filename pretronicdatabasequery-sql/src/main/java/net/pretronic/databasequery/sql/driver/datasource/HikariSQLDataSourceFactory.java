@@ -58,6 +58,7 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
             if(remoteConfig.getUsername() != null) hikariConfig.setUsername(remoteConfig.getUsername());
             if(remoteConfig.getPassword() != null) hikariConfig.setPassword(remoteConfig.getPassword());
         }
+        hikariConfig.addDataSourceProperty("useSSL", config.isUseSSL());
         if(config.getConnectionCatalog() != null) hikariConfig.setCatalog(config.getConnectionCatalog());
         if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
         hikariConfig.setAutoCommit(false);

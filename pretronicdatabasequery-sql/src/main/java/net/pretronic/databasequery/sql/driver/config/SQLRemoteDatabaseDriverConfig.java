@@ -31,12 +31,12 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
     private final String username;
     private final String password;
 
-    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, String connectionCatalog
+    protected SQLRemoteDatabaseDriverConfig(String name, Dialect dialect, String connectionString, boolean useSSL, String connectionCatalog
             , String connectionSchema, boolean connectionReadOnly, int connectionIsolationLevel
             , int connectionNetworkTimeout, String dataSourceClassName, long dataSourceConnectionExpireAfterAccess
             , long dataSourceConnectionExpire, long dataSourceConnectionLoginTimeout, int dataSourceMaximumPoolSize
             , int dataSourceMinimumIdleConnectionPoolSize,  InetSocketAddress address, String username, String password) {
-        super(name, dialect, connectionString, connectionCatalog, connectionSchema
+        super(name, dialect, connectionString, useSSL, connectionCatalog, connectionSchema
                 , connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName
                 , dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout
                 , dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize);
@@ -71,7 +71,7 @@ public class SQLRemoteDatabaseDriverConfig extends SQLDatabaseDriverConfig<SQLRe
 
     @Override
     public SQLRemoteDatabaseDriverConfig copy() {
-        return new SQLRemoteDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.connectionCatalog
+        return new SQLRemoteDatabaseDriverConfig(this.name, this.dialect, this.connectionString, this.useSSL, this.connectionCatalog
                 , this.connectionSchema, this.connectionReadOnly, this.connectionIsolationLevel, this.connectionNetworkTimeout
                 , this.dataSourceClassName, this.dataSourceConnectionExpireAfterAccess, this.dataSourceConnectionExpire
                 , this.dataSourceConnectionLoginTimeout, this.dataSourceMaximumPoolSize, this.dataSourceMinimumIdleConnectionPoolSize

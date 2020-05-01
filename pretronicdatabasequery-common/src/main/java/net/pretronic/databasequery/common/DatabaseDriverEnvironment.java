@@ -19,8 +19,17 @@
 
 package net.pretronic.databasequery.common;
 
+/**
+ * The {@link DatabaseDriverEnvironment} represents the type of database.
+ */
 public enum DatabaseDriverEnvironment {
 
+    /**
+     * A local database. Mostly a file database.
+     */
     LOCAL,
+    /**
+     * A remote database, which is accessible from outside.
+     */
     REMOTE
 }

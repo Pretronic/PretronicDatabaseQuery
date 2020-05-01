@@ -37,6 +37,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The {@link AbstractSearchQuery} represents the base implementation of {@link SearchQuery}. It only holds the query logic in form of entries.
+ * @param <T>
+ * @param <C>
+ */
 public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends DatabaseCollection> extends AbstractQuery implements SearchQuery<T> {
 
     protected final C collection;
@@ -408,6 +413,19 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return addEntry(new OrderByEntry(assignment.getFirst(), assignment.getSecond(), assignment.getThird(), order, aggregation));
     }
 
+    /**
+     * Creates a triple assignment for input field by splitting the input at any point.
+     * It splits the input into database, database collection and field, if given.
+     * For example:
+     * - Input: productive.customers.name
+     * Then it returns the triple in following order:
+     * - productive as database
+     * - customers as database collection
+     * - name as field
+     *
+     * @param assignment0 the input to split
+     * @return the result
+     */
     protected Triple<String, String, String> getAssignment(String assignment0) {
         String[] assignment = assignment0.split("\\.");
         String database = null;
@@ -427,13 +445,26 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
     public static class Entry {}
 
+    /**
+     * Represents the entry for condition for all where based methods.
+     */
     public static class ConditionEntry extends Entry {
 
+        /**
+         * The condition type. In this case the where type.
+         */
         private final Type type;
         private final String database;
         private final String databaseCollection;
         private final String field;
-        private final Object value1, extra;
+        /**
+         * The value of the entry. If it equals {@link EntryOption#PREPARED}, you should replace it by query execution to the prepared values in {@link net.pretronic.databasequery.api.query.Query#execute(Object...)}.
+         */
+        private final Object value1;
+        /**
+         * This value can be the aggregation or the second value for between.
+         */
+        private final Object extra;
 
         public ConditionEntry(Type type, String database, String databaseCollection, String field, Object value1, Object extra) {
             this.type = type;
@@ -480,9 +511,18 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * It represents the operation entry.
+     */
     public static class OperationEntry extends Entry {
 
+        /**
+         * The type of operation.
+         */
         private final Type type;
+        /**
+         * All included entries in this operation.
+         */
         private final List<Entry> entries;
 
         public OperationEntry(Type type, Entry entry) {
@@ -511,6 +551,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * This represents the join entry.
+     */
     public static class JoinEntry extends Entry {
 
         private final DatabaseCollection collection;
@@ -536,6 +579,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * It represents the join on entry. It is used in join entry.
+     */
     public static class JoinOnEntry extends Entry {
 
         private final DatabaseCollection collection1;
@@ -567,6 +613,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * It represents the limit entry.
+     */
     public static class LimitEntry extends Entry {
 
         private final int limit;
@@ -586,6 +635,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * It represents the order by entry.
+     */
     public static class OrderByEntry extends Entry {
 
         private final String database;
@@ -623,6 +675,9 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         }
     }
 
+    /**
+     * It represents the group by entry.
+     */
     public static class GroupByEntry extends Entry {
 
         private final String database;

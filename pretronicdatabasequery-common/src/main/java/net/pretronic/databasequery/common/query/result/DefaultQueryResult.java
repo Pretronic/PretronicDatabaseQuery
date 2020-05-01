@@ -21,6 +21,7 @@ package net.pretronic.databasequery.common.query.result;
 
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.result.QueryResultEntry;
+import net.pretronic.libraries.utility.Validate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * The {@link DefaultQueryResult} is the default implementation of {@link QueryResult}. It can be used for returning the result in {@link net.pretronic.databasequery.api.query.Query#execute(Object...)}.
+ */
 public class DefaultQueryResult implements QueryResult {
 
     public static final QueryResult EMPTY = new DefaultQueryResult(new ArrayList<>());
@@ -99,7 +103,13 @@ public class DefaultQueryResult implements QueryResult {
         }
     }
 
+    /**
+     * Adds an entry to the entries list.
+     * @param entry to add not null
+     * @return the current result instance
+     */
     public DefaultQueryResult addEntry(QueryResultEntry entry) {
+        Validate.notNull(entry);
         this.entries.add(entry);
         return this;
     }

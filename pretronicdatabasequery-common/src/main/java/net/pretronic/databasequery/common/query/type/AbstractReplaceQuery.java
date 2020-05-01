@@ -20,8 +20,13 @@
 package net.pretronic.databasequery.common.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
+import net.pretronic.databasequery.api.query.type.DeleteQuery;
 import net.pretronic.databasequery.api.query.type.ReplaceQuery;
 
+/**
+ * The {@link AbstractReplaceQuery} represents the base implementation of {@link ReplaceQuery}.
+ * @param <C> collection implementation type
+ */
 public abstract class AbstractReplaceQuery<C extends DatabaseCollection> extends AbstractChangeAndSearchQuery<ReplaceQuery, C> implements ReplaceQuery {
 
     public AbstractReplaceQuery(C collection) {

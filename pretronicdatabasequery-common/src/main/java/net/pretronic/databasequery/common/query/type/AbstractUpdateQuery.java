@@ -20,8 +20,13 @@
 package net.pretronic.databasequery.common.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
+import net.pretronic.databasequery.api.query.type.DeleteQuery;
 import net.pretronic.databasequery.api.query.type.UpdateQuery;
 
+/**
+ * The {@link AbstractUpdateQuery} represents the base implementation of {@link UpdateQuery}.
+ * @param <C> collection implementation type
+ */
 public abstract class AbstractUpdateQuery<C extends DatabaseCollection> extends AbstractChangeAndSearchQuery<UpdateQuery, C> implements UpdateQuery {
 
     public AbstractUpdateQuery(C collection) {

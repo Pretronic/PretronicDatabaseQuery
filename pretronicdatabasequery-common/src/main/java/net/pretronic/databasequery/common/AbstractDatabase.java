@@ -23,6 +23,10 @@ import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.libraries.logging.PretronicLogger;
 
+/**
+ * Represents the base implementation class of {@link Database}, which holds only data.
+ * @param <T> the database driver type of implementation
+ */
 public abstract class AbstractDatabase<T extends DatabaseDriver> implements Database {
 
     private final String name;

@@ -27,6 +27,11 @@ import net.pretronic.databasequery.api.collection.field.CollectionField;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The {@link AbstractDatabaseCollection} represents the default implementation of {@link DatabaseCollection}.
+ * It only holds data and it implements the async methods with the given executor service in {@link net.pretronic.databasequery.api.driver.DatabaseDriver}.
+ * @param <T>
+ */
 public abstract class AbstractDatabaseCollection<T extends Database> implements DatabaseCollection {
 
     private final String name;

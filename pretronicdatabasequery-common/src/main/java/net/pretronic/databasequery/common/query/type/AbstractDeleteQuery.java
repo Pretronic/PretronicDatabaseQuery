@@ -22,6 +22,10 @@ package net.pretronic.databasequery.common.query.type;
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.type.DeleteQuery;
 
+/**
+ * The {@link AbstractDeleteQuery} represents the base implementation of {@link DeleteQuery}.
+ * @param <C> collection implementation type
+ */
 public abstract class AbstractDeleteQuery<C extends DatabaseCollection> extends AbstractSearchQuery<DeleteQuery, C> implements DeleteQuery {
 
     public AbstractDeleteQuery(C collection) {

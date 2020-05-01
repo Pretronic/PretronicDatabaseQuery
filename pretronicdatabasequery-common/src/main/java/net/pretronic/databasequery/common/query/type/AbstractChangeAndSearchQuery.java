@@ -4,8 +4,16 @@ import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.type.ChangeQuery;
 import net.pretronic.databasequery.api.query.type.SearchQuery;
 import net.pretronic.databasequery.common.query.EntryOption;
+import net.pretronic.libraries.utility.Validate;
+import net.pretronic.libraries.utility.annonations.Nullable;
 import net.pretronic.libraries.utility.map.Triple;
 
+/**
+ * The {@link AbstractChangeAndSearchQuery} is the base implementation with entry storing of {@link AbstractSearchQuery} and {@link ChangeQuery}.
+ * It stores the query logic in form of entries.
+ * @param <T> search query implementation type
+ * @param <C> collection implementation type
+ */
 public abstract class AbstractChangeAndSearchQuery<T extends SearchQuery<T>, C extends DatabaseCollection> extends AbstractSearchQuery<T, C> implements ChangeQuery<T> {
 
     public AbstractChangeAndSearchQuery(C collection) {
@@ -80,15 +88,20 @@ public abstract class AbstractChangeAndSearchQuery<T extends SearchQuery<T>, C e
         return set(field, EntryOption.PREPARED);
     }
 
+    /**
+     * It holds the entry data for this implemented methods in this class.
+     */
     public static class ChangeAndSearchEntry extends AbstractSearchQuery.Entry {
 
         private final String database;
         private final String databaseCollection;
         private final String field;
         private final Object value;
+        @Nullable
         private final ArithmeticOperator operator;
 
         public ChangeAndSearchEntry(String database, String databaseCollection, String field, Object value, ArithmeticOperator operator) {
+            Validate.notNull(field);
             this.database = database;
             this.databaseCollection = databaseCollection;
             this.field = field;

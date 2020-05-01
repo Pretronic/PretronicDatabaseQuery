@@ -26,6 +26,9 @@ import net.pretronic.libraries.logging.PretronicLogger;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The {@link AbstractQuery} represents the base implementation of {@link Query}. It only holds data and the async implementation of execute.
+ */
 public abstract class AbstractQuery implements Query {
 
     private final DatabaseDriver driver;

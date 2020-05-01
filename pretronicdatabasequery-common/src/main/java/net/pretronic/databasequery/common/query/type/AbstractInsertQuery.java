@@ -34,6 +34,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The {@link AbstractInsertQuery} represents the base implementation of {@link InsertQuery}. It only the query logic in form of entries.
+ * @param <C> collection implementation type
+ */
 public abstract class AbstractInsertQuery<C extends DatabaseCollection> extends AbstractQuery implements InsertQuery {
 
     protected final C collection;

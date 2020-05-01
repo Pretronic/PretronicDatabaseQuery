@@ -28,6 +28,10 @@ import net.pretronic.libraries.utility.map.Triple;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The {@link AbstractFindQuery} represents the base implementation of{@link FindQuery}. It only holds the query logic in form of entries.
+ * @param <C>
+ */
 public abstract class AbstractFindQuery<C extends DatabaseCollection> extends AbstractSearchQuery<FindQuery, C> implements FindQuery {
 
     protected final List<GetEntry> getEntries;

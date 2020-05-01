@@ -21,9 +21,20 @@ package net.pretronic.databasequery.common.query;
 
 import net.pretronic.libraries.utility.annonations.Internal;
 
+/**
+ * The {@link EntryOption} represents holder data for entry storing.
+ */
 @Internal
 public enum EntryOption {
 
+    /**
+     * This is used, if the data is not defined, like if the default value for creating a {@link net.pretronic.databasequery.api.collection.DatabaseCollection} is not given.
+     * It should be taken into account when creating a {@link net.pretronic.databasequery.api.collection.DatabaseCollection} in the implementation.
+     */
     NOT_DEFINED,
+    /**
+     * This is used, if the value is not defined in the query. In the implementation, it is used to check if the value is already definded
+     * or if it should be get from the values array in {@link net.pretronic.databasequery.api.query.Query#execute(Object...)}.
+     */
     PREPARED
 }

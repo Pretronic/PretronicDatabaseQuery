@@ -34,6 +34,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ * The {@link DefaultQueryResultEntry} represents the default implementation of {@link QueryResultEntry}. It can be used to add entries to {@link net.pretronic.databasequery.api.query.result.QueryResult}.
+ * The keys are case intensive. If the key contains the database collection or the database and you only get the value with the field name, it also work.
+ * For example:
+ * - Key: name
+ * - Key in result entry: customers.name
+ */
 public class DefaultQueryResultEntry implements QueryResultEntry {
 
     private final DatabaseDriver driver;

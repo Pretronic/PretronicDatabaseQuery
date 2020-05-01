@@ -26,6 +26,12 @@ import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.libraries.utility.annonations.Internal;
 
+import java.util.function.Consumer;
+
+/**
+ * The {@link DefaultFieldBuilder} represents the default implementation of {@link FieldBuilder}.
+ * It is used in {@link net.pretronic.databasequery.common.query.type.AbstractCreateQuery#field(Consumer)}.
+ */
 public class DefaultFieldBuilder implements FieldBuilder {
 
     private String name;

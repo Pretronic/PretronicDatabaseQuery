@@ -40,6 +40,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+/**
+ * The {@link AbstractCreateQuery} represents the base implementation of {@link CreateQuery}. It only holds the query logic in form of entries and local field.
+ * @param <T> database implementation type
+ */
 public abstract class AbstractCreateQuery<T extends Database> extends AbstractQuery implements CreateQuery {
 
     protected final String name;
@@ -141,6 +145,9 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
 
     public static class Entry {}
 
+    /**
+     * The field entry data.
+     */
     public static class CreateEntry extends Entry {
 
         private final String field;
@@ -178,6 +185,9 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
         }
     }
 
+    /**
+     * The data for a {@link ForeignKey} to create.
+     */
     public static class ForeignKeyEntry extends Entry {
 
         private final String field;

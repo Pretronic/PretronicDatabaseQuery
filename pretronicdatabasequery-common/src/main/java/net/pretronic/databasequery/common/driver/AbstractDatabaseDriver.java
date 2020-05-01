@@ -28,6 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * The {@link AbstractDatabaseDriver} represents the base implementation of {@link DatabaseDriver}.
+ * It only holds data and the default registration of {@link DataTypeAdapter} with {@link #registerDefaultAdapters()}.
+ */
 public abstract class AbstractDatabaseDriver implements DatabaseDriver {
 
     private final String name;

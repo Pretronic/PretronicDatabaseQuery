@@ -123,7 +123,8 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
 
     @Override
     public MongoDBDatabaseDriverConfig copy() {
-        throw new UnsupportedOperationException();
+        return new MongoDBDatabaseDriverConfig(this.address, this.name, this.connectionString,
+                this.user, this.password, this.authenticationDatabase, this.srv, this.ssl);
     }
 
     public MongoClientURI getMongoClientURI(ServerMonitorListener monitorListener) {

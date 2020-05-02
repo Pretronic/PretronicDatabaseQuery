@@ -32,7 +32,7 @@ public class MongoDBDatabaseDriverConfigBuilder {
     private InetSocketAddress address;
     private String name;
     private String connectionString;
-    private String user;
+    private String username;
     private String password;
     private String authenticationDatabase;
     private boolean srv;
@@ -66,8 +66,8 @@ public class MongoDBDatabaseDriverConfigBuilder {
         return this;
     }
 
-    public MongoDBDatabaseDriverConfigBuilder setUser(String user) {
-        this.user = user;
+    public MongoDBDatabaseDriverConfigBuilder setUsername(String username) {
+        this.username = username;
         return this;
     }
 
@@ -93,6 +93,6 @@ public class MongoDBDatabaseDriverConfigBuilder {
 
     public MongoDBDatabaseDriverConfig build() {
         Validate.isTrue(address != null || connectionString != null);
-        return new MongoDBDatabaseDriverConfig(address, name, connectionString, user, password, authenticationDatabase, srv, ssl);
+        return new MongoDBDatabaseDriverConfig(address, name, connectionString, username, password, authenticationDatabase, srv, ssl);
     }
 }

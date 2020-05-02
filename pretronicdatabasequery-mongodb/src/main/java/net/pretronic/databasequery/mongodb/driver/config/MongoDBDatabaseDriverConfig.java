@@ -39,7 +39,7 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
     private final InetSocketAddress address;
     private final String name;
     private final String connectionString;
-    private final String user;
+    private final String username;
     private final String password;
     private final String authenticationDatabase;
 
@@ -49,11 +49,11 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
     @DocumentIgnoreBooleanValue(ignore = false)
     private final Boolean ssl;
 
-    public MongoDBDatabaseDriverConfig(InetSocketAddress address, String name, String connectionString, String user, String password, String authenticationDatabase, boolean srv, Boolean ssl) {
+    public MongoDBDatabaseDriverConfig(InetSocketAddress address, String name, String connectionString, String username, String password, String authenticationDatabase, boolean srv, Boolean ssl) {
         this.address = address;
         this.name = name;
         this.connectionString = connectionString;
-        this.user = user;
+        this.username = username;
         this.password = password;
         this.authenticationDatabase = authenticationDatabase;
         this.srv = srv;
@@ -90,8 +90,8 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
         return this.connectionString;
     }
 
-    public String getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword() {
@@ -124,7 +124,7 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
     @Override
     public MongoDBDatabaseDriverConfig copy() {
         return new MongoDBDatabaseDriverConfig(this.address, this.name, this.connectionString,
-                this.user, this.password, this.authenticationDatabase, this.srv, this.ssl);
+                this.username, this.password, this.authenticationDatabase, this.srv, this.ssl);
     }
 
     public MongoClientURI getMongoClientURI(ServerMonitorListener monitorListener) {
@@ -140,8 +140,8 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
         if(srv) uriBuilder.append("+srv");
         uriBuilder.append("://");
 
-        if(user != null) {
-            uriBuilder.append(user);
+        if(username != null) {
+            uriBuilder.append(username);
             if(password != null) uriBuilder.append(":").append(password);
             uriBuilder.append("@");
         }

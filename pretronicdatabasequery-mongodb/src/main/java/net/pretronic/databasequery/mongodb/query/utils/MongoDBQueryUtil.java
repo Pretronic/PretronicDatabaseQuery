@@ -22,9 +22,6 @@ package net.pretronic.databasequery.mongodb.query.utils;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.*;
-import net.pretronic.databasequery.api.collection.DatabaseCollection;
-import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.SearchOrder;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.common.query.result.DefaultQueryResult;
@@ -32,11 +29,13 @@ import net.pretronic.databasequery.common.query.result.DefaultQueryResultEntry;
 import net.pretronic.databasequery.common.query.type.AbstractChangeAndSearchQuery;
 import net.pretronic.databasequery.common.query.type.AbstractSearchQuery;
 import net.pretronic.databasequery.mongodb.collection.MongoDBDatabaseCollection;
-import net.pretronic.libraries.utility.Convert;
 import org.bson.*;
 import org.bson.conversions.Bson;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public final class MongoDBQueryUtil {
@@ -67,63 +66,93 @@ public final class MongoDBQueryUtil {
         switch (entry.getType()) {
             case WHERE_NULL:
             case WHERE: {
-                buildConditionAggregationGroup(context, entry);
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.eq(entry.getField(), context.getValue(entry.getValue1())))));
+                String operator = context.negate ? "ne" : "eq";
+                Document where = new Document(entry.getField(), new Document("$"+operator, context.getValue(entry.getValue1())));
+
+                if(context.parent == null) {
+                    context.add(new Document("$match", where));
+                } else {
+                    context.add(where);
+                }
                 break;
             }
             case WHERE_LIKE: {
-                buildConditionAggregationGroup(context, entry);
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.regex(entry.getField(), (String) context.getValue(entry.getValue1())))));
+                Document like = new Document()
+                        .append("$regex", context.getValue(entry.getValue1()));
+                if(context.negate) {
+                    like = new Document("$not", like);
+                }
+                if(context.parent == null) {
+                    context.add(new Document("$match", new Document(entry.getField(), like)));
+                } else {
+                    context.add(new Document(entry.getField(), like));
+                }
                 break;
             }
             case WHERE_IN: {
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.in(entry.getField(), (List<Object>) context.getValue(entry.getValue1())))));
+                BsonArray values = new BsonArray();
+                context.getValue((List<Object>)entry.getValue1()).forEach(value -> values.add(convertToBsonValue(value)));
+                String operator = context.negate ? "nin" : "in";
+                Document whereIn = new Document(entry.getField(), new Document(operator, values));
+                if(context.parent == null) {
+                    context.add(new Document("$match", whereIn));
+                } else {
+                    context.add(whereIn);
+                }
                 break;
             }
             case WHERE_BETWEEN: {
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.or(Filters.gte(entry.getField(), context.getValue(entry.getValue1())),
-                                Filters.lte(entry.getField(), context.getValue(entry.getExtra()))))));
+                BsonDocument gte = new BsonDocument(entry.getField(), new BsonDocument("$gte", convertToBsonValue(context.getValue(entry.getValue1()))));
+                BsonDocument lte = new BsonDocument(entry.getField(), new BsonDocument("$lte", convertToBsonValue(context.getValue(entry.getExtra()))));
+
+                BsonArray between = new BsonArray();
+                between.add(gte);
+                between.add(lte);
+
+                Document and = new Document("$and", between);
+
+                if(context.parent == null) {
+                    context.add(new Document("$match", and));
+                } else {
+                    context.add(and);
+                }
                 break;
             }
             case WHERE_LOWER: {
-                buildConditionAggregationGroup(context, entry);
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.lt(entry.getField(), context.getValue(entry.getValue1())))));
+                BsonDocument lte = new BsonDocument(entry.getField(), new BsonDocument("$lte", convertToBsonValue(context.getValue(entry.getValue1()))));
+                if(context.parent == null) {
+                    context.add(new Document("$match", lte));
+                } else {
+                    context.add(lte);
+                }
                 break;
             }
             case WHERE_HIGHER: {
-                buildConditionAggregationGroup(context, entry);
-                context.add(Aggregates.match(buildNegateConditionEntry(context.negate,
-                        Filters.gt(entry.getField(), context.getValue(entry.getValue1())))));
+                BsonDocument gte = new BsonDocument(entry.getField(), new BsonDocument("$gte", convertToBsonValue(context.getValue(entry.getValue1()))));
+                if(context.parent == null) {
+                    context.add(new Document("$match", gte));
+                } else {
+                    context.add(gte);
+                }
                 break;
             }
-        }
-    }
-
-    public static Bson buildNegateConditionEntry(boolean negate, Bson bson) {
-        return negate ? Filters.not(bson) : bson;
-    }
-
-    public static void buildConditionAggregationGroup(BuildContext context, AbstractSearchQuery.ConditionEntry entry) {
-        if(entry.getExtra() instanceof Aggregation) {
-            Aggregation aggregation = (Aggregation) entry.getExtra();
-            context.add(Aggregates.group("$"+entry.getField(), new BsonField(entry.getField(),
-                    new BsonDocument("$"+aggregation.toString().toLowerCase(), convertToBsonValue(context.getValue(entry.getValue1()))))));
+            default:
+                throw new IllegalStateException("Unexpected value: " + entry.getType());
         }
     }
 
     public static void buildOperationEntry(BuildContext context, AbstractSearchQuery.OperationEntry entry) {
         switch (entry.getType()) {
             case AND: {
-                context.add(Filters.and(andOr(context, entry)));
+                Document and = new Document("$and", andOr(context, entry));
+                if(context.parent == null) context.add(new Document("$match", and));
+                else context.add(and);
                 break;
             }
             case OR: {
-                context.add(Filters.or(andOr(context, entry)));
+                Document and = new Document("$or", andOr(context, entry));
+                if(context.parent == null) context.add(new Document("$match", and));
+                else context.add(and);
                 break;
             }
             case NOT: {
@@ -133,7 +162,10 @@ public final class MongoDBQueryUtil {
                     buildEntry(childContext, child);
                     context.addAll(childContext.findQuery);
                 }
+                break;
             }
+            default:
+                throw new IllegalStateException("Unexpected value: " + entry.getType());
         }
     }
 
@@ -148,66 +180,73 @@ public final class MongoDBQueryUtil {
     }
 
     public static void buildJoinEntry(BuildContext context, AbstractSearchQuery.JoinEntry entry) {
-        List<Bson> matches = new ArrayList<>(entry.getOnEntries().size());
-        List<Variable<String>> variables = new ArrayList<>();
+        BsonArray matches = new BsonArray();
+        Document variables = new Document();
 
         for (AbstractSearchQuery.JoinOnEntry onEntry : entry.getOnEntries()) {
-            Variable<String> variable = new Variable<>(
-                    onEntry.getColumn2(), "$"+onEntry.getColumn2());
-            matches.add(new Document("$eq", new BsonArray(Arrays.asList(
+            variables.append(onEntry.getColumn2(), "$"+onEntry.getColumn2());
+            matches.add(new BsonDocument("$eq", new BsonArray(Arrays.asList(
                     new BsonString("$"+onEntry.getColumn1()),
-                    new BsonString("$$"+variable.getName())))));
-            variables.add(variable);
+                    new BsonString("$$"+onEntry.getColumn2())
+            ))));
         }
 
-        Bson pipeline = Aggregates.match(Filters.expr(Filters.and(matches)));
+        BsonArray pipeline = new BsonArray();
+        pipeline.add(new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and",matches))));
 
-
-
-        Bson lookUp = Aggregates.lookup(entry.getCollection().getName(), variables, Collections.singletonList(pipeline),
-                "result"+entry.getCollection().getName());
-
-        context.add(lookUp);
+        Bson lookup = new Document("$lookup", new Document()
+                .append("from", entry.getCollection().getName())
+                .append("let", variables)
+                .append("pipeline", pipeline)
+                .append("as", "result"+entry.getCollection().getName()));
+        context.add(lookup);
     }
 
     public static void buildLimitEntry(BuildContext context, AbstractSearchQuery.LimitEntry entry) {
-        context.add(Aggregates.limit(context.getValue(entry.getLimit())+context.getValue(entry.getOffset())));
-        context.add(Aggregates.skip(context.getValue(entry.getOffset())));
+        context.add(new Document("$limit", context.getValue(entry.getLimit())+context.getValue(entry.getOffset())));
+        context.add(new Document("$skip", context.getValue(entry.getOffset())));
     }
 
     public static void buildOrderByEntry(BuildContext context, AbstractSearchQuery.OrderByEntry entry) {
         if(entry.getAggregation() != null) {
-            Bson sort = Aggregates.unwind("$"+entry.getField());
+            /*Bson sort = Aggregates.unwind("$"^^+entry.getField());
             Bson group = Aggregates.group("$_id", Accumulators.sum(entry.getField(), "$"+entry.getField()));
             context.add(sort);
-            context.add(group);
+            context.add(group);*/
+            context.add(new Document("$group", new Document()
+                    .append("_id", "$"+entry.getField())
+                    .append(entry.getField(), new Document("$"+entry.getAggregation().toString(), 1))));
         }
-        if(entry.getOrder() == SearchOrder.ASC) {
-            context.add(Aggregates.sort(Sorts.ascending(entry.getField())));
-        } else {
-            context.add(Aggregates.sort(Sorts.descending(entry.getField())));
-        }
+        int order = entry.getOrder() == SearchOrder.DESC ? -1 : 1;
+        context.add(new Document("$sort", new Document(entry.getField(), order)));
     }
 
     public static void buildGroupByEntry(BuildContext context, AbstractSearchQuery.GroupByEntry entry) {
-        if(entry.getAggregation() == null) {
+        Document groupBy = new Document();
+        groupBy.append("_id", "$"+entry.getField());
+        if(entry.getAggregation() != null) {
+            groupBy.append(entry.getField(), new Document("$"+entry.getAggregation().toString().toLowerCase(), "1"));
+        }
+        context.add(new Document("$group", groupBy));
+        /*if(entry.getAggregation() == null) {
             context.add(Aggregates.group("$"+entry.getField()));
         } else {
             context.add(Aggregates.group("$"+entry.getField(), new BsonField(entry.getField(),
                     new BsonDocument("$"+entry.getAggregation().toString().toLowerCase(),
                     new BsonInt32(1)))));
-        }
+        }*/
     }
 
     public static void printQuery(BuildContext context) {
+        StringBuilder query = new StringBuilder();
         for (Bson bson : context.getFindQuery()) {
-            context.collection.getDatabase().getLogger().debug("["+bson.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry())+"]");
+            if(query.length() != 0) query.append(",");
+            query.append(bson.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry()));
         }
+        context.collection.getDatabase().getLogger().debug("["+query+"]");
     }
 
-    public static Document prepareUpdate(BuildContext context, MongoDBDatabaseCollection collection, Collection<AbstractChangeAndSearchQuery.ChangeAndSearchEntry> setEntries) {
-        DefaultQueryResultEntry entry = new DefaultQueryResultEntry(collection.getDatabase().getDriver());
-
+    public static Document prepareUpdate(BuildContext context, Collection<AbstractChangeAndSearchQuery.ChangeAndSearchEntry> setEntries) {
         Document update = new Document();
         Document set = new Document();
         Document inc = new Document();
@@ -255,13 +294,12 @@ public final class MongoDBQueryUtil {
 
         DefaultQueryResult result = new DefaultQueryResult();
         MongoCursor<Document> cursor = collection.getCollection().aggregate(context.getFindQuery()).cursor();
-        Document update = MongoDBQueryUtil.prepareUpdate(context, collection, setEntries);
+        Document update = MongoDBQueryUtil.prepareUpdate(context, setEntries);
         while(cursor.hasNext()) {
             Document document = cursor.next();
             DefaultQueryResultEntry entry = new DefaultQueryResultEntry(collection.getDatabase().getDriver());
             document.forEach(entry::addEntry);
             result.addEntry(entry);
-            //collection.getCollection().updateOne(document, update);
             consumer.accept(document, update);
         }
         return result;
@@ -293,7 +331,7 @@ public final class MongoDBQueryUtil {
         else if(value instanceof Boolean) return new BsonBoolean((boolean) value);
         else if(value instanceof Integer || value instanceof Byte || value instanceof Short) return new BsonInt32((int) value);
         else if(value instanceof Long) return new BsonInt64((long) value);
-        else if(value instanceof Byte[]) return new BsonBinary((byte[]) value);
+        else if(value instanceof byte[]) return new BsonBinary((byte[]) value);
         return new BsonString((String) value);
     }
 }

@@ -20,14 +20,12 @@
 
 package net.pretronic.databasequery.mongodb.query.utils;
 
-import net.pretronic.databasequery.api.query.PreparedValue;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.mongodb.collection.MongoDBDatabaseCollection;
 import net.pretronic.libraries.utility.Validate;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,21 +61,13 @@ public class BuildContext {
     }
 
     protected Object nextValue() {
-        System.out.println("nextvale");
         int position = valuePosition.get();
         if(position >= values.length) throw new IllegalArgumentException("No prepared value for index " + position);
         valuePosition.incrementAndGet();
-        System.out.println("---");
-        System.out.println(values.length);
-        System.out.println(Arrays.toString(values));
-        System.out.println(valuePosition.get());
-        System.out.println(position);
-        System.out.println("---");
         return values[position];
     }
 
     protected <T> T getValue(T value) {
-        System.out.println("getvalue:"+value);
         if(value == EntryOption.PREPARED) return (T) nextValue();
         return value;
     }

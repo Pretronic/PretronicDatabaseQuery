@@ -149,7 +149,8 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
     public DataTypeInfo getDataTypeInfo(DataType dataType) {
         return Iterators.findOne(this.dataTypeInfos, dataTypeInfo -> dataTypeInfo.getDataType() == dataType);
     }
-    
+
+    //@Todo move data type infos to dialect
     private void registerDataTypeInfos() {
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DOUBLE).names("DOUBLE"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DECIMAL).names("DECIMAL"));
@@ -164,6 +165,10 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BINARY"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BINARY").defaultSize(16));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BOOLEAN).names("BIT").defaultSize(1));
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BOOLEAN).names("BOOLEAN").sizeAble(false));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BOOLEAN).names("BIT").defaultSize(1));
+        }
     }
 }

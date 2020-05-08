@@ -183,6 +183,13 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
         public FieldOption[] getFieldOptions() {
             return options;
         }
+
+        public boolean hasFieldOption(FieldOption fieldOption) {
+            for (FieldOption option : options) {
+                if(option == fieldOption) return true;
+            }
+            return false;
+        }
     }
 
     /**

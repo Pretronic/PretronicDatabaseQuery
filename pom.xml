@@ -33,6 +33,7 @@
         <dependency.h2.version>1.4.200</dependency.h2.version>
         <dependency.mysql.version>8.0.19</dependency.mysql.version>
         <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
+        <dependency.postgresql.version>42.2.12</dependency.postgresql.version>
 
         <!-- Test dependencies -->
         <test.junit.jupiter.version>5.5.2</test.junit.jupiter.version>

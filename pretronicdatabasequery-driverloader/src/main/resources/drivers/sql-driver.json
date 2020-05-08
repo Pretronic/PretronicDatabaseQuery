@@ -56,6 +56,18 @@
           "checkAvailableClass": "org.mariadb.jdbc.Driver"
         }
       ]
+    },
+    {
+      "name": "PostgreSQL",
+      "dependencies":[
+        {
+          "repository": "https://repo1.maven.org/maven2/",
+          "groupId": "org.postgresql",
+          "artifactId": "postgresql",
+          "version": "${dependency.postgresql.version}",
+          "checkAvailableClass": "org.postgresql.Driver"
+        }
+      ]
     }
   ]
 }

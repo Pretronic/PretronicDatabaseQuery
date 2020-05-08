@@ -2,7 +2,8 @@
  * (C) Copyright 2020 The PretronicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 11.01.20, 15:04
+ * @since 08.05.20, 15:17
+ * @web %web%
  *
  * The PretronicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +18,18 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.sql.dialect.defaults;
+package net.pretronic.databasequery.sql.dialect.defaults.mysql;
 
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
+import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 
 import java.io.File;
 
 public class H2PortableDialect extends AbstractDialect {
 
     public H2PortableDialect() {
-        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL,true);
+        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL,true,
+                "`", "`");
     }
 
     @Override

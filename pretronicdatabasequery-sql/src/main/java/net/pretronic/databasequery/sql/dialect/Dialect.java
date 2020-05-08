@@ -25,9 +25,10 @@ import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.type.*;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
-import net.pretronic.databasequery.sql.dialect.defaults.H2PortableDialect;
-import net.pretronic.databasequery.sql.dialect.defaults.MariaDBDialect;
-import net.pretronic.databasequery.sql.dialect.defaults.MySQLDialect;
+import net.pretronic.databasequery.sql.dialect.defaults.mysql.H2PortableDialect;
+import net.pretronic.databasequery.sql.dialect.defaults.mysql.MariaDBDialect;
+import net.pretronic.databasequery.sql.dialect.defaults.mysql.MySQLDialect;
+import net.pretronic.databasequery.sql.dialect.defaults.postgres.PostgreSQLDialect;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.map.Pair;
 
@@ -43,6 +44,8 @@ public interface Dialect extends ConnectionStringCreator {
     Dialect MYSQL = registerDialect(new MySQLDialect());
     Dialect MARIADB = registerDialect(new MariaDBDialect());
     Dialect H2_PORTABLE = registerDialect(new H2PortableDialect());
+    Dialect POSTGRESQL = registerDialect(new PostgreSQLDialect());
+
 
 
     String getName();

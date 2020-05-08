@@ -78,9 +78,27 @@ public class PostgreSQLDialect extends AbstractDialect {
     }
 
     @Override
-    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
-        if(fieldOption != FieldOption.AUTO_INCREMENT) {
-            super.buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
+    protected void buildCreateQueryFieldOptions(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        if(entry.getFieldOptions() != null && entry.getFieldOptions().length != 0) {
+            Pair<String, String> queryParts = new Pair<>(null, null);
+
+            boolean primaryKey = false;
+            boolean unique = false;
+            for (FieldOption fieldOption : entry.getFieldOptions()) {
+                if(fieldOption == FieldOption.PRIMARY_KEY) primaryKey = true;
+                if(fieldOption == FieldOption.UNIQUE) unique = true;
+                if(fieldOption != FieldOption.AUTO_INCREMENT) {
+                    buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
+                }
+            }
+            if(primaryKey && !unique) buildCreateQueryFieldOption(context, entry, FieldOption.UNIQUE, queryParts);
+            if(queryParts.getKey() != null) context.getQueryBuilder().append(queryParts.getKey());
+            if(queryParts.getValue() != null) context.getQueryBuilder().append(queryParts.getValue());
         }
+    }
+
+    @Override
+    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
+
     }
 }

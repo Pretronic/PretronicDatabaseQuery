@@ -186,13 +186,13 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
 
         if(this.getDialect().equals(Dialect.POSTGRESQL)) {
-            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BYTEA"));
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BYTEA").sizeAble(false));
         } else {
             this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BINARY"));
         }
 
         if(this.getDialect().equals(Dialect.POSTGRESQL)) {
-            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BYTEA").defaultSize(16));
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BYTEA").sizeAble(false));
         } else {
             this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BINARY").defaultSize(16));
         }

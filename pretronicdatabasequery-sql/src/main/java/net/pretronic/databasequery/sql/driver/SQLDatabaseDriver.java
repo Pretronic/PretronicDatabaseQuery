@@ -158,17 +158,45 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
             this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DOUBLE).names("DOUBLE"));
         }
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DECIMAL).names("DECIMAL"));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.FLOAT).names("FLOAT"));
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.FLOAT).names("FLOAT"));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.FLOAT).names("REAL"));
+        }
+
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.INTEGER).names("INTEGER", "INT"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.LONG).names("BIGINT").defaultSize(8));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.CHAR).names("CHAR").defaultSize(1));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.STRING).names("VARCHAR").defaultSize(255));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.LONG_TEXT).names("LONGTEXT").sizeAble(false));
+
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.LONG_TEXT).names("TEXT").sizeAble(false));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.LONG_TEXT).names("LONGTEXT").sizeAble(false));
+        }
+
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DATE).names("DATE"));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DATETIME).names("DATETIME"));
+
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DATETIME).names("TIMESTAMP"));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DATETIME).names("DATETIME"));
+        }
+
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BINARY"));
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BINARY").defaultSize(16));
+
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BYTEA"));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BINARY).names("BINARY"));
+        }
+
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BYTEA").defaultSize(16));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.UUID).names("BINARY").defaultSize(16));
+        }
+
         if(this.getDialect().equals(Dialect.POSTGRESQL)) {
             this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.BOOLEAN).names("BOOLEAN").sizeAble(false));
         } else {

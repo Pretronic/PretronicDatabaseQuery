@@ -152,7 +152,11 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
 
     //@Todo move data type infos to dialect
     private void registerDataTypeInfos() {
-        this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DOUBLE).names("DOUBLE"));
+        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DOUBLE).names("DOUBLE PRECISION"));
+        } else {
+            this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DOUBLE).names("DOUBLE"));
+        }
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.DECIMAL).names("DECIMAL"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.FLOAT).names("FLOAT"));
         this.dataTypeInfos.add(new DataTypeInfo().dataType(DataType.INTEGER).names("INTEGER", "INT"));

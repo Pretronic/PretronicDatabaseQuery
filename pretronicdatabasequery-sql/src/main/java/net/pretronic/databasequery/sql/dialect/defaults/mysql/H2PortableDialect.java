@@ -53,7 +53,7 @@ public class H2PortableDialect extends AbstractDialect {
                 path += "/";
             }
             path+="%s";
-            return "jdbc:h2:file:" + path + ";MODE=Mysql;";
+            return "jdbc:h2:file:" + path + ";MODE=Mysql;IGNORECASE=TRUE;";
         }
     }
 }

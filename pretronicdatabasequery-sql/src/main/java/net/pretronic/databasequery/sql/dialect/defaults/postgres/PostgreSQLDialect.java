@@ -83,21 +83,4 @@ public class PostgreSQLDialect extends AbstractDialect {
             super.buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
         }
     }
-
-    @Override
-    protected void createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
-        StringBuilder indexQuery = new StringBuilder();
-        indexQuery.append("CREATE INDEX CONCURRENTLY ")
-                .append(firstBackTick)
-                .append(UUID.randomUUID().toString())
-                .append(secondBackTick)
-                .append(" ON ")
-                .append(firstBackTick);
-        if(getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
-            indexQuery.append(context.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
-        }
-        indexQuery.append(context.getCollectionName()).append(secondBackTick)
-                .append(" USING BTREE (").append(firstBackTick).append(entry.getField()).append(secondBackTick).append(");");
-        context.getAdditionalExecutedQueries().add(indexQuery.toString());
-    }
 }

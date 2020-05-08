@@ -34,6 +34,7 @@ import net.pretronic.databasequery.sql.DataTypeInfo;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.libraries.utility.map.Pair;
 
@@ -52,7 +53,7 @@ public abstract class AbstractDialect implements Dialect {
     private final String protocol;
     private final DatabaseDriverEnvironment environment;
 
-    private final boolean dynamicDependencies;
+    protected final boolean dynamicDependencies;
 
     protected final String firstBackTick;
     protected final String secondBackTick;
@@ -113,40 +114,40 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public Pair<String, List<Object>> newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
-        List<Object> preparedValues = new ArrayList<>();
-        StringBuilder queryBuilder = new StringBuilder();
+    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
+        CreateQueryContext context = new CreateQueryContext(database, name);
 
-        queryBuilder.append("CREATE TABLE IF NOT EXISTS ").append(firstBackTick);
+        context.getQueryBuilder().append("CREATE TABLE IF NOT EXISTS ").append(firstBackTick);
         if(this.environment == DatabaseDriverEnvironment.REMOTE) {
-            queryBuilder.append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
+            context.getQueryBuilder().append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
         }
-        queryBuilder.append(name).append(secondBackTick).append("(");
+        context.getQueryBuilder().append(name).append(secondBackTick).append("(");
 
         for (int i = 0; i < entries.size(); i++) {
             if(i != 0) {
-                queryBuilder.append(",");
+                context.getQueryBuilder().append(",");
             }
 
             AbstractCreateQuery.Entry entry = entries.get(i);
             if(entry instanceof AbstractCreateQuery.CreateEntry) {
-                buildCreateQueryCreateEntry(database, queryBuilder, preparedValues,(AbstractCreateQuery.CreateEntry) entry);
+                buildCreateQueryCreateEntry(context,(AbstractCreateQuery.CreateEntry) entry);
             } else if(entry instanceof AbstractCreateQuery.ForeignKeyEntry) {
-                buildForeignKey(database, queryBuilder, (AbstractCreateQuery.ForeignKeyEntry) entry);
+                buildForeignKey(context, (AbstractCreateQuery.ForeignKeyEntry) entry);
             } else {
                 throw new IllegalArgumentException(String.format("Entry %s is not supported for MySQL query", entry.getClass().getName()));
             }
         }
-        return new Pair<>(queryBuilder.append(");").toString(), preparedValues);
+        context.getQueryBuilder().append(");");
+        return context;
     }
 
-    protected void buildCreateQueryCreateEntry(SQLDatabase database, StringBuilder queryBuilder, List<Object> preparedValues, AbstractCreateQuery.CreateEntry entry) {
-        DataTypeInfo dataTypeInfo = database.getDriver().getDataTypeInfo(entry.getDataType());
-        queryBuilder.append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append(dataTypeInfo.getName());
+    protected void buildCreateQueryCreateEntry(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        DataTypeInfo dataTypeInfo = context.getDatabase().getDriver().getDataTypeInfo(entry.getDataType());
+        context.getQueryBuilder().append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append(dataTypeInfo.getName());
 
-        buildCreateQuerySize(queryBuilder, entry, dataTypeInfo);
-        buildCreateQueryDefaultValue(queryBuilder, entry, preparedValues);
-        buildCreateQueryFieldOptions(queryBuilder, entry);
+        buildCreateQuerySize(context.getQueryBuilder(), entry, dataTypeInfo);
+        buildCreateQueryDefaultValue(context, entry);
+        buildCreateQueryFieldOptions(context, entry);
     }
 
     protected void buildCreateQuerySize(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, DataTypeInfo dataTypeInfo) {
@@ -156,28 +157,28 @@ public abstract class AbstractDialect implements Dialect {
         }
     }
 
-    protected void buildCreateQueryDefaultValue(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, List<Object> preparedValues) {
+    protected void buildCreateQueryDefaultValue(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
         if(entry.getDefaultValue() != null && entry.getDefaultValue() != EntryOption.NOT_DEFINED) {
-            preparedValues.add(entry.getDefaultValue());
-            queryBuilder.append(" DEFAULT ?");
+            context.getPreparedValues().add(entry.getDefaultValue());
+            context.getQueryBuilder().append(" DEFAULT ?");
         }
     }
 
-    protected void buildCreateQueryFieldOptions(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry) {
+    protected void buildCreateQueryFieldOptions(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
         if(entry.getFieldOptions() != null && entry.getFieldOptions().length != 0) {
             Pair<String, String> queryParts = new Pair<>(null, null);
             for (FieldOption fieldOption : entry.getFieldOptions()) {
-                buildCreateQueryFieldOption(queryBuilder, entry, fieldOption, queryParts);
+                buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
             }
-            if(queryParts.getKey() != null) queryBuilder.append(queryParts.getKey());
-            if(queryParts.getValue() != null) queryBuilder.append(queryParts.getValue());
+            if(queryParts.getKey() != null) context.getQueryBuilder().append(queryParts.getKey());
+            if(queryParts.getValue() != null) context.getQueryBuilder().append(queryParts.getValue());
         }
     }
 
-    protected void buildCreateQueryFieldOption(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
+    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
         switch (fieldOption) {
             case INDEX: {
-                queryParts.setKey(",INDEX "+firstBackTick+ UUID.randomUUID().toString() +secondBackTick+"("+firstBackTick + entry.getField() +secondBackTick+")");
+                createFieldIndex(context, entry);
                 break;
             }
             case UNIQUE_INDEX: {
@@ -185,36 +186,52 @@ public abstract class AbstractDialect implements Dialect {
                 break;
             }
             case PRIMARY_KEY: {
-                queryBuilder.append(" PRIMARY KEY");
+                context.getQueryBuilder().append(" PRIMARY KEY");
                 break;
             }
             case NOT_NULL: {
-                queryBuilder.append(" NOT NULL");
+                context.getQueryBuilder().append(" NOT NULL");
                 break;
             }
             default: {
-                queryBuilder.append(" ").append(fieldOption.toString());
+                context.getQueryBuilder().append(" ").append(fieldOption.toString());
                 break;
             }
         }
     }
 
-    protected void buildForeignKey(SQLDatabase database, StringBuilder queryBuilder, AbstractCreateQuery.ForeignKeyEntry entry) {
-        queryBuilder.append("CONSTRAINT ").append(firstBackTick)
+    protected void createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        StringBuilder indexQuery = new StringBuilder();
+        indexQuery.append("CREATE INDEX ")
+                .append(firstBackTick)
+                .append(UUID.randomUUID().toString())
+                .append(secondBackTick)
+                .append(" ON ")
+                .append(firstBackTick);
+        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+            indexQuery.append(context.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
+        }
+        indexQuery.append(context.getCollectionName()).append(secondBackTick)
+                .append("(").append(firstBackTick).append(entry.getField()).append(secondBackTick).append(");");
+        context.getAdditionalExecutedQueries().add(indexQuery.toString());
+    }
+
+    protected void buildForeignKey(CreateQueryContext context, AbstractCreateQuery.ForeignKeyEntry entry) {
+        context.getQueryBuilder().append("CONSTRAINT ").append(firstBackTick)
                 .append(UUID.randomUUID().toString())
                 .append(secondBackTick).append(" FOREIGN KEY(").append(firstBackTick)
                 .append(entry.getField())
                 .append(secondBackTick).append(") REFERENCES ").append(firstBackTick);
         if(this.environment == DatabaseDriverEnvironment.REMOTE) {
-            queryBuilder.append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
+            context.getQueryBuilder().append(context.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
         }
-        queryBuilder.append(entry.getForeignKey().getCollection()).append(secondBackTick).append("(").append(firstBackTick)
+        context.getQueryBuilder().append(entry.getForeignKey().getCollection()).append(secondBackTick).append("(").append(firstBackTick)
                 .append(entry.getForeignKey().getField()).append(secondBackTick).append(")");
         if(entry.getForeignKey().getDeleteOption() != null && entry.getForeignKey().getDeleteOption() != ForeignKey.Option.DEFAULT) {
-            queryBuilder.append(" ON DELETE ").append(entry.getForeignKey().getDeleteOption().toString().replace("_", " "));
+            context.getQueryBuilder().append(" ON DELETE ").append(entry.getForeignKey().getDeleteOption().toString().replace("_", " "));
         }
         if(entry.getForeignKey().getUpdateOption() != null && entry.getForeignKey().getUpdateOption() != ForeignKey.Option.DEFAULT) {
-            queryBuilder.append(" ON UPDATE ").append(entry.getForeignKey().getDeleteOption().toString().replace("_", " "));
+            context.getQueryBuilder().append(" ON UPDATE ").append(entry.getForeignKey().getDeleteOption().toString().replace("_", " "));
         }
     }
 
@@ -660,8 +677,6 @@ public abstract class AbstractDialect implements Dialect {
     protected void addEntry(Object value, SearchQueryBuilderState state) {
         addAndGetEntry(value, state);
     }
-
-
 
     protected static class SearchQueryBuilderState {
 

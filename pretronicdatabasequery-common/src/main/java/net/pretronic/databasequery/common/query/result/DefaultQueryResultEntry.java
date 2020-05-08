@@ -22,7 +22,6 @@ package net.pretronic.databasequery.common.query.result;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.databasequery.api.query.result.QueryResultEntry;
 import net.pretronic.libraries.utility.Convert;
-import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.libraries.utility.map.IndexCaseIntensiveLinkedHashMap;
 import net.pretronic.libraries.utility.map.IndexCaseIntensiveMap;

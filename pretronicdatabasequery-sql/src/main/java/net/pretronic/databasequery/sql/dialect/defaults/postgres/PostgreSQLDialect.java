@@ -25,12 +25,12 @@ import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
-import net.pretronic.databasequery.sql.SQLDatabase;
+import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 import net.pretronic.libraries.utility.map.Pair;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.UUID;
 
 public class PostgreSQLDialect extends AbstractDialect {
 
@@ -51,36 +51,53 @@ public class PostgreSQLDialect extends AbstractDialect {
     }
 
     @Override
-    protected void buildCreateQueryCreateEntry(SQLDatabase database, StringBuilder queryBuilder, List<Object> preparedValues, AbstractCreateQuery.CreateEntry entry) {
+    protected void buildCreateQueryCreateEntry(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
         if(entry.hasFieldOption(FieldOption.AUTO_INCREMENT)) {
-            queryBuilder.append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append("SERIAL");
-            buildCreateQueryFieldOptions(queryBuilder, entry);
+            context.getQueryBuilder().append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append("SERIAL");
+            buildCreateQueryFieldOptions(context, entry);
         } else {
-            super.buildCreateQueryCreateEntry(database, queryBuilder, preparedValues, entry);
+            super.buildCreateQueryCreateEntry(context, entry);
         }
     }
 
     @Override
-    protected void buildCreateQueryDefaultValue(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, List<Object> preparedValues) {
+    protected void buildCreateQueryDefaultValue(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
         if(entry.getDefaultValue() != null && entry.getDefaultValue() != EntryOption.NOT_DEFINED) {
-            queryBuilder.append(" DEFAULT ");
+            context.getQueryBuilder().append(" DEFAULT ");
             switch (entry.getDataType()) {
                 case LONG_TEXT:
                 case STRING: {
-                    queryBuilder.append("'").append(entry.getDefaultValue()).append("'");
+                    context.getQueryBuilder().append("'").append(entry.getDefaultValue()).append("'");
                     break;
                 }
                 default: {
-                    queryBuilder.append(entry.getDefaultValue());
+                    context.getQueryBuilder().append(entry.getDefaultValue());
                 }
             }
         }
     }
 
     @Override
-    protected void buildCreateQueryFieldOption(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
+    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
         if(fieldOption != FieldOption.AUTO_INCREMENT) {
-            super.buildCreateQueryFieldOption(queryBuilder, entry, fieldOption, queryParts);
+            super.buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
         }
+    }
+
+    @Override
+    protected void createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        StringBuilder indexQuery = new StringBuilder();
+        indexQuery.append("CREATE INDEX CONCURRENTLY ")
+                .append(firstBackTick)
+                .append(UUID.randomUUID().toString())
+                .append(secondBackTick)
+                .append(" ON ")
+                .append(firstBackTick);
+        if(getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
+            indexQuery.append(context.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
+        }
+        indexQuery.append(context.getCollectionName()).append(secondBackTick)
+                .append(" USING BTREE (").append(firstBackTick).append(entry.getField()).append(secondBackTick).append(");");
+        context.getAdditionalExecutedQueries().add(indexQuery.toString());
     }
 }

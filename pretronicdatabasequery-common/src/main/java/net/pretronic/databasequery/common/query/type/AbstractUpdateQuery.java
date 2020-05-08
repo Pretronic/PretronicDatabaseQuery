@@ -20,7 +20,6 @@
 package net.pretronic.databasequery.common.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
-import net.pretronic.databasequery.api.query.type.DeleteQuery;
 import net.pretronic.databasequery.api.query.type.UpdateQuery;
 
 /**

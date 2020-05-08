@@ -23,10 +23,8 @@ import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.libraries.utility.annonations.Internal;
-import net.pretronic.libraries.utility.map.Pair;
-
-import java.util.List;
 
 public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
@@ -41,12 +39,15 @@ public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
     @Internal
     public DatabaseCollection create(boolean commit) {
-        Pair<String, List<Object>> data = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY);
-        this.database.executeUpdateQuery(data.getKey(), commit, preparedStatement -> {
-            for (int i = 1; i <= data.getValue().size(); i++) {
-                preparedStatement.setObject(i, data.getValue().get(i-1));
+        CreateQueryContext context = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY);
+        this.database.executeUpdateQuery(context.getQueryBuilder().toString(), commit, preparedStatement -> {
+            for (int i = 1; i <= context.getPreparedValues().size(); i++) {
+                preparedStatement.setObject(i, context.getPreparedValues().get(i-1));
             }
         });
+        for (String additionalExecutedQuery : context.getAdditionalExecutedQueries()) {
+            this.database.executeUpdateQuery(additionalExecutedQuery, commit);
+        }
         return new SQLDatabaseCollection(this.name, this.database, this.type);
     }
 }

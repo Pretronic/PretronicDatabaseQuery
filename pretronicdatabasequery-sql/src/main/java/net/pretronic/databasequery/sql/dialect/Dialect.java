@@ -25,6 +25,7 @@ import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.type.*;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.H2PortableDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.MariaDBDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.MySQLDialect;
@@ -62,7 +63,7 @@ public interface Dialect extends ConnectionStringCreator {
 
     DatabaseDriverEnvironment getEnvironment();
 
-    Pair<String, List<Object>> newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values);
+    CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values);
 
     Pair<String, List<Object>> newDeleteQuery(SQLDatabaseCollection collection, List<AbstractDeleteQuery.Entry> entries, Object[] values);
 

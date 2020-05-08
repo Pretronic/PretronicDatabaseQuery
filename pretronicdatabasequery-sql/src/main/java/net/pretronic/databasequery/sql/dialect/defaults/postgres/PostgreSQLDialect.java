@@ -54,6 +54,7 @@ public class PostgreSQLDialect extends AbstractDialect {
     protected void buildCreateQueryCreateEntry(SQLDatabase database, StringBuilder queryBuilder, List<Object> preparedValues, AbstractCreateQuery.CreateEntry entry) {
         if(entry.hasFieldOption(FieldOption.AUTO_INCREMENT)) {
             queryBuilder.append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append("SERIAL");
+            buildCreateQueryFieldOptions(queryBuilder, entry);
         } else {
             super.buildCreateQueryCreateEntry(database, queryBuilder, preparedValues, entry);
         }

@@ -91,14 +91,11 @@ public class PostgreSQLDialect extends AbstractDialect {
                     buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
                 }
             }
-            if(primaryKey && !unique) buildCreateQueryFieldOption(context, entry, FieldOption.UNIQUE, queryParts);
+            if(primaryKey && !unique) {
+                buildCreateQueryFieldOption(context, entry, FieldOption.UNIQUE, queryParts);
+            }
             if(queryParts.getKey() != null) context.getQueryBuilder().append(queryParts.getKey());
             if(queryParts.getValue() != null) context.getQueryBuilder().append(queryParts.getValue());
         }
-    }
-
-    @Override
-    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
-
     }
 }

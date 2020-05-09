@@ -178,7 +178,8 @@ public abstract class AbstractDialect implements Dialect {
     protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
         switch (fieldOption) {
             case INDEX: {
-                createFieldIndex(context, entry);
+                String queryPart = createFieldIndex(context, entry);
+                if(queryPart != null) queryParts.setKey(queryPart);
                 break;
             }
             case UNIQUE_INDEX: {
@@ -200,22 +201,11 @@ public abstract class AbstractDialect implements Dialect {
         }
     }
 
-    protected void createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+    protected String createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
         String indexName = context.getDatabase().getName()+context.getCollectionName()+entry.getField();
         if(indexName.length() > 64) indexName = indexName.substring(0, 64);
-        StringBuilder indexQuery = new StringBuilder();
-        indexQuery.append("CREATE INDEX IF NOT EXISTS ")
-                .append(firstBackTick)
-                .append(indexName)
-                .append(secondBackTick)
-                .append(" ON ")
-                .append(firstBackTick);
-        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
-            indexQuery.append(context.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
-        }
-        indexQuery.append(context.getCollectionName()).append(secondBackTick)
-                .append("(").append(firstBackTick).append(entry.getField()).append(secondBackTick).append(");");
-        context.getAdditionalExecutedQueries().add(indexQuery.toString());
+        return ", INDEX " + firstBackTick + indexName + secondBackTick +
+                " (" + firstBackTick + entry.getField() + secondBackTick + ")";
     }
 
     protected void buildForeignKey(CreateQueryContext context, AbstractCreateQuery.ForeignKeyEntry entry) {

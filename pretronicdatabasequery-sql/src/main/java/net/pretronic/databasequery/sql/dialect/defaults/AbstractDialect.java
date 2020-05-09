@@ -201,10 +201,12 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     protected void createFieldIndex(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        String indexName = context.getDatabase().getName()+context.getCollectionName()+entry.getField();
+        if(indexName.length() > 64) indexName = indexName.substring(0, 64);
         StringBuilder indexQuery = new StringBuilder();
-        indexQuery.append("CREATE INDEX ")
+        indexQuery.append("CREATE INDEX IF NOT EXISTS ")
                 .append(firstBackTick)
-                .append(UUID.randomUUID().toString())
+                .append(indexName)
                 .append(secondBackTick)
                 .append(" ON ")
                 .append(firstBackTick);

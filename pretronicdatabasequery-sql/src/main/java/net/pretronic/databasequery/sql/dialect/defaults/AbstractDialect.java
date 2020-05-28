@@ -21,6 +21,7 @@ package net.pretronic.databasequery.sql.dialect.defaults;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
 import net.pretronic.databasequery.api.collection.field.FieldOption;
+import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.driver.DatabaseDriverFactory;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.api.query.Aggregation;
@@ -30,12 +31,14 @@ import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.*;
-import net.pretronic.databasequery.sql.DataTypeInfo;
+import net.pretronic.databasequery.sql.DataTypeInformation;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.libraries.utility.Iterators;
+import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.map.Pair;
 
 import java.sql.Driver;
@@ -52,6 +55,7 @@ public abstract class AbstractDialect implements Dialect {
     private Class<? extends Driver> driver;
     private final String protocol;
     private final DatabaseDriverEnvironment environment;
+    protected final Collection<DataTypeInformation> dataTypeInformation;
 
     protected final boolean dynamicDependencies;
 
@@ -66,6 +70,8 @@ public abstract class AbstractDialect implements Dialect {
         this.dynamicDependencies = dynamicDependencies;
         this.firstBackTick = firstBackTick;
         this.secondBackTick = secondBackTick;
+        this.dataTypeInformation = new ArrayList<>();
+        registerDataTypeInformation();
     }
 
     @Override
@@ -82,6 +88,19 @@ public abstract class AbstractDialect implements Dialect {
     public Class<? extends Driver> getDriver() {
         loadDriver();
         return this.driver;
+    }
+
+    @Override
+    public Collection<DataTypeInformation> getDataTypeInformation() {
+        return this.dataTypeInformation;
+    }
+
+    @Override
+    public DataTypeInformation getDataTypeInformation(DataType dataType) {
+        Validate.notNull(dataType);
+        DataTypeInformation information = Iterators.findOne(this.dataTypeInformation, info -> info.getDataType() == dataType);
+        if(information == null) throw new UnsupportedOperationException("DataTypeInformation for DataType " + dataType + " does not exist");
+        return information;
     }
 
     @SuppressWarnings("unchecked")
@@ -116,8 +135,7 @@ public abstract class AbstractDialect implements Dialect {
     @Override
     public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
         CreateQueryContext context = new CreateQueryContext(database, name);
-
-        context.getQueryBuilder().append("CREATE TABLE IF NOT EXISTS ").append(firstBackTick);
+        context.getQueryBuilder().append("CREATE TABLE ").append(firstBackTick);
         if(this.environment == DatabaseDriverEnvironment.REMOTE) {
             context.getQueryBuilder().append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
         }
@@ -142,18 +160,18 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     protected void buildCreateQueryCreateEntry(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
-        DataTypeInfo dataTypeInfo = context.getDatabase().getDriver().getDataTypeInfo(entry.getDataType());
-        context.getQueryBuilder().append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append(dataTypeInfo.getName());
+        DataTypeInformation dataTypeInformation = getDataTypeInformation(entry.getDataType());
+        context.getQueryBuilder().append(firstBackTick).append(entry.getField()).append(secondBackTick).append(" ").append(dataTypeInformation.getName());
 
-        buildCreateQuerySize(context.getQueryBuilder(), entry, dataTypeInfo);
+        buildCreateQuerySize(context.getQueryBuilder(), entry, dataTypeInformation);
         buildCreateQueryDefaultValue(context, entry);
         buildCreateQueryFieldOptions(context, entry);
     }
 
-    protected void buildCreateQuerySize(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, DataTypeInfo dataTypeInfo) {
-        if(dataTypeInfo.isSizeAble()) {
-            if(entry.getSize() != 0) queryBuilder.append("(").append(entry.getSize()).append(")");
-            else if(dataTypeInfo.getDefaultSize() != 0) queryBuilder.append("(").append(dataTypeInfo.getDefaultSize()).append(")");
+    protected void buildCreateQuerySize(StringBuilder queryBuilder, AbstractCreateQuery.CreateEntry entry, DataTypeInformation dataTypeInformation) {
+        if(dataTypeInformation.isSizeAble()) {
+            if(entry.getSize() != 0 && entry.getSize() > 0) queryBuilder.append("(").append(entry.getSize()).append(")");
+            else if(dataTypeInformation.getDefaultSize() > 0) queryBuilder.append("(").append(dataTypeInformation.getDefaultSize()).append(")");
         }
     }
 
@@ -669,6 +687,8 @@ public abstract class AbstractDialect implements Dialect {
     protected void addEntry(Object value, SearchQueryBuilderState state) {
         addAndGetEntry(value, state);
     }
+
+    protected abstract void registerDataTypeInformation();
 
     protected static class SearchQueryBuilderState {
 

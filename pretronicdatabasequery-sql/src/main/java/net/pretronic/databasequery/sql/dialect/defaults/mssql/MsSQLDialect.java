@@ -2,7 +2,7 @@
  * (C) Copyright 2020 The PretronicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 08.05.20, 15:17
+ * @since 09.05.20, 16:49
  * @web %web%
  *
  * The PretronicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
@@ -18,38 +18,63 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.sql.dialect.defaults.mysql;
+package net.pretronic.databasequery.sql.dialect.defaults.mssql;
 
+import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
+import net.pretronic.databasequery.api.collection.field.FieldOption;
 import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
+import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
+import net.pretronic.databasequery.common.query.EntryOption;
+import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.DataTypeInformation;
+import net.pretronic.databasequery.sql.SQLDatabase;
+import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
+import net.pretronic.libraries.utility.map.Pair;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
-public class MySQLDialect extends AbstractDialect {
+public class MsSQLDialect extends AbstractDialect {
 
-    public MySQLDialect() {
-        this("MySQL", "com.mysql.cj.jdbc.Driver", "mysql", DatabaseDriverEnvironment.REMOTE,
-                true, "`", "`");
+    public MsSQLDialect() {
+        super("MsSQL", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sqlserver", DatabaseDriverEnvironment.REMOTE, true, "[", "]");
     }
 
-    public MySQLDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
-        super(name, driverName, protocol, environment, dynamicDependencies, firstBackTick, secondBackTick);
-    }
+    /*
+    IF NOT EXISTS ; IDENTITY(1,1)
 
-
+     */
 
     @Override
     public String createConnectionString(String connectionString, Object host) {
+        //jdbc:sqlserver://<server>:<port>;databaseName=AdventureWorks;user=<user>;password=<password>
         if(connectionString != null) {
             return connectionString;
+            /*
+            IF OBJECT_ID(N'dbo.Cars', N'U') IS NULL BEGIN CREATE TABLE dbo.Cars (Name varchar(64) not null); END;
+             */
         } else if(host instanceof InetSocketAddress) {
             InetSocketAddress address = (InetSocketAddress) host;
-            return String.format("jdbc:mysql://%s:%s", address.getHostName(), address.getPort());
+            return String.format("jdbc:sqlserver://%s:%s", address.getHostName(), address.getPort());
         }
         throw new DatabaseQueryException("Can't match jdbc url for dialect " + getName());
+    }
+
+    @Override
+    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
+        return super.newCreateQuery(database, entries, name, engine, collectionType, includingQuery, values);
+    }
+
+    @Override
+    protected void buildCreateQueryFieldOption(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry, FieldOption fieldOption, Pair<String, String> queryParts) {
+        if(fieldOption == FieldOption.AUTO_INCREMENT) {
+            context.getQueryBuilder().append(" IDENTITY(1,1)");
+        } else {
+            super.buildCreateQueryFieldOption(context, entry, fieldOption, queryParts);
+        }
     }
 
     @Override
@@ -61,12 +86,29 @@ public class MySQLDialect extends AbstractDialect {
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATETIME).names("DATETIME"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BINARY).names("BINARY"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.UUID).names("BINARY").defaultSize(16));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BIT").defaultSize(1));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BIT").sizeAble(false));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DECIMAL).names("DECIMAL"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.INTEGER).names("INTEGER", "INT"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.CHAR).names("CHAR").defaultSize(1));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.STRING).names("VARCHAR").defaultSize(255));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATE).names("DATE"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
+    }
+
+    @Override
+    protected void buildCreateQueryDefaultValue(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {
+        if(entry.getDefaultValue() != null && entry.getDefaultValue() != EntryOption.NOT_DEFINED) {
+            context.getQueryBuilder().append(" DEFAULT ");
+            switch (entry.getDataType()) {
+                case LONG_TEXT:
+                case STRING: {
+                    context.getQueryBuilder().append("'").append(entry.getDefaultValue()).append("'");
+                    break;
+                }
+                default: {
+                    context.getQueryBuilder().append(entry.getDefaultValue());
+                }
+            }
+        }
     }
 }

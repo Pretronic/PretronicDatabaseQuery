@@ -21,11 +21,10 @@
 package net.pretronic.databasequery.sql.dialect.defaults.mysql;
 
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
-import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 
 import java.io.File;
 
-public class H2PortableDialect extends AbstractDialect {
+public class H2PortableDialect extends MySQLDialect {
 
     public H2PortableDialect() {
         super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL,true,

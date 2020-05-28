@@ -68,6 +68,18 @@
           "checkAvailableClass": "org.postgresql.Driver"
         }
       ]
+    },
+    {
+      "name": "MsSQL",
+      "dependencies":[
+        {
+          "repository": "https://repo1.maven.org/maven2/",
+          "groupId": "com.microsoft.sqlserver",
+          "artifactId": "mssql-jdbc",
+          "version": "${dependency.mssql.version}",
+          "checkAvailableClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        }
+      ]
     }
   ]
 }

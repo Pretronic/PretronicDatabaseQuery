@@ -21,16 +21,17 @@
 package net.pretronic.databasequery.sql.dialect.defaults.postgres;
 
 import net.pretronic.databasequery.api.collection.field.FieldOption;
+import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
+import net.pretronic.databasequery.sql.DataTypeInformation;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 import net.pretronic.libraries.utility.map.Pair;
 
 import java.net.InetSocketAddress;
-import java.util.UUID;
 
 public class PostgreSQLDialect extends AbstractDialect {
 
@@ -117,5 +118,24 @@ public class PostgreSQLDialect extends AbstractDialect {
                 .append("(").append(firstBackTick).append(entry.getField()).append(secondBackTick).append(");");
         context.getAdditionalExecutedQueries().add(indexQuery.toString());
         return null;
+    }
+
+    @Override
+    protected void registerDataTypeInformation() {
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DOUBLE).names("DOUBLE PRECISION"));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG).names("BIGINT").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG_TEXT).names("TEXT").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATETIME).names("TIMESTAMP"));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BINARY).names("BYTEA").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.UUID).names("BYTEA").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BOOLEAN").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.FLOAT).names("FLOAT"));
+
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DECIMAL).names("DECIMAL"));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.INTEGER).names("INTEGER", "INT"));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.CHAR).names("CHAR").defaultSize(1));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.STRING).names("VARCHAR").defaultSize(255));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATE).names("DATE"));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
     }
 }

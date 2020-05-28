@@ -21,14 +21,14 @@ package net.pretronic.databasequery.sql;
 
 import net.pretronic.databasequery.api.datatype.DataType;
 
-public class DataTypeInfo {
+public class DataTypeInformation {
 
     private DataType dataType;
     private String[] names;
     private boolean sizeAble;
     private int defaultSize;
 
-    public DataTypeInfo() {
+    public DataTypeInformation() {
         this.sizeAble = true;
         this.defaultSize = 0;
     }
@@ -53,22 +53,22 @@ public class DataTypeInfo {
         return defaultSize;
     }
 
-    public DataTypeInfo dataType(DataType dataType) {
+    public DataTypeInformation dataType(DataType dataType) {
         this.dataType = dataType;
         return this;
     }
 
-    public DataTypeInfo names(String... names) {
+    public DataTypeInformation names(String... names) {
         this.names = names;
         return this;
     }
 
-    public DataTypeInfo sizeAble(boolean sizeAble) {
+    public DataTypeInformation sizeAble(boolean sizeAble) {
         this.sizeAble = sizeAble;
         return this;
     }
 
-    public DataTypeInfo defaultSize(int defaultSize) {
+    public DataTypeInformation defaultSize(int defaultSize) {
         this.defaultSize = defaultSize;
         return this;
     }

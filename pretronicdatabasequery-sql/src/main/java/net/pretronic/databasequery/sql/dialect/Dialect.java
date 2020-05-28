@@ -20,12 +20,15 @@
 package net.pretronic.databasequery.sql.dialect;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
+import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.type.*;
+import net.pretronic.databasequery.sql.DataTypeInformation;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
+import net.pretronic.databasequery.sql.dialect.defaults.mssql.MsSQLDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.H2PortableDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.MariaDBDialect;
 import net.pretronic.databasequery.sql.dialect.defaults.mysql.MySQLDialect;
@@ -46,7 +49,7 @@ public interface Dialect extends ConnectionStringCreator {
     Dialect MARIADB = registerDialect(new MariaDBDialect());
     Dialect H2_PORTABLE = registerDialect(new H2PortableDialect());
     Dialect POSTGRESQL = registerDialect(new PostgreSQLDialect());
-
+    Dialect MSSQL = registerDialect(new MsSQLDialect());
 
 
     String getName();
@@ -55,13 +58,16 @@ public interface Dialect extends ConnectionStringCreator {
 
     Class<? extends Driver> getDriver();
 
-
     void loadDriver();
-
 
     String getProtocol();
 
     DatabaseDriverEnvironment getEnvironment();
+
+    Collection<DataTypeInformation> getDataTypeInformation();
+
+    DataTypeInformation getDataTypeInformation(DataType dataType);
+
 
     CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values);
 

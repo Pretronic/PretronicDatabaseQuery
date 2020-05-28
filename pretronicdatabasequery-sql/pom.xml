@@ -98,6 +98,14 @@
             <version>${dependency.h2.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${dependency.mssql.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

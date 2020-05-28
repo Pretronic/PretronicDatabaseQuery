@@ -22,11 +22,10 @@ package net.pretronic.databasequery.sql.dialect.defaults.mysql;
 
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
-import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 
 import java.net.InetSocketAddress;
 
-public class MariaDBDialect extends AbstractDialect {
+public class MariaDBDialect extends MySQLDialect {
 
     public MariaDBDialect() {
         super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb", DatabaseDriverEnvironment.REMOTE,

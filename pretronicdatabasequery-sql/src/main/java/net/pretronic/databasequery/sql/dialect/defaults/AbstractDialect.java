@@ -135,7 +135,7 @@ public abstract class AbstractDialect implements Dialect {
     @Override
     public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
         CreateQueryContext context = new CreateQueryContext(database, name);
-        context.getQueryBuilder().append("CREATE TABLE ").append(firstBackTick);
+        context.getQueryBuilder().append("CREATE TABLE IF NOT EXISTS ").append(firstBackTick);
         if(this.environment == DatabaseDriverEnvironment.REMOTE) {
             context.getQueryBuilder().append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
         }

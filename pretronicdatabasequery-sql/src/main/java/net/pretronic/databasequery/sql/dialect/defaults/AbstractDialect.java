@@ -139,6 +139,7 @@ public abstract class AbstractDialect implements Dialect {
         if(this.environment == DatabaseDriverEnvironment.REMOTE) {
             context.getQueryBuilder().append(database.getName()).append(secondBackTick).append(".").append(firstBackTick);
         }
+
         context.getQueryBuilder().append(name).append(secondBackTick).append("(");
 
         for (int i = 0; i < entries.size(); i++) {

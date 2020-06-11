@@ -56,7 +56,9 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
                         DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
                         if(!this.getEntries.isEmpty()) {
                             for (GetEntry entry : this.getEntries) {
-                                String getter = entry.getAggregation() == null ? entry.getField() : entry.getAggregation() + "(`" + entry.getField() + "`)";
+                                String getter;
+                                if(entry.getAlias() != null) getter = entry.getAlias();
+                                else getter = entry.getAggregation() == null ? entry.getField() : entry.getAggregation() + "(`" + entry.getField() + "`)";
                                 Object value = resultSet.getObject(getter);
                                 resultEntry.addEntry(getter, value);
                             }

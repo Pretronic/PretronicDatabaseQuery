@@ -22,10 +22,14 @@ package net.pretronic.databasequery.api.driver;
 
 import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.datatype.adapter.DataTypeAdapter;
+import net.pretronic.databasequery.api.datatype.adapter.defaults.InetAddressAdapter;
+import net.pretronic.databasequery.api.datatype.adapter.defaults.InetSocketAddressAdapter;
 import net.pretronic.databasequery.api.datatype.adapter.defaults.UUIDDataTypeAdapter;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.pretronic.libraries.logging.PretronicLogger;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -132,5 +136,7 @@ public interface DatabaseDriver {
      */
     default void registerDefaultAdapters(){
         registerDataTypeAdapter(UUID.class,new UUIDDataTypeAdapter());
+        registerDataTypeAdapter(InetAddress.class, new InetAddressAdapter());
+        registerDataTypeAdapter(InetSocketAddress.class, new InetSocketAddressAdapter());
     }
 }

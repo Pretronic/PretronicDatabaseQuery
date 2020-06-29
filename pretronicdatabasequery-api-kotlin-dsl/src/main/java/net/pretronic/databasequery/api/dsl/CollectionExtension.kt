@@ -41,7 +41,7 @@ fun DatabaseCollection.replace(initializer: ReplaceQuery.() -> Unit) : ReplaceQu
 }
 
 fun DatabaseCollection.delete(initializer: DeleteQuery.() -> Unit) : DeleteQuery {
-    return this.delete(initializer).apply(initializer)
+    return this.delete().apply(initializer)
 }
 
 fun DatabaseCollection.group(initializer: QueryGroup.() -> Unit) : QueryGroup {

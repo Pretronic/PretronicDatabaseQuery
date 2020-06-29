@@ -103,6 +103,9 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
         builder.accept(fieldBuilder);
         Validate.notNull(fieldBuilder.getName(), fieldBuilder.getType());
         this.entries.add(new CreateEntry(fieldBuilder.getName(), fieldBuilder.getType(), fieldBuilder.getSize(), fieldBuilder.getDefaultValue(), fieldBuilder.getOptions()));
+        if(fieldBuilder.getForeignKey() != null) {
+            this.entries.add(new ForeignKeyEntry(fieldBuilder.getName(), fieldBuilder.getForeignKey()));
+        }
         return this;
     }
 

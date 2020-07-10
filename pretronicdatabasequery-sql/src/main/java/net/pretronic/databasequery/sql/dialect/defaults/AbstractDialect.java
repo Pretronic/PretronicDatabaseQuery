@@ -512,7 +512,7 @@ public abstract class AbstractDialect implements Dialect {
     protected void buildSearchQueryOperationEntry(AbstractSearchQuery.OperationEntry entry, SearchQueryBuilderState state) {
         switch (entry.getType()) {
             case OR: {
-                andOr(entry,"AND", state);
+                andOr(entry,"OR", state);
                 break;
             }
             case AND: {

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>PretronicDatabaseQuery</artifactId>
         <groupId>net.pretronic.databasequery</groupId>
-        <version>1.2.29.55-SNAPSHOT</version>
+        <version>1.2.30.56-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

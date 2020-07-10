@@ -512,11 +512,11 @@ public abstract class AbstractDialect implements Dialect {
     protected void buildSearchQueryOperationEntry(AbstractSearchQuery.OperationEntry entry, SearchQueryBuilderState state) {
         switch (entry.getType()) {
             case OR: {
-                andOr(entry,"OR", state);
+                andOr(entry, "OR", state);
                 break;
             }
             case AND: {
-                andOr(entry,"AND", state);
+                andOr(entry, "AND", state);
             }
             case NOT : {
                 state.negate = true;
@@ -534,7 +534,7 @@ public abstract class AbstractDialect implements Dialect {
                 state.clauseBuilder.append(" WHERE ");
                 state.where = false;
             } else {
-                state.clauseBuilder.append(" ").append(symbol).append(" ");
+                state.clauseBuilder.append(" AND ");
             }
         }
 

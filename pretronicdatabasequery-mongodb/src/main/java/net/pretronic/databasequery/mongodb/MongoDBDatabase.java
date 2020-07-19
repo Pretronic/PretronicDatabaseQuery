@@ -24,16 +24,21 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
+import net.pretronic.databasequery.api.collection.InnerQueryDatabaseCollection;
 import net.pretronic.databasequery.api.query.Query;
 import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
+import net.pretronic.databasequery.api.query.function.RowNumberQueryFunction;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
+import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.AbstractDatabase;
 import net.pretronic.databasequery.mongodb.collection.MongoDBDatabaseCollection;
 import net.pretronic.databasequery.mongodb.driver.MongoDBDatabaseDriver;
 import net.pretronic.databasequery.mongodb.query.MongoDBCreateQuery;
 import org.bson.Document;
+
+import java.util.function.Consumer;
 
 public class MongoDBDatabase extends AbstractDatabase<MongoDBDatabaseDriver> {
 
@@ -49,6 +54,16 @@ public class MongoDBDatabase extends AbstractDatabase<MongoDBDatabaseDriver> {
     @Override
     public DatabaseCollection getCollection(String name) {
         return new MongoDBDatabaseCollection(name, this, DatabaseCollectionType.NORMAL);
+    }
+
+    @Override
+    public InnerQueryDatabaseCollection getInnerQueryCollection(DatabaseCollection from, String aliasName, Consumer<FindQuery> queryConsumer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public InnerQueryDatabaseCollection getRowNumberInnerQueryCollection(DatabaseCollection from, String aliasName, RowNumberQueryFunction function) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

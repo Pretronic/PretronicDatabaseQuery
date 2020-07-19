@@ -365,7 +365,6 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     protected String buildFindQueryGetBuilder(FindQueryBuilderState state) {
-        System.out.println("build fing get " + state.getBuilder.length());
         if(state.getBuilder.length() == 0) return "*";
         else return state.getBuilder.toString();
     }

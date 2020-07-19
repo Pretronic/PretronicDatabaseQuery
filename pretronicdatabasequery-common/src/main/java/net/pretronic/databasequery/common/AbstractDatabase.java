@@ -50,4 +50,13 @@ public abstract class AbstractDatabase<T extends DatabaseDriver> implements Data
     public PretronicLogger getLogger() {
         return this.driver.getLogger();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof Database) {
+            return getName().equals(((Database) o).getName()) && getDriver().equals(((Database) o).getDriver());
+        }
+        return false;
+    }
 }

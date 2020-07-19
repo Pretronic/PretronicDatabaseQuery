@@ -123,6 +123,20 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof AbstractFindQuery) {
+            AbstractFindQuery<?> other = ((AbstractFindQuery<?>) o);
+            if(getEntries.size() != other.getEntries.size()) return false;
+            for (int i = 0; i < getEntries.size(); i++) {
+                if(!getEntries.get(i).equals(other.getEntries.get(i))) return false;
+            }
+            return super.equals(o);
+        }
+        return false;
+    }
+
     public static class GetEntry extends Entry {
 
         private final String database;
@@ -162,6 +176,20 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         public String getAlias() {
             return alias;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof GetEntry) {
+                GetEntry entry = ((GetEntry) o);
+                if(database != null && !database.equals(entry.database)) return false;
+                if(databaseCollection != null && !databaseCollection.equals(entry.databaseCollection)) return false;
+                if(aggregation != null && aggregation != entry.aggregation) return false;
+                if(alias != null && !alias.equals(entry.alias)) return false;
+                return field.equals(entry.field);
+            }
+            return false;
+        }
     }
 
     public static class FunctionEntry extends Entry {
@@ -180,6 +208,16 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
 
         public String getGetAliasName() {
             return getAliasName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof FunctionEntry) {
+                FunctionEntry entry = ((FunctionEntry) o);
+                return function.equals(entry.function) && getAliasName.equals(entry.getAliasName);
+            }
+            return false;
         }
     }
 }

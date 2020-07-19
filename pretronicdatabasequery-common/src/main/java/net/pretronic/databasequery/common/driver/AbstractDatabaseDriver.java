@@ -97,4 +97,13 @@ public abstract class AbstractDatabaseDriver implements DatabaseDriver {
     public void unregisterDataTypeAdapter(Class<?> clazz) {
         this.dataTypeAdapters.remove(clazz);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof DatabaseDriver) {
+            return getName().equals(((DatabaseDriver) o).getName()) && getType().equals(((DatabaseDriver) o).getType());
+        }
+        return false;
+    }
 }

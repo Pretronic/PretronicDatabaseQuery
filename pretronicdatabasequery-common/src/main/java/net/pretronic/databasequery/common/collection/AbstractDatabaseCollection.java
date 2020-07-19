@@ -106,4 +106,14 @@ public abstract class AbstractDatabaseCollection<T extends Database> implements 
         this.database.getDriver().getExecutorService().execute(()-> future.complete(hasField(name)));
         return future;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof DatabaseCollection) {
+            DatabaseCollection collection = ((DatabaseCollection) o);
+            return getName().equals(collection.getName()) && getDatabase().equals(((DatabaseCollection) o).getDatabase());
+        }
+        return false;
+    }
 }

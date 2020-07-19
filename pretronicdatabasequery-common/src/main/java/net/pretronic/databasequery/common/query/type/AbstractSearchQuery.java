@@ -449,6 +449,20 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         return new Triple<>(database, databaseCollection, field);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof AbstractSearchQuery) {
+            AbstractSearchQuery<?,?> other = ((AbstractSearchQuery<?,?>)o);
+            if(entries.size() != other.entries.size()) return false;
+            for (int i = 0; i < entries.size(); i++) {
+                if(!entries.get(i).equals(other.entries.get(i))) return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static class Entry {}
 
     /**
@@ -505,6 +519,22 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             return extra;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof ConditionEntry) {
+                ConditionEntry entry = ((ConditionEntry) o);
+                if(type != entry.type) return false;
+                if(database != null && !database.equals(entry.database)) return false;
+                if(databaseCollection != null && !databaseCollection.equals(entry.databaseCollection)) return false;
+                if(!field.equals(entry.field)) return false;
+                if(type != Type.WHERE_NULL && !value1.equals(entry.value1)) return false;
+                if(extra != null && !extra.equals(entry.getExtra())) return false;
+                return true;
+            }
+            return false;
+        }
+
         public enum Type {
 
             WHERE,
@@ -549,6 +579,21 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
             return entries;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof OperationEntry) {
+                OperationEntry entry = ((OperationEntry) o);
+                if(type != entry.type) return false;
+                if(entries.size() != entry.entries.size()) return false;
+                for (int i = 0; i < entries.size(); i++) {
+                    if(!entries.get(i).equals(entry.entries.get(i))) return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
         public enum Type {
 
             NOT,
@@ -582,6 +627,22 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
         public List<JoinOnEntry> getOnEntries() {
             return onEntries;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof JoinEntry) {
+                JoinEntry entry = ((JoinEntry) o);
+                if(collection != null && !collection.equals(entry.getCollection())) return false;
+                if(type != entry.getType()) return false;
+                if(onEntries.size() != entry.onEntries.size()) return false;
+                for (int i = 0; i < onEntries.size(); i++) {
+                    if(!onEntries.get(i).equals(entry.onEntries.get(i))) return false;
+                }
+                return true;
+            }
+            return false;
         }
     }
 
@@ -617,6 +678,18 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         public String getColumn2() {
             return column2;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof JoinOnEntry) {
+                JoinOnEntry entry = ((JoinOnEntry) o);
+                if(collection1 != null && !collection1.equals(entry.collection1)) return false;
+                if(collection2 != null && !collection2.equals(entry.collection2)) return false;
+                return column1.equals(entry.column1) && column2.equals(entry.column2);
+            }
+            return false;
+        }
     }
 
     /**
@@ -638,6 +711,16 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
         public int getOffset() {
             return offset;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof LimitEntry) {
+                LimitEntry entry = ((LimitEntry) o);
+                return limit == entry.limit && offset == entry.offset;
+            }
+            return false;
         }
     }
 
@@ -679,6 +762,19 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         public Aggregation getAggregation() {
             return aggregation;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof OrderByEntry) {
+                OrderByEntry entry = ((OrderByEntry) o);
+                if(database != null && !database.equals(entry.getDatabase())) return false;
+                if(databaseCollection != null && !databaseCollection.equals(entry.databaseCollection)) return false;
+                if(aggregation != null && !aggregation.equals(entry.aggregation)) return false;
+                return field.equals(entry.getField()) && order == entry.getOrder();
+            }
+            return false;
+        }
     }
 
     /**
@@ -712,6 +808,19 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
 
         public Aggregation getAggregation() {
             return aggregation;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(o instanceof GroupByEntry) {
+                GroupByEntry entry = ((GroupByEntry) o);
+                if(database != null && !database.equals(entry.database)) return false;
+                if(databaseCollection != null && !databaseCollection.equals(entry.databaseCollection)) return false;
+                if(aggregation != null && aggregation != entry.aggregation) return false;
+                return field.equals(entry.field);
+            }
+            return false;
         }
     }
 }

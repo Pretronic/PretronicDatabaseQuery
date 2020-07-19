@@ -39,4 +39,14 @@ public class RowNumberQueryFunction implements QueryFunction {
     public SearchOrder getOrder() {
         return order;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o instanceof RowNumberQueryFunction) {
+            RowNumberQueryFunction function = ((RowNumberQueryFunction) o);
+            return orderField.equals(function.orderField) && order == function.order;
+        }
+        return false;
+    }
 }

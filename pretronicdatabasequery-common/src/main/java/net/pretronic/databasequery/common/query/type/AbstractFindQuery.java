@@ -21,8 +21,10 @@ package net.pretronic.databasequery.common.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.Aggregation;
+import net.pretronic.databasequery.api.query.function.QueryFunction;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.libraries.utility.Validate;
+import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.libraries.utility.map.Triple;
 
 import java.util.ArrayList;
@@ -34,11 +36,16 @@ import java.util.List;
  */
 public abstract class AbstractFindQuery<C extends DatabaseCollection> extends AbstractSearchQuery<FindQuery, C> implements FindQuery {
 
-    protected final List<GetEntry> getEntries;
+    protected final List<Entry> getEntries;
 
     public AbstractFindQuery(C collection) {
         super(collection);
         this.getEntries = new ArrayList<>();
+    }
+
+    @Internal
+    public List<Entry> getGetEntries() {
+        return getEntries;
     }
 
     @Override
@@ -109,6 +116,13 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         return this;
     }
 
+    @Override
+    public FindQuery getFunction(QueryFunction function, String getAliasName) {
+        Validate.notNull(function, (Object) getAliasName);
+        this.getEntries.add(new FunctionEntry(function, getAliasName));
+        return this;
+    }
+
     public static class GetEntry extends Entry {
 
         private final String database;
@@ -147,6 +161,25 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
 
         public String getAlias() {
             return alias;
+        }
+    }
+
+    public static class FunctionEntry extends Entry {
+
+        private final QueryFunction function;
+        private final String getAliasName;
+
+        public FunctionEntry(QueryFunction function, String getAliasName) {
+            this.function = function;
+            this.getAliasName = getAliasName;
+        }
+
+        public QueryFunction getFunction() {
+            return function;
+        }
+
+        public String getGetAliasName() {
+            return getAliasName;
         }
     }
 }

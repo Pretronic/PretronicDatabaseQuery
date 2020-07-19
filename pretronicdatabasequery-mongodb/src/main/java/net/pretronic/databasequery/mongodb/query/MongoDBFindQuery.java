@@ -67,17 +67,23 @@ public class MongoDBFindQuery extends AbstractFindQuery<MongoDBDatabaseCollectio
                     }
                 });
             } else {
-                for (GetEntry getEntry : getEntries) {
-                    if(getEntry.getDatabase() != null) throw new UnsupportedOperationException("MongoDB cross database entry getting is not possible");
+                for (Entry entry : getEntries) {
+                    if(entry instanceof GetEntry) {
+                        GetEntry getEntry = ((GetEntry) entry);
+                        if(getEntry.getDatabase() != null) throw new UnsupportedOperationException("MongoDB cross database entry getting is not possible");
 
-                    if(getEntry.getDatabaseCollection() != null) {
-                        Document subDocument = document.get("result"+getEntry.getDatabaseCollection(), Document.class);
-                        Object value = subDocument.get(getEntry.getField());
-                        resultEntry.addEntry(getEntry.getDatabaseCollection()+"."+getEntry.getField(), value);
+                        if(getEntry.getDatabaseCollection() != null) {
+                            Document subDocument = document.get("result"+getEntry.getDatabaseCollection(), Document.class);
+                            Object value = subDocument.get(getEntry.getField());
+                            resultEntry.addEntry(getEntry.getDatabaseCollection()+"."+getEntry.getField(), value);
+                        } else {
+                            Object value = document.get(getEntry.getField());
+                            resultEntry.addEntry(getEntry.getField(), value);
+                        }
                     } else {
-                        Object value = document.get(getEntry.getField());
-                        resultEntry.addEntry(getEntry.getField(), value);
+                        throw new UnsupportedOperationException(entry.getClass().getName() + " is currently not supported in mongodb");
                     }
+
 
                 }
             }

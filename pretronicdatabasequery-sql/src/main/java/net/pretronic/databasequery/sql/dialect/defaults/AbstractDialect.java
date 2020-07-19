@@ -27,6 +27,7 @@ import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.PreparedValue;
+import net.pretronic.databasequery.api.query.function.RowNumberQueryFunction;
 import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
@@ -34,9 +35,11 @@ import net.pretronic.databasequery.common.query.type.*;
 import net.pretronic.databasequery.sql.DataTypeInformation;
 import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.collection.SQLInnerQueryDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
+import net.pretronic.databasequery.sql.query.type.SQLFindQuery;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.map.Pair;
@@ -339,45 +342,61 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractFindQuery.GetEntry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values) {
+    public Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractSearchQuery.Entry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values) {
         FindQueryBuilderState state = new FindQueryBuilderState(values);
 
-        for (AbstractFindQuery.GetEntry getEntry : getEntries) {
-            buildFindQueryEntry(getEntry, state);
+        for (AbstractSearchQuery.Entry entry : getEntries) {
+            if(entry instanceof AbstractFindQuery.GetEntry) {
+                buildFindQueryGetEntry(((AbstractFindQuery.GetEntry) entry), state);
+            } else if(entry instanceof AbstractFindQuery.FunctionEntry) {
+                buildFindQueryFunctionEntry(((AbstractFindQuery.FunctionEntry) entry), state);
+            }
+
         }
         for (AbstractSearchQuery.Entry entry : entries) {
             buildSearchQueryEntry(entry, state, "AND", false);
         }
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("SELECT ").append(buildFindQueryGetBuilder(state)).append(" FROM ").append(firstBackTick);
-        if(this.environment == DatabaseDriverEnvironment.REMOTE) {
-            queryBuilder.append(collection.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
-        }
-        queryBuilder.append(collection.getName()).append(secondBackTick).append(" ").append(state.buildSearchQuery());
+        queryBuilder.append("SELECT ").append(buildFindQueryGetBuilder(state)).append(" FROM ");
+        buildCollectionQueryPart(queryBuilder, collection);
+        queryBuilder.append(state.buildSearchQuery());
 
         return new Pair<>(queryBuilder.toString(), state.preparedValues);
     }
 
     protected String buildFindQueryGetBuilder(FindQueryBuilderState state) {
+        System.out.println("build fing get " + state.getBuilder.length());
         if(state.getBuilder.length() == 0) return "*";
         else return state.getBuilder.toString();
     }
 
-    protected void buildFindQueryEntry(AbstractFindQuery.GetEntry entry, FindQueryBuilderState state) {
+    protected void buildFindQueryGetEntry(AbstractFindQuery.GetEntry entry, FindQueryBuilderState state) {
         if(state.getBuilder.length() != 0) {
             state.getBuilder.append(",");
         }
         if(entry.getAggregation() != null) {
             state.getBuilder.append(entry.getAggregation()).append("(").append(firstBackTick).append(buildField(entry)).append(secondBackTick).append(")");
         }else {
-            state.getBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
+            if(entry.getField().equals("*")) state.getBuilder.append("*");//@Todo optimize field building for all entries
+            else state.getBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
         }
         if(entry.getAlias() != null) {
             state.getBuilder.append(" AS ").append(entry.getAlias());
         }
     }
 
-
+    private void buildFindQueryFunctionEntry(AbstractFindQuery.FunctionEntry entry, FindQueryBuilderState state) {
+        if(state.getBuilder.length() != 0) {
+            state.getBuilder.append(",");
+        }
+        if(entry.getFunction() instanceof RowNumberQueryFunction) {
+            RowNumberQueryFunction function = ((RowNumberQueryFunction) entry.getFunction());
+            state.getBuilder.append("ROW_NUMBER() over (ORDER BY ")
+                    .append(function.getOrderField()).append(" ")
+                    .append(function.getOrder().toString())
+                    .append(") AS ").append(entry.getGetAliasName());
+        }
+    }
 
     @Override
     public Pair<String, List<Object>> newDeleteQuery(SQLDatabaseCollection collection, List<AbstractDeleteQuery.Entry> entries, Object[] values) {
@@ -625,11 +644,29 @@ public abstract class AbstractDialect implements Dialect {
         }
     }
 
+    protected void buildCollectionQueryPart(StringBuilder builder, SQLDatabaseCollection collection) {
+        if(collection instanceof SQLInnerQueryDatabaseCollection) {
+            builder.append("(");
+            SQLInnerQueryDatabaseCollection innerQueryCollection = ((SQLInnerQueryDatabaseCollection) collection);
+            SQLFindQuery query = (SQLFindQuery) innerQueryCollection.getQuery();
+            String queryString = newFindQuery((SQLDatabaseCollection) innerQueryCollection.getCollection(),
+                    query.getGetEntries(), query.getEntries(), new Object[0]).getKey();
+            builder.append(queryString).append(") AS ").append(innerQueryCollection.getName());
+        } else {
+            builder.append(firstBackTick);
+            if(this.environment == DatabaseDriverEnvironment.REMOTE) {
+                builder.append(collection.getDatabase().getName()).append(secondBackTick).append(".").append(firstBackTick);
+            }
+            builder.append(collection.getName()).append(secondBackTick).append(" ");
+        }
+    }
+
     protected String buildField(AbstractSearchQuery.GroupByEntry entry) {
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 
     protected String buildField(AbstractFindQuery.GetEntry entry) {
+        if(entry.getField().equals("*")) return entry.getField();
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 

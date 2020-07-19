@@ -94,7 +94,7 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
             return this.results.get(key);
         }
         for (Map.Entry<String, Object> entry : this.results.entrySet()) {
-            if(entry.getKey().endsWith(key)) return entry.getValue();
+            if(entry.getKey().toLowerCase().endsWith(key.toLowerCase())) return entry.getValue();
         }
         return null;
     }

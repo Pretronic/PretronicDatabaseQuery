@@ -54,11 +54,19 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
                     DefaultQueryResult result = new DefaultQueryResult();
                     while (resultSet.next()) {
                         DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
-                        if(!this.getEntries.isEmpty()) {
-                            for (GetEntry entry : this.getEntries) {
+                        /*if(!this.getEntries.isEmpty()) {
+                            for (Entry entry : this.getEntries) {
                                 String getter;
-                                if(entry.getAlias() != null) getter = entry.getAlias();
-                                else getter = entry.getAggregation() == null ? entry.getField() : entry.getAggregation() + "(`" + entry.getField() + "`)";
+                                if(entry instanceof GetEntry) {
+                                    GetEntry getEntry = ((GetEntry) entry);
+                                    if(getEntry.getAlias() != null) getter = getEntry.getAlias();
+                                    else getter = getEntry.getAggregation() == null ? getEntry.getField() : getEntry.getAggregation()
+                                            + "(`" + getEntry.getField() + "`)";
+                                } else if(entry instanceof FunctionEntry) {
+                                    getter = ((FunctionEntry) entry).getGetAliasName();
+                                } else {
+                                    throw new UnsupportedOperationException(entry.getClass().getName() + " is not supported in sql");
+                                }
                                 Object value = resultSet.getObject(getter);
                                 resultEntry.addEntry(getter, value);
                             }
@@ -70,6 +78,15 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
                                 }
                                 resultEntry.addEntry(resultSet.getMetaData().getColumnName(i), value);
                             }
+                        }*/
+                        for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                            Object value = resultSet.getObject(i);
+                            if(value instanceof Clob) {
+                                value = FileUtil.readContent(((Clob) value).getAsciiStream());
+                            }
+                            String tableName0 = resultSet.getMetaData().getTableName(i);
+                            String tableName = tableName0.equals("") ? "" : tableName0+".";
+                            resultEntry.addEntry(tableName+resultSet.getMetaData().getColumnName(i), value);
                         }
                         result.addEntry(resultEntry);
                     }

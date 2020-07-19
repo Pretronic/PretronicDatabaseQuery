@@ -21,16 +21,20 @@ package net.pretronic.databasequery.sql;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
+import net.pretronic.databasequery.api.collection.InnerQueryDatabaseCollection;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryExecuteFailedException;
 import net.pretronic.databasequery.api.query.Query;
 import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
+import net.pretronic.databasequery.api.query.function.RowNumberQueryFunction;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
+import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.databasequery.common.AbstractDatabase;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
+import net.pretronic.databasequery.sql.collection.SQLInnerQueryDatabaseCollection;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.query.SQLQueryGroup;
 import net.pretronic.databasequery.sql.query.SQLQueryTransaction;
@@ -56,6 +60,16 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
     @Override
     public DatabaseCollection getCollection(String name) {
         return new SQLDatabaseCollection(name, this, DatabaseCollectionType.NORMAL);
+    }
+
+    @Override
+    public InnerQueryDatabaseCollection getInnerQueryCollection(DatabaseCollection from, String aliasName, Consumer<FindQuery> queryConsumer) {
+        return new SQLInnerQueryDatabaseCollection(aliasName, this, DatabaseCollectionType.NORMAL, from, queryConsumer);
+    }
+
+    @Override
+    public InnerQueryDatabaseCollection getRowNumberInnerQueryCollection(DatabaseCollection from, String aliasName, RowNumberQueryFunction function) {
+        return getInnerQueryCollection(from, aliasName, query -> query.get("*").getFunction(function, "RowNumber"));
     }
 
     @Override

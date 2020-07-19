@@ -29,6 +29,7 @@ import net.pretronic.databasequery.api.query.type.join.JoinType;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.libraries.utility.Iterators;
 import net.pretronic.libraries.utility.Validate;
+import net.pretronic.libraries.utility.annonations.Internal;
 import net.pretronic.libraries.utility.map.Triple;
 
 import java.util.ArrayList;
@@ -51,6 +52,11 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         super(collection.getDatabase().getDriver());
         this.collection = collection;
         this.entries = new ArrayList<>();
+    }
+
+    @Internal
+    public List<Entry> getEntries() {
+        return entries;
     }
 
     @Override

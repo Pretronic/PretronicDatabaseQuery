@@ -22,6 +22,7 @@ package net.pretronic.databasequery.api.query.type;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.Aggregation;
+import net.pretronic.databasequery.api.query.function.QueryFunction;
 
 /**
  * The {@link FindQuery} represents the query to search data in the executed {@link net.pretronic.databasequery.api.collection.DatabaseCollection}.
@@ -104,4 +105,11 @@ public interface FindQuery extends SearchQuery<FindQuery> {
      * @return the query instance
      */
     FindQuery getAs(Aggregation aggregation, String collection, String field, String alias);
+
+    /**
+     * @param function to get
+     * @param getAliasName alias for getting in query result
+     * @return the query instance
+     */
+    FindQuery getFunction(QueryFunction function, String getAliasName);
 }

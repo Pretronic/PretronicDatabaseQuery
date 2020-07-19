@@ -73,7 +73,7 @@ public interface Dialect extends ConnectionStringCreator {
 
     Pair<String, List<Object>> newDeleteQuery(SQLDatabaseCollection collection, List<AbstractDeleteQuery.Entry> entries, Object[] values);
 
-    Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractFindQuery.GetEntry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values);
+    Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractSearchQuery.Entry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values);
 
     Pair<String, List<Object>> newInsertQuery(SQLDatabaseCollection collection, List<AbstractInsertQuery.Entry> entries, Object[] values);
 

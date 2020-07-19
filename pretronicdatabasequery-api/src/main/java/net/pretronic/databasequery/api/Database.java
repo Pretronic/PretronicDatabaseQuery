@@ -22,15 +22,19 @@ package net.pretronic.databasequery.api;
 
 import net.pretronic.databasequery.api.collection.CollectionCreator;
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
+import net.pretronic.databasequery.api.collection.InnerQueryDatabaseCollection;
 import net.pretronic.databasequery.api.driver.DatabaseDriver;
 import net.pretronic.databasequery.api.query.Query;
 import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
+import net.pretronic.databasequery.api.query.function.RowNumberQueryFunction;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
+import net.pretronic.databasequery.api.query.type.FindQuery;
 import net.pretronic.libraries.document.Document;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 /**
  * The {@link Database} object represents a database on a remote server or a file of a local database.
@@ -71,6 +75,22 @@ public interface Database {
      * @return A new collection object for accessing the data
      */
     DatabaseCollection getCollection(String name);
+
+    /**
+     * Get a inner query from this database
+     *
+     * For example, it is useful for getting the entry number of the the whole collection, while filtering in the find query.
+     * Only the find query and the size methods are available in this collection.
+     *
+     * <p>Important = A new collection object is also returned, when the collection doesn't exist on the remote server.</p>
+     *
+     * @param aliasName The alias name of the collection
+     * @param queryConsumer The query of the collection
+     * @return inner query collection object
+     */
+    InnerQueryDatabaseCollection getInnerQueryCollection(DatabaseCollection from, String aliasName, Consumer<FindQuery> queryConsumer);
+
+    InnerQueryDatabaseCollection getRowNumberInnerQueryCollection(DatabaseCollection from, String aliasName, RowNumberQueryFunction function);
 
     /**
      * Create a new collection on a remote server or on a local file database.

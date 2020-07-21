@@ -251,9 +251,7 @@ public final class MongoDBQueryUtil {
         Document set = new Document();
         Document inc = new Document();
         Document mul = new Document();
-        System.out.println("size"+setEntries.size());
         for (AbstractChangeAndSearchQuery.ChangeAndSearchEntry changeAndSearchEntry : setEntries) {
-            System.out.println(changeAndSearchEntry.getField()+":"+changeAndSearchEntry.getOperator()+":"+changeAndSearchEntry.getValue());
             Object value = context.getValue(changeAndSearchEntry.getValue());
             if(changeAndSearchEntry.getOperator() == null) {
                 set.append(changeAndSearchEntry.getField(), value);

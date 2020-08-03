@@ -123,11 +123,12 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
         try(Connection connection = this.dataSource.getConnection()) {
             try(PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatementConsumer.accept(preparedStatement);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                R result = resultSetFunction.apply(resultSet);
-                if(commit) connection.commit();
-                if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", getDriver().getName(), query);
-                return result;
+                try(ResultSet resultSet = preparedStatement.executeQuery();) {
+                    R result = resultSetFunction.apply(resultSet);
+                    if(commit) connection.commit();
+                    if(getLogger().isDebugging()) getLogger().debug("{} - Executed sql query: {}", getDriver().getName(), query);
+                    return result;
+                }
             }
         } catch (SQLException exception) {
             exceptionConsumer.accept(exception);

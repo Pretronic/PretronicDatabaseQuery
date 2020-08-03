@@ -66,13 +66,14 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
         hikariConfig.setAutoCommit(false);
         hikariConfig.setReadOnly(config.isConnectionReadOnly());
         long connectionExpire = config.getDataSourceConnectionExpire();
+        //@Todo custom max/min config options for every dialect
+        if((config.getDialect().equals(Dialect.MYSQL) || config.getDialect().equals(Dialect.MARIADB)) && connectionExpire < TimeUnit.MINUTES.toMillis(5)) {
+            connectionExpire = TimeUnit.MINUTES.toMillis(5);
+        }
         if(connectionExpire != 0) {
-            //@Todo custom max/min config options for every dialect
-            if((config.getDialect().equals(Dialect.MYSQL) || config.getDialect().equals(Dialect.MARIADB)) && connectionExpire < TimeUnit.MINUTES.toMillis(5)) {
-                connectionExpire = TimeUnit.MINUTES.toMillis(5);
-            }
             hikariConfig.setMaxLifetime(connectionExpire);
         }
+
         if(config.getDataSourceConnectionExpireAfterAccess() != 0) hikariConfig.setIdleTimeout(config.getDataSourceConnectionExpireAfterAccess());
         if(config.getDataSourceConnectionLoginTimeout() != 0) hikariConfig.setConnectionTimeout(config.getDataSourceConnectionLoginTimeout());
         if(config.getDataSourceMaximumPoolSize() != 0) hikariConfig.setMaximumPoolSize(config.getDataSourceMaximumPoolSize());

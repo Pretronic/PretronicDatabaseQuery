@@ -67,7 +67,7 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
         hikariConfig.setReadOnly(config.isConnectionReadOnly());
         long connectionExpire = config.getDataSourceConnectionExpire();
         //@Todo custom max/min config options for every dialect
-        if((config.getDialect().equals(Dialect.MYSQL) || config.getDialect().equals(Dialect.MARIADB)) && connectionExpire < TimeUnit.MINUTES.toMillis(5)) {
+        if((config.getDialect().equals(Dialect.MYSQL) || config.getDialect().equals(Dialect.MARIADB)) && connectionExpire > TimeUnit.MINUTES.toMillis(5)) {
             connectionExpire = TimeUnit.MINUTES.toMillis(5);
         }
         if(connectionExpire != 0) {

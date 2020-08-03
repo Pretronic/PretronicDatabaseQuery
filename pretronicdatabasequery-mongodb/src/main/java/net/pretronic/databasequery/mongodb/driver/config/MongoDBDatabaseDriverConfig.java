@@ -129,7 +129,6 @@ public class MongoDBDatabaseDriverConfig implements RemoteDatabaseDriverConfig<M
 
     public MongoClientURI getMongoClientURI(ServerMonitorListener monitorListener) {
         String uri = buildMongoURI();
-        System.out.println(uri);
         return new MongoClientURI(uri, new MongoClientOptions.Builder().addServerMonitorListener(monitorListener));
     }
 

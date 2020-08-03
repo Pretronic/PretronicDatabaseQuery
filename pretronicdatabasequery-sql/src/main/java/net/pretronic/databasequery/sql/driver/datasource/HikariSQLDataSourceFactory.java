@@ -23,6 +23,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.IsolationLevel;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
+import net.pretronic.databasequery.sql.dialect.Dialect;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.driver.config.SQLDatabaseDriverConfig;
 import net.pretronic.databasequery.sql.driver.config.SQLLocalDatabaseDriverConfig;
@@ -31,6 +32,7 @@ import net.pretronic.libraries.utility.Validate;
 import net.pretronic.libraries.utility.reflect.ReflectionUtil;
 
 import javax.sql.DataSource;
+import java.util.concurrent.TimeUnit;
 
 public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
 
@@ -63,7 +65,14 @@ public class HikariSQLDataSourceFactory implements SQLDataSourceFactory {
         if(config.getConnectionSchema() != null) hikariConfig.setSchema(config.getConnectionSchema());
         hikariConfig.setAutoCommit(false);
         hikariConfig.setReadOnly(config.isConnectionReadOnly());
-        if(config.getDataSourceConnectionExpire() != 0) hikariConfig.setMaxLifetime(config.getDataSourceConnectionExpire());
+        long connectionExpire = config.getDataSourceConnectionExpire();
+        if(connectionExpire != 0) {
+            //@Todo custom max/min config options for every dialect
+            if((config.getDialect().equals(Dialect.MYSQL) || config.getDialect().equals(Dialect.MARIADB)) && connectionExpire < TimeUnit.MINUTES.toMillis(5)) {
+                connectionExpire = TimeUnit.MINUTES.toMillis(5);
+            }
+            hikariConfig.setMaxLifetime(connectionExpire);
+        }
         if(config.getDataSourceConnectionExpireAfterAccess() != 0) hikariConfig.setIdleTimeout(config.getDataSourceConnectionExpireAfterAccess());
         if(config.getDataSourceConnectionLoginTimeout() != 0) hikariConfig.setConnectionTimeout(config.getDataSourceConnectionLoginTimeout());
         if(config.getDataSourceMaximumPoolSize() != 0) hikariConfig.setMaximumPoolSize(config.getDataSourceMaximumPoolSize());

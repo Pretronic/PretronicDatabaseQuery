@@ -47,6 +47,6 @@ public class SQLDeleteQuery extends AbstractDeleteQuery<SQLDatabaseCollection> i
         Pair<String, List<Object>> data = this.collection.getDatabase().getDriver().getDialect()
                 .newDeleteQuery(this.collection, this.entries, values);
         this.collection.getDatabase().executeUpdateQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data));
-        return new DefaultQueryResult().addProperty("sqlQuery", data.getKey());
+        return new DefaultQueryResult().addProperty("sqlQuery", data.getKey()).addProperty("sqlQueryValues", data.getValue());
     }
 }

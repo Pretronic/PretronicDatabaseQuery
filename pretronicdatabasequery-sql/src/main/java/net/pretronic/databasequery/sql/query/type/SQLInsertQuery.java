@@ -49,7 +49,7 @@ public class SQLInsertQuery extends AbstractInsertQuery<SQLDatabaseCollection> i
         Number[] keys = this.collection.getDatabase().executeUpdateQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data),
                 keyColumns);
         DefaultQueryResult result = new DefaultQueryResult();
-        result.addProperty("sqlQuery", data.getKey());
+        result.addProperty("sqlQuery", data.getKey()).addProperty("sqlQueryValues", data.getValue());
         for (int i = 0; i < keyColumns.length; i++) {
             result.addEntry(new DefaultQueryResultEntry(this.collection.getDatabase().getDriver()).addEntry(keyColumns[i], keys[i]));
         }

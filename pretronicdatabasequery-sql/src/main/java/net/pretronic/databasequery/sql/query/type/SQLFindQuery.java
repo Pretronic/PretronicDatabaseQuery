@@ -52,7 +52,7 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
         return this.collection.getDatabase().executeResultQuery(data.getKey(), commit, SQLUtil.getSelectConsumer(collection, data),
                 resultSet -> {
                     DefaultQueryResult result = new DefaultQueryResult();
-                    result.addProperty("sqlQuery", data.getKey());
+                    result.addProperty("sqlQuery", data.getKey()).addProperty("sqlQueryValues", data.getValue());
                     while (resultSet.next()) {
                         DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
                         /*if(!this.getEntries.isEmpty()) {

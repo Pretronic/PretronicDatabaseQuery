@@ -1,3 +1,5 @@
+#!groovy
+
 final String CI_NAME = "PretronicCI"
 final String CI_EMAIL = "ci@pretronic.net"
 final String COMMIT_MESSAGE = "Version change %version%"
@@ -12,6 +14,7 @@ String VERSION = "UNDEFINED"
 String BRANCH = "UNDEFINED"
 boolean SKIP = false
 int BUILD_NUMBER = -1;
+String JAVADOCS_NAME = "pretronic-databasequery"
 
 pipeline {
     agent any
@@ -82,15 +85,13 @@ pipeline {
                     if(BRANCH == BRANCH_MASTER) {
                         sh 'mvn javadoc:aggregate-jar'
                         withCredentials([string(credentialsId: '120a9a64-81a7-4557-80bf-161e3ab8b976', variable: 'SECRET')]) {
-                            String name = env.JOB_NAME
-
                             httpRequest(acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_OCTETSTREAM',
                                     httpMode: 'POST', ignoreSslErrors: true, timeout: 3000,
                                     multipartName: 'file',
                                     responseHandle: 'NONE',
                                     uploadFile: "target/${name}-${VERSION}-javadoc.jar",
                                     customHeaders:[[name:'token', value:"${SECRET}", maskValue:true]],
-                                    url: "https://pretronic.net/javadoc/${name}/${VERSION}/create")
+                                    url: "https://pretronic.net/javadoc/${JAVADOCS_NAME}/${VERSION}/create")
                         }
                     }
                 }

@@ -112,7 +112,7 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         Validate.notNull(collection);
         Validate.notNull(field);
         Validate.notNull(alias);
-        this.getEntries.add(new GetEntry(null, collection, field, null, alias));
+        this.getEntries.add(new GetEntry(null, collection, field, aggregation, alias));
         return this;
     }
 

@@ -50,6 +50,6 @@ public class SQLReplaceQuery extends AbstractReplaceQuery<SQLDatabaseCollection>
                 preparedStatement.setObject(i, data.getValue().get(i-1));
             }
         });
-        return DefaultQueryResult.EMPTY;
+        return new DefaultQueryResult().addProperty("sqlQuery", data.getKey());
     }
 }

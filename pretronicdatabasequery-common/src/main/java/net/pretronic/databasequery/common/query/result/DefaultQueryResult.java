@@ -22,10 +22,11 @@ package net.pretronic.databasequery.common.query.result;
 import net.pretronic.databasequery.api.query.result.QueryResult;
 import net.pretronic.databasequery.api.query.result.QueryResultEntry;
 import net.pretronic.libraries.utility.Validate;
+import net.pretronic.libraries.utility.annonations.Internal;
+import net.pretronic.libraries.utility.map.caseintensive.CaseIntensiveHashMap;
+import net.pretronic.libraries.utility.map.caseintensive.CaseIntensiveMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -37,6 +38,7 @@ public class DefaultQueryResult implements QueryResult {
     public static final QueryResult EMPTY = new DefaultQueryResult(new ArrayList<>());
 
     private final List<QueryResultEntry> entries;
+    private final CaseIntensiveMap<Object> properties;
 
     public DefaultQueryResult() {
         this(new ArrayList<>());
@@ -44,6 +46,7 @@ public class DefaultQueryResult implements QueryResult {
 
     public DefaultQueryResult(List<QueryResultEntry> entries) {
         this.entries = entries;
+        this.properties = new CaseIntensiveHashMap<>();
     }
 
     @Override
@@ -87,6 +90,11 @@ public class DefaultQueryResult implements QueryResult {
     }
 
     @Override
+    public CaseIntensiveMap<Object> getProperties() {
+        return this.properties;
+    }
+
+    @Override
     public Stream<QueryResultEntry> stream() {
         return this.entries.stream();
     }
@@ -108,9 +116,17 @@ public class DefaultQueryResult implements QueryResult {
      * @param entry to add not null
      * @return the current result instance
      */
+    @Internal
     public DefaultQueryResult addEntry(QueryResultEntry entry) {
         Validate.notNull(entry);
         this.entries.add(entry);
+        return this;
+    }
+
+    @Internal
+    public DefaultQueryResult addProperty(String key, Object value) {
+        Validate.notNull(key);
+        this.properties.put(key, value);
         return this;
     }
 }

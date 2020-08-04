@@ -21,10 +21,12 @@
 package net.pretronic.databasequery.api.query.result;
 
 import net.pretronic.databasequery.api.query.Query;
+import net.pretronic.libraries.utility.map.caseintensive.CaseIntensiveMap;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -107,6 +109,13 @@ public interface QueryResult extends Iterable<QueryResultEntry> {
      * @return The amount of rows
      */
     int size();
+
+    /**
+     * Gets properties of this result, like the executed sql query.
+     *
+     * @return the properties
+     */
+    CaseIntensiveMap<Object> getProperties();
 
     /**
      * Create a new stream with the result entries.

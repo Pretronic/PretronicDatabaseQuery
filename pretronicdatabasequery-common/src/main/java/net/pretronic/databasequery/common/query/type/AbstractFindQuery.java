@@ -129,8 +129,11 @@ public abstract class AbstractFindQuery<C extends DatabaseCollection> extends Ab
         if(o instanceof AbstractFindQuery) {
             AbstractFindQuery<?> other = ((AbstractFindQuery<?>) o);
             if(getEntries.size() != other.getEntries.size()) return false;
-            for (int i = 0; i < getEntries.size(); i++) {
+            /*for (int i = 0; i < getEntries.size(); i++) {
                 if(!getEntries.get(i).equals(other.getEntries.get(i))) return false;
+            }*/
+            for (Entry getEntry : getEntries) {
+                if(!other.getEntries.contains(getEntry)) return false;
             }
             return super.equals(o);
         }

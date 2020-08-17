@@ -455,8 +455,11 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         if(o instanceof AbstractSearchQuery) {
             AbstractSearchQuery<?,?> other = ((AbstractSearchQuery<?,?>)o);
             if(entries.size() != other.entries.size()) return false;
-            for (int i = 0; i < entries.size(); i++) {
+            /*for (int i = 0; i < entries.size(); i++) {
                 if(!entries.get(i).equals(other.entries.get(i))) return false;
+            }*/
+            for (Entry entry : entries) {
+                if(!other.entries.contains(entry)) return false;
             }
             return true;
         }
@@ -586,8 +589,11 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
                 OperationEntry entry = ((OperationEntry) o);
                 if(type != entry.type) return false;
                 if(entries.size() != entry.entries.size()) return false;
-                for (int i = 0; i < entries.size(); i++) {
+                /*for (int i = 0; i < entries.size(); i++) {
                     if(!entries.get(i).equals(entry.entries.get(i))) return false;
+                }*/
+                for (Entry entry1 : entries) {
+                    if(!entry.entries.contains(entry1)) return false;
                 }
                 return true;
             }
@@ -637,8 +643,11 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
                 if(collection != null && !collection.equals(entry.getCollection())) return false;
                 if(type != entry.getType()) return false;
                 if(onEntries.size() != entry.onEntries.size()) return false;
-                for (int i = 0; i < onEntries.size(); i++) {
+                /*for (int i = 0; i < onEntries.size(); i++) {
                     if(!onEntries.get(i).equals(entry.onEntries.get(i))) return false;
+                }*/
+                for (JoinOnEntry onEntry : onEntries) {
+                    if(!entry.onEntries.contains(onEntry)) return false;
                 }
                 return true;
             }

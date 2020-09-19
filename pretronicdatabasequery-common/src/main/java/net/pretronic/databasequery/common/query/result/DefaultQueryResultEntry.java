@@ -191,7 +191,7 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
 
     @Override
     public boolean contains(String key) {
-        return this.results.containsKey(key);
+        return getObject(key) != null;
     }
 
     @Override

@@ -27,7 +27,7 @@ import java.io.File;
 public class H2PortableDialect extends MySQLDialect {
 
     public H2PortableDialect() {
-        super("H2Portable", "org.h2.Driver", "h2:file", DatabaseDriverEnvironment.LOCAL,true,
+        super("H2Portable", "org.h2.Driver", "h2:file", 0, DatabaseDriverEnvironment.LOCAL,true,
                 "`", "`");
     }
 

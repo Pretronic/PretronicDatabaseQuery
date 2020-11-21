@@ -40,7 +40,7 @@ import java.util.List;
 public class MsSQLDialect extends AbstractDialect {
 
     public MsSQLDialect() {
-        super("MsSQL", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sqlserver", DatabaseDriverEnvironment.REMOTE, true, "[", "]");
+        super("MsSQL", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sqlserver",1433, DatabaseDriverEnvironment.REMOTE, true, "[", "]");
     }
 
     /*

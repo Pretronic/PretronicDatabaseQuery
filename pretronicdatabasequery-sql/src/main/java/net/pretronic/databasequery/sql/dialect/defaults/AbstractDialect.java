@@ -57,6 +57,7 @@ public abstract class AbstractDialect implements Dialect {
     private final String driverName;
     private Class<? extends Driver> driver;
     private final String protocol;
+    private final int defaultPort;
     private final DatabaseDriverEnvironment environment;
     protected final Collection<DataTypeInformation> dataTypeInformation;
 
@@ -65,10 +66,11 @@ public abstract class AbstractDialect implements Dialect {
     protected final String firstBackTick;
     protected final String secondBackTick;
 
-    public AbstractDialect(String name, String driverName, String protocol, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
+    public AbstractDialect(String name, String driverName, String protocol, int defaultPort, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
         this.name = name;
         this.driverName = driverName;
         this.protocol = protocol;
+        this.defaultPort = defaultPort;
         this.environment = environment;
         this.dynamicDependencies = dynamicDependencies;
         this.firstBackTick = firstBackTick;
@@ -128,6 +130,11 @@ public abstract class AbstractDialect implements Dialect {
     @Override
     public String getProtocol() {
         return this.protocol;
+    }
+
+    @Override
+    public int getDefaultPort() {
+        return defaultPort;
     }
 
     @Override
@@ -376,8 +383,7 @@ public abstract class AbstractDialect implements Dialect {
         if(entry.getAggregation() != null) {
             state.getBuilder.append(entry.getAggregation()).append("(").append(firstBackTick).append(buildField(entry)).append(secondBackTick).append(")");
         }else {
-            if(entry.getField().equals("*")) state.getBuilder.append("*");//@Todo optimize field building for all entries
-            else state.getBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
+            state.getBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
         }
         if(entry.getAlias() != null) {
             state.getBuilder.append(" AS ").append(entry.getAlias());
@@ -665,7 +671,6 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     protected String buildField(AbstractFindQuery.GetEntry entry) {
-        if(entry.getField().equals("*")) return entry.getField();
         return buildField(entry.getDatabase(), entry.getDatabaseCollection(), entry.getField());
     }
 

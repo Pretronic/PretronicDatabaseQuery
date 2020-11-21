@@ -20,26 +20,12 @@
 
 package net.pretronic.databasequery.sql.dialect.defaults.mysql;
 
-import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
-
-import java.net.InetSocketAddress;
 
 public class MariaDBDialect extends MySQLDialect {
 
     public MariaDBDialect() {
-        super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb", DatabaseDriverEnvironment.REMOTE,
+        super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb", 3306, DatabaseDriverEnvironment.REMOTE,
                 true, "`", "`");
-    }
-
-    @Override
-    public String createConnectionString(String connectionString, Object host) {
-        if(connectionString != null) {
-            return connectionString;
-        } else if(host instanceof InetSocketAddress) {
-            InetSocketAddress address = (InetSocketAddress) host;
-            return String.format("jdbc:mariadb://%s:%s", address.getHostName(), address.getPort());
-        }
-        throw new DatabaseQueryException("Can't match jdbc url for dialect " + getName());
     }
 }

@@ -36,7 +36,7 @@ import java.net.InetSocketAddress;
 public class PostgreSQLDialect extends AbstractDialect {
 
     public PostgreSQLDialect() {
-        super("PostgreSQL", "org.postgresql.Driver", "postgresql", DatabaseDriverEnvironment.REMOTE,
+        super("PostgreSQL", "org.postgresql.Driver", "postgresql",5432, DatabaseDriverEnvironment.REMOTE,
                 true, "\"", "\"");
     }
 
@@ -46,7 +46,11 @@ public class PostgreSQLDialect extends AbstractDialect {
             return connectionString;
         } else if(host instanceof InetSocketAddress) {
             InetSocketAddress address = (InetSocketAddress) host;
-            return String.format("jdbc:postgresql://%s:%s", address.getHostName(), address.getPort())+"/";
+            int port = address.getPort();
+            if(port == 0) {
+                port = getDefaultPort();
+            }
+            return String.format("jdbc:postgresql://%s:%s", address.getHostName(), port)+"/";
         }
         throw new DatabaseQueryException("Can't match jdbc url for dialect " + getName());
     }

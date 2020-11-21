@@ -62,6 +62,8 @@ public interface Dialect extends ConnectionStringCreator {
 
     String getProtocol();
 
+    int getDefaultPort();
+
     DatabaseDriverEnvironment getEnvironment();
 
     Collection<DataTypeInformation> getDataTypeInformation();

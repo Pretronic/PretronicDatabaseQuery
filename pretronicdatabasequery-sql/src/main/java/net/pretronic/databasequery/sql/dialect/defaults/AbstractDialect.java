@@ -37,6 +37,7 @@ import net.pretronic.databasequery.sql.SQLDatabase;
 import net.pretronic.databasequery.sql.collection.SQLDatabaseCollection;
 import net.pretronic.databasequery.sql.collection.SQLInnerQueryDatabaseCollection;
 import net.pretronic.databasequery.sql.dialect.Dialect;
+import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.driver.SQLDatabaseDriver;
 import net.pretronic.databasequery.sql.query.type.SQLFindQuery;
@@ -57,7 +58,7 @@ public abstract class AbstractDialect implements Dialect {
     private final String driverName;
     private Class<? extends Driver> driver;
     private final String protocol;
-    private final int defaultPort;
+    private final DialectDefaultSettings defaultSettings;
     private final DatabaseDriverEnvironment environment;
     protected final Collection<DataTypeInformation> dataTypeInformation;
 
@@ -66,11 +67,11 @@ public abstract class AbstractDialect implements Dialect {
     protected final String firstBackTick;
     protected final String secondBackTick;
 
-    public AbstractDialect(String name, String driverName, String protocol, int defaultPort, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
+    public AbstractDialect(String name, String driverName, String protocol, DialectDefaultSettings defaultSettings, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
         this.name = name;
         this.driverName = driverName;
         this.protocol = protocol;
-        this.defaultPort = defaultPort;
+        this.defaultSettings = defaultSettings;
         this.environment = environment;
         this.dynamicDependencies = dynamicDependencies;
         this.firstBackTick = firstBackTick;
@@ -133,8 +134,8 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     @Override
-    public int getDefaultPort() {
-        return defaultPort;
+    public DialectDefaultSettings getDefaultSettings() {
+        return defaultSettings;
     }
 
     @Override

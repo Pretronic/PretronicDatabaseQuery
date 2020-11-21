@@ -155,7 +155,6 @@ public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<
     }
 
     public String getDataSourceClass() {
-        //@Todo own default datasource
         if(this.dataSourceClassName == null) {
             this.dataSourceClassName = HikariDataSource.class.getName();
         }

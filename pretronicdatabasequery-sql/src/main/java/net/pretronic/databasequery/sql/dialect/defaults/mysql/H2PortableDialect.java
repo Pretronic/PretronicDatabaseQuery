@@ -21,13 +21,16 @@
 package net.pretronic.databasequery.sql.dialect.defaults.mysql;
 
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
+import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 public class H2PortableDialect extends MySQLDialect {
 
     public H2PortableDialect() {
-        super("H2Portable", "org.h2.Driver", "h2:file", 0, DatabaseDriverEnvironment.LOCAL,true,
+        super("H2Portable", "org.h2.Driver", "h2:file",
+                new DialectDefaultSettings(0, TimeUnit.MINUTES.toMillis(5)), DatabaseDriverEnvironment.LOCAL,true,
                 "`", "`");
     }
 

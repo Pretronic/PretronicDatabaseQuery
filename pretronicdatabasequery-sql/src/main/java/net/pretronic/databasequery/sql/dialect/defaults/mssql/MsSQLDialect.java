@@ -30,17 +30,21 @@ import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.DataTypeInformation;
 import net.pretronic.databasequery.sql.SQLDatabase;
+import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 import net.pretronic.libraries.utility.map.Pair;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MsSQLDialect extends AbstractDialect {
 
     public MsSQLDialect() {
-        super("MsSQL", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sqlserver",1433, DatabaseDriverEnvironment.REMOTE, true, "[", "]");
+        super("MsSQL", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "sqlserver",
+                new DialectDefaultSettings(1433, TimeUnit.MINUTES.toMillis(15)),
+                DatabaseDriverEnvironment.REMOTE, true, "[", "]");
     }
 
     /*

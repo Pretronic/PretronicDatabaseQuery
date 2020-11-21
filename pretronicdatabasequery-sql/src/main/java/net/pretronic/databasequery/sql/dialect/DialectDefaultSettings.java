@@ -2,7 +2,7 @@
  * (C) Copyright 2020 The PretronicDatabaseQuery Project (Davide Wietlisbach & Philipp Elvin Friedhoff)
  *
  * @author Philipp Elvin Friedhoff
- * @since 08.05.20, 15:17
+ * @since 21.11.20, 16:17
  * @web %web%
  *
  * The PretronicDatabaseQuery Project is under the Apache License, version 2.0 (the "License");
@@ -18,18 +18,23 @@
  * under the License.
  */
 
-package net.pretronic.databasequery.sql.dialect.defaults.mysql;
+package net.pretronic.databasequery.sql.dialect;
 
-import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
-import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
+public class DialectDefaultSettings {
 
-import java.util.concurrent.TimeUnit;
+    private final int defaultPort;
+    private final long defaultConnectionExpire;
 
-public class MariaDBDialect extends MySQLDialect {
+    public DialectDefaultSettings(int defaultPort, long defaultConnectionExpire) {
+        this.defaultPort = defaultPort;
+        this.defaultConnectionExpire = defaultConnectionExpire;
+    }
 
-    public MariaDBDialect() {
-        super("MariaDB", "org.mariadb.jdbc.Driver", "mariadb",
-                new DialectDefaultSettings(3306, TimeUnit.MINUTES.toMillis(5)), DatabaseDriverEnvironment.REMOTE,
-                true, "`", "`");
+    public int getDefaultPort() {
+        return defaultPort;
+    }
+
+    public long getDefaultConnectionExpire() {
+        return defaultConnectionExpire;
     }
 }

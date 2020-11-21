@@ -24,19 +24,22 @@ import net.pretronic.databasequery.api.datatype.DataType;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.sql.DataTypeInformation;
+import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class MySQLDialect extends AbstractDialect {
 
     public MySQLDialect() {
-        this("MySQL", "com.mysql.cj.jdbc.Driver", "mysql", 3306, DatabaseDriverEnvironment.REMOTE,
+        this("MySQL", "com.mysql.cj.jdbc.Driver", "mysql",
+                new DialectDefaultSettings(3306, TimeUnit.MINUTES.toMillis(5)), DatabaseDriverEnvironment.REMOTE,
                 true, "`", "`");
     }
 
-    public MySQLDialect(String name, String driverName, String protocol, int defaultPort, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
-        super(name, driverName, protocol, defaultPort, environment, dynamicDependencies, firstBackTick, secondBackTick);
+    public MySQLDialect(String name, String driverName, String protocol, DialectDefaultSettings defaultSettings, DatabaseDriverEnvironment environment, boolean dynamicDependencies, String firstBackTick, String secondBackTick) {
+        super(name, driverName, protocol, defaultSettings, environment, dynamicDependencies, firstBackTick, secondBackTick);
     }
 
 
@@ -49,7 +52,7 @@ public class MySQLDialect extends AbstractDialect {
             InetSocketAddress address = (InetSocketAddress) host;
             int port = address.getPort();
             if(port == 0) {
-                port = getDefaultPort();
+                port = getDefaultSettings().getDefaultPort();
             }
             return String.format("jdbc:%s://%s:%s", getProtocol(), address.getHostName(), port);
         }

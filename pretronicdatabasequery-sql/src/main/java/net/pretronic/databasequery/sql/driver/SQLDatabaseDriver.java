@@ -140,33 +140,4 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
     public Dialect getDialect() {
         return getConfig().getDialect();
     }
-
-    /*//@Todo move data type infos to dialect
-    private void registerDataTypeInfos() {
-        if(this.getDialect().equals(Dialect.POSTGRESQL)) {
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DOUBLE).names("DOUBLE PRECISION"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG).names("BIGINT").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG_TEXT).names("TEXT").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATETIME).names("TIMESTAMP"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BINARY).names("BYTEA").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.UUID).names("BYTEA").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BOOLEAN").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.FLOAT).names("FLOAT"));
-        } else {
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DOUBLE).names("DOUBLE"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.FLOAT).names("REAL"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG).names("BIGINT").defaultSize(8));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.LONG_TEXT).names("LONGTEXT").sizeAble(false));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATETIME).names("DATETIME"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BINARY).names("BINARY"));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.UUID).names("BINARY").defaultSize(16));
-            this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BIT").defaultSize(1));
-        }
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DECIMAL).names("DECIMAL"));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.INTEGER).names("INTEGER", "INT"));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.CHAR).names("CHAR").defaultSize(1));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.STRING).names("VARCHAR").defaultSize(255));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATE).names("DATE"));
-        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.TIMESTAMP).names("TIMESTAMP"));
-    }*/
 }

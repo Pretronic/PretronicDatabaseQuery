@@ -27,16 +27,19 @@ import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.AbstractCreateQuery;
 import net.pretronic.databasequery.sql.DataTypeInformation;
+import net.pretronic.databasequery.sql.dialect.DialectDefaultSettings;
 import net.pretronic.databasequery.sql.dialect.context.CreateQueryContext;
 import net.pretronic.databasequery.sql.dialect.defaults.AbstractDialect;
 import net.pretronic.libraries.utility.map.Pair;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class PostgreSQLDialect extends AbstractDialect {
 
     public PostgreSQLDialect() {
-        super("PostgreSQL", "org.postgresql.Driver", "postgresql",5432, DatabaseDriverEnvironment.REMOTE,
+        super("PostgreSQL", "org.postgresql.Driver", "postgresql",
+                new DialectDefaultSettings(5432, TimeUnit.MINUTES.toMillis(15)), DatabaseDriverEnvironment.REMOTE,
                 true, "\"", "\"");
     }
 
@@ -48,7 +51,7 @@ public class PostgreSQLDialect extends AbstractDialect {
             InetSocketAddress address = (InetSocketAddress) host;
             int port = address.getPort();
             if(port == 0) {
-                port = getDefaultPort();
+                port = getDefaultSettings().getDefaultPort();
             }
             return String.format("jdbc:postgresql://%s:%s", address.getHostName(), port)+"/";
         }

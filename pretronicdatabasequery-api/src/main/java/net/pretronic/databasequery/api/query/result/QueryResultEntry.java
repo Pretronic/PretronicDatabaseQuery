@@ -22,6 +22,7 @@ package net.pretronic.databasequery.api.query.result;
 
 import net.pretronic.libraries.utility.map.IndexCaseIntensiveMap;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -65,6 +66,10 @@ public interface QueryResultEntry extends Iterable<Map.Entry<String, Object>> {
     byte getByte(int index);
 
     byte getByte(String key);
+
+    BigDecimal getBigDecimal(int index);
+
+    BigDecimal getBigDecimal(String key);
 
     boolean getBoolean(int index);
 

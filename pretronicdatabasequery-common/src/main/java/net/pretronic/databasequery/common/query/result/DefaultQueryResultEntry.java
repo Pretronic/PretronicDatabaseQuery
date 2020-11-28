@@ -28,6 +28,7 @@ import net.pretronic.libraries.utility.map.IndexCaseIntensiveMap;
 import net.pretronic.libraries.utility.reflect.UnsafeInstanceCreator;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -157,6 +158,16 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
     @Override
     public byte getByte(String key) {
         return Convert.toByte(getObject(key));
+    }
+
+    @Override
+    public BigDecimal getBigDecimal(int index) {
+        return Convert.toBigDecimal(getObject(index));
+    }
+
+    @Override
+    public BigDecimal getBigDecimal(String key) {
+        return Convert.toBigDecimal(getObject(key));
     }
 
     @Override

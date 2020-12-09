@@ -172,7 +172,7 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
     }
 
     private PreparedStatement setPrepareStatement(Connection connection, String query, String[] keyColumns) throws SQLException {
-        if(keyColumns != null) return connection.prepareStatement(query, keyColumns);
+        if(keyColumns != null && keyColumns.length > 0) return connection.prepareStatement(query, keyColumns);
         else return connection.prepareStatement(query);
     }
 

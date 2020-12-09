@@ -146,6 +146,11 @@ public abstract class AbstractDialect implements Dialect {
     @Override
     public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, boolean ifNotExists, Object[] values) {
         CreateQueryContext context = new CreateQueryContext(database, name);
+        newCreateQuery(context, database, entries, name, engine, collectionType, includingQuery, ifNotExists, values);
+        return context;
+    }
+
+    protected void newCreateQuery(CreateQueryContext context, SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, boolean ifNotExists, Object[] values) {
         context.getQueryBuilder().append("CREATE TABLE");
         if(ifNotExists) {
             context.getQueryBuilder().append(" IF NOT EXISTS");
@@ -168,11 +173,10 @@ public abstract class AbstractDialect implements Dialect {
             } else if(entry instanceof AbstractCreateQuery.ForeignKeyEntry) {
                 buildForeignKey(context, (AbstractCreateQuery.ForeignKeyEntry) entry);
             } else {
-                throw new IllegalArgumentException(String.format("Entry %s is not supported for MySQL query", entry.getClass().getName()));
+                throw new IllegalArgumentException(String.format("Entry %s is not supported for SQL query", entry.getClass().getName()));
             }
         }
-        context.getQueryBuilder().append(");");
-        return context;
+        context.getQueryBuilder().append(")");
     }
 
     protected void buildCreateQueryCreateEntry(CreateQueryContext context, AbstractCreateQuery.CreateEntry entry) {

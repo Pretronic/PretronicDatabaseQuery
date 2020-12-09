@@ -103,6 +103,17 @@ public interface CreateQuery extends Query {
      */
     CreateQuery include(FindQuery query);
 
+    /**
+     * Set the if not exists value of the create query.
+     *
+     * If the value is true, the collection will only be created, if the collection does not exist.
+     * The default value is true.
+     *
+     * @param ifNotExists if should created if not exist
+     * @return the query instance
+     */
+    CreateQuery ifNotExists(boolean ifNotExists);
+
 
     /**
      * Creates the database collection.

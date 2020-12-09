@@ -71,7 +71,7 @@ public interface Dialect extends ConnectionStringCreator {
     DataTypeInformation getDataTypeInformation(DataType dataType);
 
 
-    CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values);
+    CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, boolean ifNotExists, Object[] values);
 
     Pair<String, List<Object>> newDeleteQuery(SQLDatabaseCollection collection, List<AbstractDeleteQuery.Entry> entries, Object[] values);
 

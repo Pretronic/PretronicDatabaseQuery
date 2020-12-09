@@ -68,8 +68,8 @@ public class MsSQLDialect extends AbstractDialect {
     }
 
     @Override
-    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
-        return super.newCreateQuery(database, entries, name, engine, collectionType, includingQuery, values);
+    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, boolean ifNotExists, Object[] values) {
+        return super.newCreateQuery(database, entries, name, engine, collectionType, includingQuery, ifNotExists, values);
     }
 
     @Override

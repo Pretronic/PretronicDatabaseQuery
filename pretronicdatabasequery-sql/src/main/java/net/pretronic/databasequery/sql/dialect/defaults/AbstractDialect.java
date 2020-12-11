@@ -29,6 +29,7 @@ import net.pretronic.databasequery.api.query.ForeignKey;
 import net.pretronic.databasequery.api.query.PreparedValue;
 import net.pretronic.databasequery.api.query.function.RowNumberQueryFunction;
 import net.pretronic.databasequery.api.query.type.FindQuery;
+import net.pretronic.databasequery.api.query.type.SearchQuery;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
 import net.pretronic.databasequery.common.query.EntryOption;
 import net.pretronic.databasequery.common.query.type.*;
@@ -359,7 +360,12 @@ public abstract class AbstractDialect implements Dialect {
 
     @Override
     public Pair<String, List<Object>> newFindQuery(SQLDatabaseCollection collection, List<AbstractSearchQuery.Entry> getEntries, List<AbstractFindQuery.Entry> entries, Object[] values) {
-        FindQueryBuilderState state = new FindQueryBuilderState(values);
+        return newFindQuery(new FindQueryBuilderState(values), collection, getEntries,entries, values);
+    }
+
+    protected Pair<String, List<Object>> newFindQuery(FindQueryBuilderState state, SQLDatabaseCollection collection, List<AbstractSearchQuery.Entry> getEntries,
+                                                      List<AbstractFindQuery.Entry> entries, Object[] values) {
+
 
         for (AbstractSearchQuery.Entry entry : getEntries) {
             if(entry instanceof AbstractFindQuery.GetEntry) {
@@ -367,7 +373,6 @@ public abstract class AbstractDialect implements Dialect {
             } else if(entry instanceof AbstractFindQuery.FunctionEntry) {
                 buildFindQueryFunctionEntry(((AbstractFindQuery.FunctionEntry) entry), state);
             }
-
         }
         for (AbstractSearchQuery.Entry entry : entries) {
             buildSearchQueryEntry(entry, state, "AND", false);
@@ -493,8 +498,32 @@ public abstract class AbstractDialect implements Dialect {
         } else {
             state.clauseBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
         }
-        addEntry(entry.getValue1(), state);
-        state.clauseBuilder.append(getWhereCompareSymbol(entry.getType())).append("?");
+        state.clauseBuilder.append(getWhereCompareSymbol(entry.getType()));
+
+        if(entry.getValue1() instanceof SQLFindQuery) {
+            SQLFindQuery subQuery = (SQLFindQuery) entry.getValue1();
+            buildSubQuery(subQuery, state);
+        } else {
+            state.clauseBuilder.append("?");
+            addEntry(entry.getValue1(), state);
+        }
+    }
+
+    protected void buildSubQuery(SQLFindQuery subQuery, SearchQueryBuilderState state) {
+
+
+        FindQueryBuilderState subQueryState = new FindQueryBuilderState(state.values);
+        subQueryState.preparedValuesCount = state.preparedValuesCount;
+
+        state.clauseBuilder.append("(");
+
+        Pair<String, List<Object>> data = newFindQuery(subQueryState, subQuery.getCollection(), subQuery.getGetEntries(), subQuery.getEntries(), state.values);
+
+        state.preparedValues.addAll(data.getValue());
+        state.clauseBuilder.append(data.getKey());
+        state.clauseBuilder.append(")");
+
+        state.preparedValuesCount = subQueryState.preparedValuesCount;
     }
 
     protected void buildSearchQueryWhereNullConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state) {
@@ -510,16 +539,22 @@ public abstract class AbstractDialect implements Dialect {
         if(state.negate) {
             state.clauseBuilder.append("NOT ");
         }
-        state.clauseBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick).append(" IN (");
+        state.clauseBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick).append(" IN ");
 
-        @SuppressWarnings("unchecked")
-        List<Object> values = (List<Object>) addAndGetEntry(entry.getValue1(), state);
+        if(entry.getValue1() instanceof SQLFindQuery) {
+            SQLFindQuery subQuery = (SQLFindQuery) entry.getValue1();
+            buildSubQuery(subQuery, state);
+        } else {
+            state.clauseBuilder.append("(");
+            @SuppressWarnings("unchecked")
+            List<Object> values = (List<Object>) addAndGetEntry(entry.getValue1(), state);
 
-        for (int i = 0; i < values.size(); i++) {
-            if(i > 0) state.clauseBuilder.append(",");
-            state.clauseBuilder.append("?");
+            for (int i = 0; i < values.size(); i++) {
+                if(i > 0) state.clauseBuilder.append(",");
+                state.clauseBuilder.append("?");
+            }
+            state.clauseBuilder.append(")");
         }
-        state.clauseBuilder.append(")");
     }
 
     protected void buildSearchQueryWhereBetweenConditionEntry(AbstractSearchQuery.ConditionEntry entry, SearchQueryBuilderState state) {

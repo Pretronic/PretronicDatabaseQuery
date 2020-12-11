@@ -54,6 +54,10 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
         this.entries = new ArrayList<>();
     }
 
+    public C getCollection() {
+        return collection;
+    }
+
     @Internal
     public List<Entry> getEntries() {
         return entries;
@@ -233,6 +237,66 @@ public abstract class AbstractSearchQuery<T extends SearchQuery<T>, C extends Da
     public T whereBetween(String field) {
         Validate.notNull(field);
         return addConditionEntry(ConditionEntry.Type.WHERE_BETWEEN, field, EntryOption.PREPARED, EntryOption.PREPARED);
+    }
+
+    @Override
+    public T where(String field, FindQuery innerQuery) {
+        Validate.notNull(field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE, field, innerQuery);
+    }
+
+    @Override
+    public T where(Aggregation aggregation, String field, FindQuery innerQuery) {
+        Validate.notNull(aggregation, field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE, field, innerQuery, aggregation);
+    }
+
+    @Override
+    public T whereNot(String field, FindQuery innerQuery) {
+        Validate.notNull(field, innerQuery);
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, innerQuery, null)));
+    }
+
+    @Override
+    public T whereNot(Aggregation aggregation, String field, FindQuery innerQuery) {
+        Validate.notNull(aggregation, field, innerQuery);
+        return addEntry(new OperationEntry(OperationEntry.Type.NOT, buildConditionEntry(ConditionEntry.Type.WHERE, field, innerQuery, aggregation)));
+    }
+
+    @Override
+    public T whereLike(String field, FindQuery innerQuery) {
+        Validate.notNull(field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_LIKE, field, innerQuery);
+    }
+
+    @Override
+    public T whereLike(Aggregation aggregation, String field, FindQuery innerQuery) {
+        Validate.notNull(aggregation, field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_LIKE, field, innerQuery, aggregation);
+    }
+
+    @Override
+    public T whereLower(String field, FindQuery innerQuery) {
+        Validate.notNull(field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_LOWER, field, innerQuery);
+    }
+
+    @Override
+    public T whereLower(Aggregation aggregation, String field, FindQuery innerQuery) {
+        Validate.notNull(aggregation, field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_LOWER, field, innerQuery, aggregation);
+    }
+
+    @Override
+    public T whereHigher(String field, FindQuery innerQuery) {
+        Validate.notNull(field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_HIGHER, field, innerQuery);
+    }
+
+    @Override
+    public T whereHigher(Aggregation aggregation, String field, FindQuery innerQuery) {
+        Validate.notNull(aggregation, field, innerQuery);
+        return addConditionEntry(ConditionEntry.Type.WHERE_HIGHER, field, innerQuery);
     }
 
     @Override

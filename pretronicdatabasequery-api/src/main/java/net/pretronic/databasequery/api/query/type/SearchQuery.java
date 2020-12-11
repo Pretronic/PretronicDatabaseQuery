@@ -72,6 +72,24 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
      */
     T where(Aggregation aggregation,String field);
 
+    /**
+     * Creates a inner query for using where.
+     *
+     * @param innerQuery to use
+     * @return query instance
+     */
+    T where(String field, FindQuery innerQuery);
+
+    /**
+     * Creates a inner query for using where.
+     *
+     * @param aggregation to use
+     * @param field to use
+     * @param innerQuery to use
+     * @return query instance
+     */
+    T where(Aggregation aggregation, String field, FindQuery innerQuery);
+
 
     /**
      * Filter for fields, which are not the {@code value}.
@@ -97,6 +115,11 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
     T whereNot(Aggregation aggregation,String field);
 
 
+    T whereNot(String field, FindQuery innerQuery);
+
+    T whereNot(Aggregation aggregation, String field, FindQuery innerQuery);
+
+
     /**
      * Filter for fields with a pattern.
      *
@@ -116,6 +139,10 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
 
     T whereLike(Aggregation aggregation,String field);
 
+    T whereLike(String field, FindQuery innerQuery);
+
+    T whereLike(Aggregation aggregation, String field, FindQuery innerQuery);
+
 
     /**
      * Filter for values of the field, which are lower then the {@code value}.
@@ -132,6 +159,10 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
 
     T whereLower(Aggregation aggregation,String field);
 
+    T whereLower(String field, FindQuery innerQuery);
+
+    T whereLower(Aggregation aggregation, String field, FindQuery innerQuery);
+
 
     /**
      * Filter for values of the field, whch are higher then the {@code value}.
@@ -147,6 +178,10 @@ public interface SearchQuery<T extends SearchQuery<T>> extends JoinQuery<T> {
     T whereHigher(String field);
 
     T whereHigher(Aggregation aggregation,String field);
+
+    T whereHigher(String field, FindQuery innerQuery);
+
+    T whereHigher(Aggregation aggregation, String field, FindQuery innerQuery);
 
 
     /**

@@ -28,6 +28,8 @@ import net.pretronic.databasequery.api.datatype.adapter.defaults.UUIDDataTypeAda
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
 import net.pretronic.libraries.logging.PretronicLogger;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -122,7 +124,7 @@ public interface DatabaseDriver {
      * @param adapter instance
      * @param <T> adapter type
      */
-    <T> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<T> adapter);
+    <T extends R ,R> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<R> adapter);
 
     /**
      * Unregister, if exist a data type adapter with the class.
@@ -136,7 +138,8 @@ public interface DatabaseDriver {
      */
     default void registerDefaultAdapters(){
         registerDataTypeAdapter(UUID.class,new UUIDDataTypeAdapter());
-        registerDataTypeAdapter(InetAddress.class, new InetAddressAdapter());
+        registerDataTypeAdapter(Inet4Address.class, new InetAddressAdapter());
+        registerDataTypeAdapter(Inet6Address.class, new InetAddressAdapter());
         registerDataTypeAdapter(InetSocketAddress.class, new InetSocketAddressAdapter());
     }
 }

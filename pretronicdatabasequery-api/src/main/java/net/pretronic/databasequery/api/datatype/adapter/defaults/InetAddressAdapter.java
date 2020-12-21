@@ -23,6 +23,7 @@ package net.pretronic.databasequery.api.datatype.adapter.defaults;
 import net.pretronic.databasequery.api.datatype.adapter.DataTypeAdapter;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 

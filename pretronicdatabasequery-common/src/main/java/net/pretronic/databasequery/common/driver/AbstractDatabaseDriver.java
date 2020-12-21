@@ -89,7 +89,7 @@ public abstract class AbstractDatabaseDriver implements DatabaseDriver {
     }
 
     @Override
-    public <T> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<T> adapter) {
+    public <T extends R, R> void registerDataTypeAdapter(Class<T> clazz, DataTypeAdapter<R> adapter) {
         this.dataTypeAdapters.put(clazz, adapter);
     }
 

@@ -54,12 +54,8 @@ public class MsSQLDialect extends AbstractDialect {
 
     @Override
     public String createConnectionString(String connectionString, Object host) {
-        //jdbc:sqlserver://<server>:<port>;databaseName=AdventureWorks;user=<user>;password=<password>
         if(connectionString != null) {
             return connectionString;
-            /*
-            IF OBJECT_ID(N'dbo.Cars', N'U') IS NULL BEGIN CREATE TABLE dbo.Cars (Name varchar(64) not null); END;
-             */
         } else if(host instanceof InetSocketAddress) {
             InetSocketAddress address = (InetSocketAddress) host;
             return String.format("jdbc:sqlserver://%s:%s", address.getHostName(), address.getPort());
@@ -68,8 +64,22 @@ public class MsSQLDialect extends AbstractDialect {
     }
 
     @Override
-    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, Object[] values) {
-        return super.newCreateQuery(database, entries, name, engine, collectionType, includingQuery, values);
+    public CreateQueryContext newCreateQuery(SQLDatabase database, List<AbstractCreateQuery.Entry> entries, String name, String engine, DatabaseCollectionType collectionType, FindQuery includingQuery, boolean ifNotExists, Object[] values) {
+        CreateQueryContext context = new CreateQueryContext(database, name);
+        if(ifNotExists) {
+            context.getQueryBuilder()
+                    .append("IF NOT EXISTS (SELECT * FROM sys.tables INNER JOIN sys.schemas ON sys.tables.schema_id = sys.schemas.schema_id WHERE sys.tables.name = N'")
+                    .append(name)
+                    .append("' AND sys.tables.type = 'U' AND sys.schemas.name = '")
+                    .append(database.getName())
+                    .append("')")
+                    .append(" BEGIN ");
+        }
+        newCreateQuery(context, database, entries, name, engine, collectionType, includingQuery, false, values);
+        if(ifNotExists) {
+            context.getQueryBuilder().append(" END");
+        }
+        return context;
     }
 
     @Override

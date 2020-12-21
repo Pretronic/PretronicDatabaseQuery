@@ -52,12 +52,14 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
     protected String engine;
     protected DatabaseCollectionType type;
     protected FindQuery includingQuery;
+    protected boolean ifNotExist;
 
     public AbstractCreateQuery(String name, T database) {
         super(database.getDriver());
         this.name = name;
         this.database = database;
         this.entries = new ArrayList<>();
+        this.ifNotExist = true;
     }
 
     @Override
@@ -131,6 +133,12 @@ public abstract class AbstractCreateQuery<T extends Database> extends AbstractQu
     public CreateQuery include(FindQuery query) {
         if(this.includingQuery != null) throw new IllegalArgumentException("Including query already set");
         this.includingQuery = query;
+        return this;
+    }
+
+    @Override
+    public CreateQuery ifNotExists(boolean ifNotExists) {
+        this.ifNotExist = ifNotExists;
         return this;
     }
 

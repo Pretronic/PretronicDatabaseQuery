@@ -39,7 +39,7 @@ public class SQLCreateQuery extends AbstractCreateQuery<SQLDatabase> {
 
     @Internal
     public DatabaseCollection create(boolean commit) {
-        CreateQueryContext context = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, EMPTY_OBJECT_ARRAY);
+        CreateQueryContext context = this.database.getDriver().getDialect().newCreateQuery(this.database, this.entries, this.name, this.engine, this.type, this.includingQuery, this.ifNotExist, EMPTY_OBJECT_ARRAY);
         this.database.executeUpdateQuery(context.getQueryBuilder().toString(), commit, preparedStatement -> {
             for (int i = 1; i <= context.getPreparedValues().size(); i++) {
                 preparedStatement.setObject(i, context.getPreparedValues().get(i-1));

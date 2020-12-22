@@ -55,31 +55,6 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
                     result.addProperty("sqlQuery", data.getKey()).addProperty("sqlQueryValues", data.getValue());
                     while (resultSet.next()) {
                         DefaultQueryResultEntry resultEntry = new DefaultQueryResultEntry(this.collection.getDatabase().getDriver());
-                        /*if(!this.getEntries.isEmpty()) {
-                            for (Entry entry : this.getEntries) {
-                                String getter;
-                                if(entry instanceof GetEntry) {
-                                    GetEntry getEntry = ((GetEntry) entry);
-                                    if(getEntry.getAlias() != null) getter = getEntry.getAlias();
-                                    else getter = getEntry.getAggregation() == null ? getEntry.getField() : getEntry.getAggregation()
-                                            + "(`" + getEntry.getField() + "`)";
-                                } else if(entry instanceof FunctionEntry) {
-                                    getter = ((FunctionEntry) entry).getGetAliasName();
-                                } else {
-                                    throw new UnsupportedOperationException(entry.getClass().getName() + " is not supported in sql");
-                                }
-                                Object value = resultSet.getObject(getter);
-                                resultEntry.addEntry(getter, value);
-                            }
-                        } else {
-                            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                                Object value = resultSet.getObject(i);
-                                if(value instanceof Clob) {
-                                    value = FileUtil.readContent(((Clob) value).getAsciiStream());
-                                }
-                                resultEntry.addEntry(resultSet.getMetaData().getColumnName(i), value);
-                            }
-                        }*/
                         for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                             Object value = resultSet.getObject(i);
                             if(value instanceof Clob) {
@@ -87,7 +62,7 @@ public class SQLFindQuery extends AbstractFindQuery<SQLDatabaseCollection> imple
                             }
                             String tableName0 = resultSet.getMetaData().getTableName(i);
                             String tableName = tableName0.equals("") ? "" : tableName0+".";
-                            resultEntry.addEntry(tableName+resultSet.getMetaData().getColumnName(i), value);
+                            resultEntry.addEntry(tableName+resultSet.getMetaData().getColumnLabel(i), value);
                         }
                         result.addEntry(resultEntry);
                     }

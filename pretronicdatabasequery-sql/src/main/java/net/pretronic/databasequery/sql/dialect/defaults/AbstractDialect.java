@@ -395,13 +395,33 @@ public abstract class AbstractDialect implements Dialect {
             state.getBuilder.append(",");
         }
         if(entry.getAggregation() != null) {
-            state.getBuilder.append(entry.getAggregation()).append("(").append(firstBackTick).append(buildField(entry)).append(secondBackTick).append(")");
+            state.getBuilder.append(entry.getAggregation()).append("(").append(buildGetField(entry)).append(")");
         }else {
-            state.getBuilder.append(firstBackTick).append(buildField(entry)).append(secondBackTick);
+            state.getBuilder.append(buildGetField(entry));
         }
         if(entry.getAlias() != null) {
             state.getBuilder.append(" AS ").append(entry.getAlias());
         }
+    }
+
+    protected String buildGetField(AbstractFindQuery.GetEntry entry) {
+        StringBuilder builder = new StringBuilder();
+        if(entry.getDatabase() != null) {
+            if(!entry.getDatabase().equals("*")) builder.append(firstBackTick);
+            builder.append(entry.getDatabase());
+            if(!entry.getDatabase().equals("*")) builder.append(secondBackTick);
+            builder.append(".");
+        }
+        if(entry.getDatabaseCollection() != null) {
+            if(!entry.getDatabaseCollection().equals("*")) builder.append(firstBackTick);
+            builder.append(entry.getDatabaseCollection());
+            if(!entry.getDatabaseCollection().equals("*")) builder.append(secondBackTick);
+            builder.append(".");
+        }
+        if(!entry.getField().equals("*")) builder.append(firstBackTick);
+        builder.append(entry.getField());
+        if(!entry.getField().equals("*")) builder.append(secondBackTick);
+        return builder.toString();
     }
 
     private void buildFindQueryFunctionEntry(AbstractFindQuery.FunctionEntry entry, FindQueryBuilderState state) {

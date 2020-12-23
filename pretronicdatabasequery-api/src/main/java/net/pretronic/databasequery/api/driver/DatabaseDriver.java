@@ -140,6 +140,7 @@ public interface DatabaseDriver {
         registerDataTypeAdapter(UUID.class,new UUIDDataTypeAdapter());
         registerDataTypeAdapter(Inet4Address.class, new InetAddressAdapter());
         registerDataTypeAdapter(Inet6Address.class, new InetAddressAdapter());
+        registerDataTypeAdapter(InetAddress.class, new InetAddressAdapter());
         registerDataTypeAdapter(InetSocketAddress.class, new InetSocketAddressAdapter());
     }
 }

@@ -191,7 +191,7 @@ public abstract class SQLDatabaseDriverConfig<T extends SQLDatabaseDriverConfig<
 
     public int getDataSourceMinimumIdleConnectionPoolSize() {
         if(this.dataSourceMinimumIdleConnectionPoolSize == 0) {
-            this.dataSourceMinimumIdleConnectionPoolSize = 1;
+            this.dataSourceMinimumIdleConnectionPoolSize = 2;
         }
         return this.dataSourceMinimumIdleConnectionPoolSize;
     }

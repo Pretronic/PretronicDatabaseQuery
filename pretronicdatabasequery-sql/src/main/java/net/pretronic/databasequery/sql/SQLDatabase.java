@@ -104,7 +104,7 @@ public class SQLDatabase extends AbstractDatabase<SQLDatabaseDriver> {
 
     public boolean isLocalConnected() {
         if(getDriver().getDialect().getEnvironment() != DatabaseDriverEnvironment.LOCAL) {
-            throw new DatabaseQueryException("Only available for database driver with local enviroment");
+            throw new DatabaseQueryException("Only available for database driver with local environment");
         }
         try(Connection ignored = this.dataSource.getConnection()) {
             return true;

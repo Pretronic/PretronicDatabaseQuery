@@ -7,7 +7,7 @@
     <groupId>net.pretronic.databasequery</groupId>
     <artifactId>PretronicDatabaseQuery</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.56.83-SNAPSHOT</version>
+    <version>1.2.57.84-SNAPSHOT</version>
 
     <modules>
         <module>pretronicdatabasequery-api</module>

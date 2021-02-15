@@ -94,8 +94,9 @@ public class DefaultQueryResultEntry implements QueryResultEntry {
         if(results.containsKey(key)){
             return this.results.get(key);
         }
+        String[] split = key.split("\\.");
         for (Map.Entry<String, Object> entry : this.results.entrySet()) {
-            if(entry.getKey().toLowerCase().endsWith(key.toLowerCase())) return entry.getValue();
+            if(split[split.length-1].equalsIgnoreCase(entry.getKey())) return entry.getValue();
         }
         return null;
     }

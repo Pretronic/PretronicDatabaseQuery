@@ -38,7 +38,7 @@ public class DocumentDataTypeAdapter implements DataTypeAdapter<Document> {
     @Override
     public Object write(Document document) {
         if(document.isPrimitive()) throw new IllegalArgumentException("Document can't be a primitive value");
-        return DocumentFileType.JSON.getWriter().write(document);
+        return DocumentFileType.JSON.getWriter().write(document,false);
     }
 
     @Override

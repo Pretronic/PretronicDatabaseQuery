@@ -135,6 +135,7 @@ public class PostgreSQLDialect extends AbstractDialect {
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DATETIME).names("TIMESTAMP"));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BINARY).names("BYTEA").sizeAble(false));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.UUID).names("BYTEA").sizeAble(false));
+        this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.DOCUMENT).names("TEXT").sizeAble(false));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.BOOLEAN).names("BOOLEAN").sizeAble(false));
         this.dataTypeInformation.add(new DataTypeInformation().dataType(DataType.FLOAT).names("FLOAT"));
 

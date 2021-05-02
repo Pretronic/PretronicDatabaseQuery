@@ -22,6 +22,7 @@ package net.pretronic.databasequery.api.datatype;
 
 import net.pretronic.databasequery.api.collection.DatabaseCollection;
 import net.pretronic.databasequery.api.query.type.CreateQuery;
+import net.pretronic.libraries.document.Document;
 
 import java.util.Date;
 
@@ -45,6 +46,7 @@ public enum DataType {
     TIMESTAMP(long.class),
     BINARY(byte.class, byte[].class),
     UUID(java.util.UUID.class),
+    DOCUMENT(Document.class),
     BOOLEAN(boolean.class);
 
     private final Class<?>[] javaClasses;

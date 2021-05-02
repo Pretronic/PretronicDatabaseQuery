@@ -22,6 +22,7 @@ package net.pretronic.databasequery.sql.driver;
 import net.pretronic.databasequery.api.Database;
 import net.pretronic.databasequery.api.driver.DatabaseDriverFactory;
 import net.pretronic.databasequery.api.driver.config.DatabaseDriverConfig;
+import net.pretronic.databasequery.api.driver.config.RemoteDatabaseDriverConfig;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryConnectException;
 import net.pretronic.databasequery.api.exceptions.DatabaseQueryException;
 import net.pretronic.databasequery.common.DatabaseDriverEnvironment;
@@ -84,20 +85,23 @@ public class SQLDatabaseDriver extends AbstractDatabaseDriver {
     @Override
     public void connect() {
         getDialect().loadDriver();
+
         if(getDialect().getEnvironment() == DatabaseDriverEnvironment.REMOTE && this.dataSource == null) {
+            RemoteDatabaseDriverConfig<?> remoteConfig = (RemoteDatabaseDriverConfig<?>) getConfig();
+            String at = getConfig().getConnectionString() != null ? getConfig().getConnectionString() : remoteConfig.getHost().getHostAddress()+":"+remoteConfig.getPort();
             this.dataSource = SQLDataSourceFactory.create(this, null);
             try (Connection ignored = this.dataSource.getConnection()) {
-                getLogger().info("{} Connected to remote {} database at {}", getName(),getConfig().getDialect().getName(), getConfig().getConnectionString());
+                getLogger().info("{} Connected to remote {} database at {}", getName(),getConfig().getDialect().getName(), at);
             } catch (SQLException exception) {
-                getLogger().info("{} Failed to connect to sql database at {}", getName(),getConfig().getConnectionString());
+                getLogger().info("{} Failed to connect to sql database at {}", getName(), at);
                 throw new DatabaseQueryConnectException(exception.getMessage(), exception);
             }
         } else if(getConfig().getDialect().getEnvironment() == DatabaseDriverEnvironment.LOCAL) {
-            getLogger().info("{} Connected to local {} database at {}",getName(), getConfig().getDialect().getName(), getConfig().getConnectionString());
+            getLogger().info("{} Connected to local {} database", getName(), getConfig().getDialect().getName());
         } else if(isConnected()) {
             getLogger().info("{} Driver already connected", getName());
         } else {
-            throw new DatabaseQueryConnectException("Error by connecting to database at " + getConfig().getConnectionString());
+            throw new DatabaseQueryConnectException(getName() + " Error while connecting to database");
         }
     }
 

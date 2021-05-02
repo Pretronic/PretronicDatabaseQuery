@@ -173,7 +173,10 @@ public class SQLDatabaseDriverConfigBuilder {
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,
                     dataSourceMaximumPoolSize, dataSourceMinimumIdleConnectionPoolSize, location);
         } else if(dialect.getEnvironment() == DatabaseDriverEnvironment.REMOTE) {
-            Validate.notNull(username,address);
+            Validate.notNull(username);
+            if(connectionString == null && address == null) {
+                throw new IllegalArgumentException("ConnectionString and Address are null. Specify one of them.");
+            }
             return new SQLRemoteDatabaseDriverConfig(name, dialect, connectionString, useSSL, connectionCatalog, connectionSchema,
                     connectionReadOnly, connectionIsolationLevel, connectionNetworkTimeout, dataSourceClassName,
                     dataSourceConnectionExpireAfterAccess, dataSourceConnectionExpire, dataSourceConnectionLoginTimeout,

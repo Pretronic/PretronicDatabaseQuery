@@ -22,6 +22,7 @@ package net.pretronic.databasequery.sql.collection;
 import net.pretronic.databasequery.api.collection.AliasDatabaseCollection;
 import net.pretronic.databasequery.api.collection.DatabaseCollectionType;
 import net.pretronic.databasequery.api.collection.field.CollectionField;
+import net.pretronic.databasequery.api.query.Aggregation;
 import net.pretronic.databasequery.api.query.QueryGroup;
 import net.pretronic.databasequery.api.query.QueryTransaction;
 import net.pretronic.databasequery.api.query.type.*;
@@ -35,13 +36,15 @@ import java.util.Collection;
 
 public class SQLDatabaseCollection extends AbstractDatabaseCollection<SQLDatabase> {
 
+    private static final String DROP_QUERY = "DROP TABLE `%s`.`%s`;";
+
     public SQLDatabaseCollection(String name, SQLDatabase database, DatabaseCollectionType type) {
         super(name, database, type);
     }
 
     @Override
     public long getSize() {
-        return 0;
+        return find().get(Aggregation.COUNT, "*", "size").execute().first().getLong("size");
     }
 
     @Override
@@ -71,12 +74,12 @@ public class SQLDatabaseCollection extends AbstractDatabaseCollection<SQLDatabas
 
     @Override
     public void drop() {
-
+        this.getDatabase().executeUpdateQuery(String.format(DROP_QUERY, getDatabase().getName(), getName()), true);
     }
 
     @Override
     public void clear() {
-
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
@@ -91,26 +94,26 @@ public class SQLDatabaseCollection extends AbstractDatabaseCollection<SQLDatabas
 
     @Override
     public Collection<CollectionField> getFields() {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public CollectionField getField(String name) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public boolean hasField(String name) {
-        return false;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public CollectionField addField(String name) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public AliasDatabaseCollection as(String alias) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

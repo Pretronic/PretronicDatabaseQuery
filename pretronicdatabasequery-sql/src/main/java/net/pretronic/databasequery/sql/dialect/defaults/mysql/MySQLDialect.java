@@ -54,7 +54,7 @@ public class MySQLDialect extends AbstractDialect {
             if(port == 0) {
                 port = getDefaultSettings().getDefaultPort();
             }
-            return String.format("jdbc:%s://%s:%s", getProtocol(), address.getHostName(), port);
+            return String.format("jdbc:%s://%s:%s?useUnicode=true", getProtocol(), address.getHostName(), port);
         }
         throw new DatabaseQueryException("Can't match jdbc url for dialect " + getName());
     }

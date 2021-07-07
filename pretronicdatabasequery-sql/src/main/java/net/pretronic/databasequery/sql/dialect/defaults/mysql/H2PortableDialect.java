@@ -55,7 +55,7 @@ public class H2PortableDialect extends MySQLDialect {
                 path += "/";
             }
             path+="%s";
-            return "jdbc:h2:file:" + path + ";MODE=Mysql;IGNORECASE=TRUE;";
+            return "jdbc:h2:file:" + path + "?useUnicode=true;MODE=Mysql;IGNORECASE=TRUE;";
         }
     }
 }

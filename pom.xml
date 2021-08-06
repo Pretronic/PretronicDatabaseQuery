@@ -29,7 +29,7 @@
         <dependency.pretronic.connectionpool.version>1.0.1-SNAPSHOT</dependency.pretronic.connectionpool.version>
 
         <dependency.hikaricp.version>3.4.1</dependency.hikaricp.version>
-        <dependency.mongodb.version>3.12.8</dependency.mongodb.version>
+        <dependency.mongodb.version>3.12.10</dependency.mongodb.version>
         <dependency.h2.version>1.4.200</dependency.h2.version>
         <dependency.mysql.version>8.0.24</dependency.mysql.version>
         <dependency.mariadb.version>2.6.0</dependency.mariadb.version>

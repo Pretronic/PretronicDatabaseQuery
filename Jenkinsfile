@@ -71,7 +71,7 @@ pipeline {
             when { equals expected: false, actual: SKIP }
             steps {
                 configFileProvider([configFile(fileId: 'afe25550-309e-40c1-80ad-59da7989fb4e', variable: 'MAVEN_GLOBAL_SETTINGS')]) {
-                    sh 'mvn -B -gs $MAVEN_GLOBAL_SETTINGS clean deploy'
+                    sh 'mvn -B -gs $MAVEN_GLOBAL_SETTINGS clean deploy -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true'
                 }
             }
         }

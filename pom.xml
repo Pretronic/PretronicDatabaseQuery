@@ -28,7 +28,7 @@
         <dependency.pretronic.libraries.version>1.2.112.256-SNAPSHOT</dependency.pretronic.libraries.version>
         <dependency.pretronic.connectionpool.version>1.0.1-SNAPSHOT</dependency.pretronic.connectionpool.version>
 
-        <dependency.hikaricp.version>5.0.0</dependency.hikaricp.version>
+        <dependency.hikaricp.version>4.0.3</dependency.hikaricp.version>
         <dependency.mongodb.version>3.12.10</dependency.mongodb.version>
         <dependency.h2.version>2.0.202</dependency.h2.version>
         <dependency.mysql.version>8.0.27</dependency.mysql.version>
